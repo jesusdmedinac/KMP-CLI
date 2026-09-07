@@ -15,12 +15,13 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 - [x] Progress Tracker (`PROGRESS.md`) setup
 - [x] Community Landing Page & Guide (`README.md`)
 - [x] Living KMP Ecosystem & Reference Guide ([`docs/ecosystem/kmp-ecosystem-state.md`](docs/ecosystem/kmp-ecosystem-state.md))
+- [x] [ADR-001: Modular Engine (kmp-core) and CLI (kmp-cli) Architecture](docs/architecture/ADR-001-modular-core-and-cli-architecture.md)
 
 ---
 
 ## Phase 1: MVP Core CLI & `kmp doctor`
 ### Feature: KMP Environment Doctor (`docs/features/01_kmp_doctor.feature`)
-- [ ] Setup KMP Native Gradle build skeleton with Clikt & Mordant
+- [ ] Setup multi-module KMP Gradle skeleton: `kmp-core` (engine library) and `kmp-cli` (Native application with Clikt & Mordant)
 - [ ] Implement System Diagnostics Engine:
   - [ ] `kdoctor` integration wrapper (delegation and output normalizer on macOS)
   - [ ] JDK detector and Gradle version compatibility checker

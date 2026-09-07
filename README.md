@@ -145,6 +145,8 @@ For the full living progress tracker, see **[PROGRESS.md](PROGRESS.md)**.
 ├── .gitignore                                  # Multiplatform & build ignore rules
 └── docs/
     ├── RFC-001-vision-and-architecture.md      # Comprehensive architecture & RFC
+    ├── architecture/
+    │   └── ADR-001-modular-core-and-cli-architecture.md # Core library vs CLI binary decision
     ├── ecosystem/
     │   └── kmp-ecosystem-state.md              # Living KMP ecosystem & developer reference guide
     └── features/                               # Executable BDD Gherkin specifications
