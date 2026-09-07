@@ -14,6 +14,7 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
   - [x] [`docs/features/03_kmp_project_analysis.feature`](docs/features/03_kmp_project_analysis.feature)
 - [x] Progress Tracker (`PROGRESS.md`) setup
 - [x] Community Landing Page & Guide (`README.md`)
+- [x] Living KMP Ecosystem & Reference Guide ([`docs/ecosystem/kmp-ecosystem-state.md`](docs/ecosystem/kmp-ecosystem-state.md))
 
 ---
 
