@@ -8,36 +8,45 @@
 
 ## 1. Executive Summary and Motivation
 
-The **Kotlin Multiplatform (KMP)** ecosystem has reached production maturity for sharing business logic, multiplatform UI with Compose Multiplatform, and lightweight backends with Ktor. However, the developer experience (DX) remains fragmented:
-- Environment configuration (JDK, Android SDK, Xcode, CocoaPods/SPM, Kotlin Native targets) is a recurring source of friction.
-- Creating new projects or modules often depends on heavyweight IDE wizards or outdated template repositories.
-- With the rise of modern AI coding agents (such as Antigravity, Claude Code, Cursor, Copilot), there is no open standard for KMP tooling to expose structured project metadata, nor a curated hub of "skills" (procedural knowledge, runbooks, and best practices) tailored specifically for KMP development.
+The **Kotlin Multiplatform (KMP)** ecosystem has reached production maturity for sharing business logic, multiplatform UI with Compose Multiplatform, and lightweight backends with Ktor. Recent ecosystem advancements have accelerated this transition:
+- **JetBrains Kotlin Toolchain (v0.12.0)**: JetBrains has evolved Amper into the official unified **Kotlin Toolchain** (`./kotlin`), introducing declarative project configuration (`module.yaml`), Compose Hot Reload, multiplatform library publishing, and early Model Context Protocol (MCP) support for AI pairs.
+- **JetBrains KDoctor**: JetBrains maintains `kdoctor` as a dedicated mobile environment checker (Java, Android Studio, Xcode, CocoaPods).
 
-Inspired by the capabilities of **Android CLI** and the **Android Skills** ecosystem, this project aims to build:
-1. **KMP CLI (`kmp`)**: A native, fast, and extensible command-line interface designed for both human developers and AI agents.
-2. **KMP Skills Hub**: An open catalog of reusable skills based on the open `SKILL.md` standard to guide architecture, implementations, and best practices across Compose Multiplatform, Ktor, SQLDelight, Room KMP, Firebase, Coroutines, and migrations.
+Despite these tools, the developer experience (DX) and AI collaboration experience remain fragmented:
+1. **No Unified CLI with AI-Native Diagnostics**: `kdoctor` is a single-purpose terminal tool without JSON output (`--json`), limited to mobile macOS setups, and unaware of the new Kotlin Toolchain (`module.yaml`), Wasm web targets, Desktop prerequisites, or agent skill configurations.
+2. **Missing Agent Skills Hub**: While JetBrains acknowledges that AI agents are instrumental for tasks like project migration and modernization, there is no open package manager or curated repository for reusable **KMP Skills** (`SKILL.md`) covering Compose Multiplatform, Ktor, SQLDelight, Room KMP, Firebase, and migration playbooks.
+3. **Dual Build-System Reality**: Real-world projects navigate between established Gradle setups (`build.gradle.kts` + version catalogs) and declarative Kotlin Toolchain setups (`module.yaml`). Tooling must understand both seamlessly.
+
+Inspired by **Android CLI** and the **Android Skills** ecosystem, this project establishes:
+1. **KMP CLI (`kmp`)**: A high-performance, native command-line interface and MCP bridge that unifies environment diagnostics (orchestrating and expanding `kdoctor`), project analysis, and scaffolding for both humans and AI agents.
+2. **KMP Skills Hub**: An open, curated catalog of procedural skills adhering to the open `SKILL.md` standard for developer and AI pair consumption.
 
 ---
 
 ## 2. Design Principles
 
 ### 2.1. Dual Experience: Humans and AI Agents
-- **For Humans**: A rich, interactive, and clean terminal UI (semantic ANSI colors, progress spinners, interactive prompts, and readable tables) powered by libraries like Clikt and Mordant.
+- **For Humans**: A rich, interactive terminal UI (ANSI color coding, progress spinners, interactive prompts, and readable tables) powered by Clikt and Mordant.
 - **For AI Agents**:
-  - Global `--json` flag on all commands to provide typed, structured, and deterministic outputs.
-  - Dedicated inspection commands (`kmp describe`, `kmp analyze`) returning dependency graphs, active targets, and artifact locations without requiring fragile Gradle log scraping.
-  - Compatibility with modern agent protocols (Model Context Protocol - MCP and standard skill formats).
+  - Global `--json` flag on all commands providing deterministic, schema-validated payloads.
+  - Dedicated inspection commands (`kmp describe`, `kmp analyze`) parsing project structure without fragile log scraping.
+  - Native **Model Context Protocol (MCP)** server integration, allowing AI agents (Antigravity, Claude Code, Cursor, Copilot) to query diagnostics, inspect projects, and install skills natively as tools.
 
-### 2.2. Dogfooding & Native Performance
-- Build the core CLI in **Kotlin Multiplatform Native** to generate standalone executable binaries (universal `Mach-O` on macOS x86_64/arm64, Linux ELF, and Windows PE) without requiring a pre-installed JVM to run basic commands or diagnostics.
+### 2.2. Facade & Orchestration Architecture
+- **Embrace and Augment Upstream Tools**:
+  - `kmp doctor` does not reinvent diagnostics from scratch. If `kdoctor` is installed on macOS, `kmp doctor` invokes it, normalizes its output into structured data, and augments it with checks that `kdoctor` lacks (Kotlin Toolchain 0.12, Wasm tooling, Desktop targets, Gradle compatibility, and active agent skills).
+  - If `kdoctor` is absent, `kmp doctor` executes built-in diagnostic checks and optionally assists with installation (`brew install kdoctor`).
+- **Support Both Build Worlds**:
+  - Full inspection and scaffolding support for both standard Gradle (`build.gradle.kts` with `libs.versions.toml`) and modern Kotlin Toolchain (`module.yaml`).
 
-### 2.3. Decoupled Extensibility (Plugin Architecture)
-- Architecture inspired by `git` and `gh`: any executable in the user's `PATH` or in `~/.kmp/plugins/` adhering to the `kmp-<subcommand>` naming convention is automatically discovered as a subcommand.
-- Standard communication over stdin/stdout with argument forwarding and JSON metadata exchange (`kmp <subcommand> --plugin-manifest`).
+### 2.3. Dogfooding & Standalone Native Performance
+- Built in **Kotlin Multiplatform Native** to generate standalone binaries (universal `Mach-O` on macOS x86_64/arm64, Linux ELF, and Windows PE) with sub-second startup times and zero JVM boot overhead.
 
-### 2.4. Open Skills Standard (`SKILL.md`)
-- Adoption of the progressive disclosure skill specification featuring YAML frontmatter (`name`, `description`, `compatibility`, `tags`) paired with actionable procedural guidelines.
-- Native compatibility with agentic orchestration systems (including Google Antigravity).
+### 2.4. Decoupled Extensibility (Plugin Engine)
+- Inspired by `git` and `gh`: any executable matching `kmp-<subcommand>` found in the user's `PATH` or in `~/.kmp/plugins/` is automatically registered as a subcommand with argument forwarding and standard JSON IPC.
+
+### 2.5. Open Skills Standard (`SKILL.md`)
+- Adopts the progressive disclosure standard featuring YAML frontmatter (`name`, `description`, `compatibility`, `tags`) and procedural documentation. Fully compatible with Google Antigravity and open agent runtimes.
 
 ---
 
@@ -45,27 +54,34 @@ Inspired by the capabilities of **Android CLI** and the **Android Skills** ecosy
 
 ```
                       ┌─────────────────────────────────────────┐
-                      │                KMP CLI                  │
-                      │          (Kotlin Multiplatform)         │
+                      │          KMP CLI & MCP Bridge           │
+                      │         (Kotlin/Native Engine)          │
                       └────────────────────┬────────────────────┘
                                            │
          ┌───────────────────┬─────────────┴───────┬───────────────────┐
          ▼                   ▼                     ▼                   ▼
    ┌───────────┐      ┌─────────────┐       ┌─────────────┐     ┌─────────────┐
    │kmp doctor │      │ kmp create  │       │ kmp analyze │     │ kmp skills  │
-   │Host env   │      │ Multi-      │       │ Project     │     │ Skill hub   │
-   │diagnostics│      │ platform    │       │ metadata for│     │ management  │
-   │(JDK, SDK, │      │ project     │       │ AI agents   │     │ for devs    │
-   │Xcode...)  │      │ templates   │       │ and IDEs    │     │ and agents  │
-   └───────────┘      └─────────────┘       └─────────────┘     └──────┬──────┘
-                                                                       │
+   │Environment│      │ Scaffolding │       │ Inspect     │     │ Package     │
+   │diagnostics│      │ (Gradle &   │       │ Gradle &    │     │ manager for │
+   │& repair   │      │ Toolchain)  │       │ module.yaml │     │ SKILL.md hub│
+   └─────┬─────┘      └─────────────┘       └─────────────┘     └──────┬──────┘
+         │                                                             │
+         ├──────────────────────────────┐                              │
+         ▼                              ▼                              │
+┌──────────────────┐          ┌──────────────────┐                     │
+│ JetBrains        │          │ Native Checks    │                     │
+│ kdoctor (macOS)  │          │ (Toolchain 0.12, │                     │
+│ [Delegated Check]│          │ Wasm, Desktop,   │                     │
+│                  │          │ Skills state)    │                     │
+└──────────────────┘          └──────────────────┘                     │
                                                    ┌───────────────────┴───────────────────┐
                                                    ▼                                       ▼
                                        ┌───────────────────────┐               ┌───────────────────────┐
                                        │    KMP Skills Hub     │               │  KMP Plugins Engine   │
                                        │ (SKILL.md catalog:    │               │ (Subprocesses in PATH:│
                                        │ Compose, Ktor, SQL,   │               │ kmp-<plugin-name>)    │
-                                       │ Coroutines, Arch)     │               └───────────────────────┘
+                                       │ Toolchain migration)  │               └───────────────────────┘
                                        └───────────────────────┘
 ```
 
@@ -74,38 +90,46 @@ Inspired by the capabilities of **Android CLI** and the **Android Skills** ecosy
 ## 4. Core Command Suite
 
 ### 4.1. `kmp doctor`
-Evaluates the health and readiness of the host environment for KMP development:
-- Installed Java/JDK version and Gradle compatibility.
-- Android SDK (`ANDROID_HOME`), platform-tools, and Build Tools.
-- On macOS: Xcode installation, `xcrun` version, command-line tools, available simulators, and CocoaPods/SPM.
-- Connectivity to primary Maven repositories (Maven Central, Google, Gradle Plugin Portal).
-- Dual output: interactive visual report for humans, or structured JSON with remediation actions for AI agents.
+Evaluates the host environment for complete Kotlin Multiplatform development:
+- **Upstream Delegation**: If `kdoctor` is installed, delegates macOS/iOS/CocoaPods verification and aggregates the findings.
+- **Modern Extended Checks**:
+  - **Kotlin Toolchain**: Detects whether `./kotlin` / `kotlin` CLI (v0.12+) is available.
+  - **Web / Wasm Target**: Checks for Node.js, Emscripten/emsdk, and compatible browser runtimes.
+  - **Desktop Target**: Validates JDK compatibility and host graphics/native libraries.
+  - **AI Agent Readiness**: Verifies local agent skills directories (`.agents/skills/` or `~/.gemini/config/skills/`).
+- **Dual Output**:
+  - Human: ANSI colored checkmarks, warning badges, and formatted tables.
+  - AI Agent (`--json`): Typed JSON schema with status codes, error classifications, and recommended remediation commands.
 
 ### 4.2. `kmp describe` / `kmp analyze`
-Inspects the project located in the current working directory:
-- Identifies KMP modules and configured targets (`jvm`, `iosArm64`, `wasmJs`, `desktop`, etc.).
-- Inspects dependencies defined in `gradle/libs.versions.toml`.
-- Reports applied plugins and target compatibility.
-- Emits structured JSON schemas so AI agents understand project context without parsing Gradle files blindly.
+Analyzes projects in the working directory:
+- **Gradle Mode**: Parses `settings.gradle.kts`, `build.gradle.kts`, and `gradle/libs.versions.toml`.
+- **Kotlin Toolchain Mode**: Parses `module.yaml` and multi-module configurations.
+- Reports target matrix (`jvm`, `android`, `iosArm64`, `wasmJs`, `desktop`), applied plugins, and dependencies.
+- Emits structured JSON schemas for AI context injection.
 
 ### 4.3. `kmp create`
-Interactive scaffolding generator for modern KMP projects:
-- Official templates:
-  - `compose-multiplatform`: Multiplatform application with shared UI (Android, iOS, Desktop, Web Wasm).
-  - `library`: KMP library pre-configured for Maven Central publishing with Dokka and GitHub Actions.
-  - `fullstack`: Ktor Server + Compose Web/Desktop/Mobile sharing models and domain logic.
-- Non-interactive flag support (`--name`, `--package`, `--targets=android,ios,desktop`, `--output`).
+Scaffolding generator supporting modern architectures:
+- Templates:
+  - `compose-multiplatform`: Modern Compose UI targeting Android, iOS, Desktop, and Wasm.
+  - `toolchain-app`: Declarative Kotlin Toolchain project (`module.yaml`) with Compose Hot Reload support.
+  - `kmp-library`: Library configured for multiplatform publishing (Gradle or Toolchain 0.12).
+  - `fullstack`: Ktor Server + Compose client sharing domain logic.
+- Headless / non-interactive flags (`--name`, `--package`, `--targets`, `--format=gradle|toolchain`).
 
 ### 4.4. `kmp skills`
-Package manager for Kotlin Multiplatform skills:
-- `kmp skills list`: Lists installed or locally available skills.
-- `kmp skills find <keyword>`: Searches the community catalog or remote registries.
-- `kmp skills add <id>`: Downloads and installs a skill into the agent configuration directory (e.g. `~/.gemini/config/skills/` or local `.agents/skills/`).
+Package manager for Kotlin Multiplatform agent skills:
+- `kmp skills list`: Enumerates installed and available skills.
+- `kmp skills find <query>`: Searches local and remote registries.
+- `kmp skills add <id>`: Installs a skill into the agent directory (workspace or global).
 - `kmp skills remove <id>`: Uninstalls a skill.
-- `kmp skills describe <id>`: Displays the `SKILL.md` contents and references.
+- `kmp skills describe <id>`: Displays frontmatter, instructions, and references.
 
-### 4.5. `kmp update`
-- Checks for CLI updates and allows in-place self-updates of the binary.
+### 4.5. `kmp mcp`
+- Launches a stdio **Model Context Protocol (MCP)** server exposing `kmp` commands (`doctor`, `analyze`, `skills`) directly to MCP-compatible AI agents.
+
+### 4.6. `kmp update`
+- Checks for new CLI releases and performs in-place binary upgrades.
 
 ---
 
@@ -113,30 +137,34 @@ Package manager for Kotlin Multiplatform skills:
 
 ### Phase 0: Foundations & Specifications (Current)
 - [x] Repository initialization & Git version control.
-- [x] RFC-001: Vision, architecture, and standards.
-- [x] BDD functional specifications (Gherkin `.feature` files).
-- [x] Progress Tracker (`PROGRESS.md`).
+- [x] RFC-001: Vision, architecture, and standards (incorporating Kotlin Toolchain 0.12 & KDoctor).
+- [x] BDD functional specifications (`docs/features/`).
+- [x] Central Progress Tracker (`PROGRESS.md`).
 
 ### Phase 1: Core CLI & `kmp doctor` (MVP)
-- Kotlin Multiplatform Native Gradle build configuration.
-- Clikt and Mordant integration for CLI options, subcommands, and terminal UI.
-- `kmp doctor` implementation (JDK, Android SDK, and Xcode checks) with human & `--json` output.
-- Automated diagnostic test suite.
+- Kotlin Multiplatform Native Gradle setup targeting `macosArm64`, `macosX64`, and `linuxX64`.
+- CLI framework with Clikt and Mordant (terminal formatting & `--json` serializer).
+- `kmp doctor` implementation:
+  - `kdoctor` integration wrapper on macOS.
+  - Modern diagnostic checks: JDK, Android SDK, Kotlin Toolchain (0.12+), Wasm prerequisites.
+  - Structured `--json` output with actionable remediation commands.
+- Automated tests for diagnostic parsing and reporting.
 
 ### Phase 2: KMP Skills Hub & `kmp skills` Command
-- Open `SKILL.md` schema and registry index format (`catalog.json`).
-- Initial seed skills:
+- Open `SKILL.md` schema and registry catalog (`catalog.json`).
+- Seed skills:
   - `kmp-compose-adaptive`: Responsive and adaptive Compose Multiplatform patterns.
   - `kmp-ktor-networking`: Ktor client multiplatform setup with native engines and serialization.
   - `kmp-sqldelight-database`: Multiplatform database persistence with SQLDelight / Room KMP.
-  - `kmp-coroutines-concurrency`: Best practices for multiplatform async and flows.
+  - `kmp-toolchain-migration`: Step-by-step migration from `build.gradle.kts` to Kotlin Toolchain `module.yaml`.
+  - `kmp-coroutines-concurrency`: Concurrency and structured async practices across targets.
 - Subcommand `kmp skills (list | find | add | describe)`.
 
-### Phase 3: Project Scaffolding & Analysis (`kmp create` / `kmp analyze`)
-- Project structure inspector for `kmp analyze`.
-- Template scaffolding engine for `kmp create`.
+### Phase 3: Project Analysis & Scaffolding (`kmp analyze` / `kmp create`)
+- Project inspector supporting both `build.gradle.kts` and `module.yaml`.
+- Template engine for modern KMP project scaffolding.
 
-### Phase 4: Plugin Architecture & Distribution
-- External plugin discovery (`kmp-<subcommand>` resolution in `PATH`).
-- IPC JSON communication standard for plugins.
-- Packaging for distribution (Homebrew Tap, standalone shell installer).
+### Phase 4: MCP Server, Plugin Engine & Distribution
+- `kmp mcp` server implementation for AI agent pairing.
+- External plugin discovery (`kmp-<subcommand>` in `PATH`).
+- Release packaging (Homebrew Tap, universal binary distribution).
