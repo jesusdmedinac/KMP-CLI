@@ -4,7 +4,7 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 
 ---
 
-## Phase 0: Foundations & Specifications (In Progress)
+## Phase 0: Foundations & Specifications (Completed)
 - [x] Repository initialization & Git setup
 - [x] Baseline `.gitignore` configuration
 - [x] [RFC-001: Vision, Architecture, and Roadmap](docs/RFC-001-vision-and-architecture.md) (aligned with Kotlin Toolchain 0.12 & KDoctor)
@@ -13,6 +13,7 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
   - [x] [`docs/features/02_kmp_skills_management.feature`](docs/features/02_kmp_skills_management.feature)
   - [x] [`docs/features/03_kmp_project_analysis.feature`](docs/features/03_kmp_project_analysis.feature)
 - [x] Progress Tracker (`PROGRESS.md`) setup
+- [x] Community Landing Page & Guide (`README.md`)
 
 ---
 
