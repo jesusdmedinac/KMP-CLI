@@ -168,3 +168,12 @@ Package manager for Kotlin Multiplatform agent skills:
 - `kmp mcp` server implementation for AI agent pairing.
 - External plugin discovery (`kmp-<subcommand>` in `PATH`).
 - Release packaging (Homebrew Tap, universal binary distribution).
+- Publishing `kmp-core` to Maven Central and automated listing on `klibs.io`.
+
+### Phase 5: Ecosystem Expansions & Tooling Integrations (Future Outcomes & Nice-to-Haves)
+- **Gradle Plugin (`kmp-gradle-plugin`)**: Native Gradle integration consuming `kmp-core` to run `kmpDoctor`, `kmpAnalyze`, and `kmpSkillsVerify` in CI/CD pipelines without needing a local CLI binary.
+- **IDE Extensions (IntelliJ IDEA, Android Studio, Fleet)**:
+  - Toolwindow for environment diagnostics with interactive one-click fix buttons.
+  - Interactive visual browser for discovering, previewing, and applying KMP Skills directly in the IDE.
+- **Web-Based Skills Hub**: An interactive web portal (e.g. `skills.kmp-cli.org`) for exploring, searching, and previewing curated `SKILL.md` documents.
+- **Community Plugin Registry**: Standardized verification, signing, and discovery pipeline for community `kmp-*` plugins.

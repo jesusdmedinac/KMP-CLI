@@ -69,3 +69,18 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 - [ ] JSON IPC communication standard for plugins
 - [ ] Self-update mechanism (`kmp update`)
 - [ ] Packaging for distribution (Homebrew Tap, universal binary)
+- [ ] Publish `kmp-core` to Maven Central & verify listing on `klibs.io`
+
+---
+
+## Phase 5: Ecosystem Expansions & IDE Tooling (Future Outcomes / Nice-to-Haves)
+- [ ] **Gradle Plugin (`kmp-gradle-plugin`)**:
+  - [ ] Task `kmpDoctor` for CI/CD environment validation
+  - [ ] Task `kmpAnalyze` for automated build health reports
+  - [ ] Task `kmpSkillsVerify` to ensure repository follows certified KMP skills
+- [ ] **IDE Integration (IntelliJ IDEA, Android Studio, Fleet)**:
+  - [ ] Diagnostic status panel and one-click environment fixes
+  - [ ] In-IDE KMP Skills catalog browser
+- [ ] **Web Skills Hub (`skills.kmp-cli.org`)**: Interactive web portal for community skills
+- [ ] **Community Plugin Registry**: Verified registry for third-party `kmp-*` extensions
+

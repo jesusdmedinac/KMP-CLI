@@ -133,6 +133,13 @@ For the full living progress tracker, see **[PROGRESS.md](PROGRESS.md)**.
 - [ ] Model Context Protocol (`kmp mcp`) stdio server
 - [ ] Decoupled plugin discovery (`kmp-<subcommand>` in `PATH`)
 - [ ] Homebrew Tap and standalone installation scripts
+- [ ] Maven Central publishing for `kmp-core` & automated indexing on `klibs.io`
+
+### Phase 5: Ecosystem Expansions & IDE Tooling 🔮 (Future Outcomes / Nice-to-Haves)
+- [ ] **Gradle Plugin (`kmp-gradle-plugin`)**: Native Gradle tasks (`kmpDoctor`, `kmpAnalyze`, `kmpSkillsVerify`) for CI/CD pipelines without needing a separate CLI installation.
+- [ ] **IDE Tooling (IntelliJ IDEA, Android Studio, Fleet)**: Visual environment diagnostics panel and in-IDE KMP Skills browser.
+- [ ] **Web Skills Hub**: Interactive online documentation and discovery portal for community skills.
+- [ ] **Community Plugin Marketplace**: Verified registry for third-party `kmp-*` extensions.
 
 ---
 

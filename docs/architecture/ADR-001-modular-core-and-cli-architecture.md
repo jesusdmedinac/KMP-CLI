@@ -72,4 +72,4 @@ By publishing `kmp-core` to Maven Central with standard Kotlin Multiplatform met
 
 ### 4.2. Negative Consequences & Mitigations
 - **Slightly higher initial Gradle setup**: Mitigated by configuring a clean multi-module Gradle project from Day 1 using modern Gradle convention plugins.
-- **Risk of premature over-modularization**: Mitigated by strictly constraining the architecture to **only two modules** (`kmp-core` and `kmp-cli`) during Phases 1–3. Additional modules (such as `kmp-gradle-plugin`) will only be introduced in Phase 4.
+- **Risk of premature over-modularization**: Mitigated by strictly constraining the architecture to **only two modules** (`kmp-core` and `kmp-cli`) during Phases 1–4. Additional modules (such as `kmp-gradle-plugin`, IDE integrations, or web portals) are explicitly scheduled under **Phase 5 (Ecosystem Expansions & Future Outcomes)**.
