@@ -21,7 +21,7 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 
 ## Phase 1: MVP Core CLI & `kmp doctor`
 ### Feature: KMP Environment Doctor (`docs/features/01_kmp_doctor.feature`)
-- [ ] Setup multi-module KMP Gradle skeleton: `kmp-core` (engine library) and `kmp-cli` (Native application with Clikt & Mordant)
+- [x] Setup multi-module KMP Gradle skeleton: `kmp-core` (engine library) and `kmp-cli` (Native application with Clikt & Mordant)
 - [ ] Implement System Diagnostics Engine:
   - [ ] `kdoctor` integration wrapper (delegation and output normalizer on macOS)
   - [ ] JDK detector and Gradle version compatibility checker
