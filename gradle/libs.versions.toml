@@ -1,0 +1,19 @@
+[versions]
+kotlin = "2.1.10"
+clikt = "5.0.2"
+mordant = "3.0.1"
+kotlinx-coroutines = "1.9.0"
+kotlinx-serialization = "1.7.3"
+
+[libraries]
+clikt = { group = "com.github.ajalt.clikt", name = "clikt", version.ref = "clikt" }
+mordant = { group = "com.github.ajalt.mordant", name = "mordant", version.ref = "mordant" }
+mordant-coroutines = { group = "com.github.ajalt.mordant", name = "mordant-coroutines", version.ref = "mordant" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
+
+[plugins]
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
