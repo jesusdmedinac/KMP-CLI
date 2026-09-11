@@ -22,18 +22,16 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 ## Phase 1: MVP Core CLI & `kmp doctor`
 ### Feature: KMP Environment Doctor (`docs/features/01_kmp_doctor.feature`)
 - [x] Setup multi-module KMP Gradle skeleton: `kmp-core` (engine library) and `kmp-cli` (Native application with Clikt & Mordant)
-- [ ] Implement System Diagnostics Engine:
-  - [ ] `kdoctor` integration wrapper (delegation and output normalizer on macOS)
-  - [ ] JDK detector and Gradle version compatibility checker
-  - [ ] Android SDK detector (`ANDROID_HOME` / platform tools)
-  - [ ] Kotlin Toolchain (0.12+) detector (`./kotlin` / `kotlin` CLI)
-  - [ ] Web / Wasm prerequisites checker (Node.js, emsdk, browser runtimes)
-  - [ ] Agent Readiness checker (local/global skills directories)
-- [ ] Scenario: Run doctor delegating to kdoctor on macOS when available
-- [ ] Scenario: Run doctor with JSON output for AI agent consumption (`--json`)
-- [ ] Scenario: Run doctor when kdoctor is not installed on macOS (native fallback & brew hint)
-- [ ] Scenario: Run doctor when a critical requirement is missing (with actionable remediations)
-- [ ] Universal macOS binary build task (`assembleReleaseExecutableMacos`)
+- [ ] **[#2](https://github.com/jesusdmedinac/KMP-CLI/issues/2)** Core Diagnostic Data Models & Serialization in `kmp-core`
+- [ ] **[#3](https://github.com/jesusdmedinac/KMP-CLI/issues/3)** System Diagnostics Engine (`JdkChecker` & `KotlinToolchainChecker`)
+- [ ] **[#4](https://github.com/jesusdmedinac/KMP-CLI/issues/4)** Upstream macOS Delegation: `KDoctor` Integration Wrapper
+- [ ] **[#5](https://github.com/jesusdmedinac/KMP-CLI/issues/5)** Clikt Doctor Command with Dual Output in `kmp-cli` (Human TUI & `--json`)
+- [ ] **[#6](https://github.com/jesusdmedinac/KMP-CLI/issues/6)** Universal macOS Binary Assembly Task (`assembleReleaseExecutableMacos`)
+- [ ] Scenarios in `01_kmp_doctor.feature`:
+  - [ ] Scenario: Run doctor delegating to kdoctor on macOS when available
+  - [ ] Scenario: Run doctor with JSON output for AI agent consumption (`--json`)
+  - [ ] Scenario: Run doctor when kdoctor is not installed on macOS (native fallback & brew hint)
+  - [ ] Scenario: Run doctor when a critical requirement is missing (with actionable remediations)
 
 ---
 
