@@ -37,7 +37,7 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 
 ## Phase 2: KMP Skills Hub & Management
 ### Feature: KMP Skills Repository (`docs/features/02_kmp_skills_management.feature`)
-- [ ] **[#7](https://github.com/jesusdmedinac/KMP-CLI/issues/7)** Open `SKILL.md` Schema, Data Models & Registry Catalog in `kmp-core`
+- [x] **[#7](https://github.com/jesusdmedinac/KMP-CLI/issues/7)** Open `SKILL.md` Schema, Data Models & Registry Catalog in `kmp-core`
 - [ ] **[#8](https://github.com/jesusdmedinac/KMP-CLI/issues/8)** Curate Official Seed KMP Skills (Adaptive Compose, Ktor, SQLDelight, Toolchain, Coroutines)
   - [ ] `kmp-compose-adaptive` (Responsive & adaptive Compose Multiplatform patterns)
   - [ ] `kmp-ktor-networking` (Ktor client setup, native engines, serialization)
