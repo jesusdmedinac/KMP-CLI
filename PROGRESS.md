@@ -12,6 +12,7 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
   - [x] [`docs/features/01_kmp_doctor.feature`](docs/features/01_kmp_doctor.feature)
   - [x] [`docs/features/02_kmp_skills_management.feature`](docs/features/02_kmp_skills_management.feature)
   - [x] [`docs/features/03_kmp_project_analysis.feature`](docs/features/03_kmp_project_analysis.feature)
+  - [x] [`docs/features/04_kmp_skills_curation.feature`](docs/features/04_kmp_skills_curation.feature)
 - [x] Progress Tracker (`PROGRESS.md`) setup
 - [x] Community Landing Page & Guide (`README.md`)
 - [x] Living KMP Ecosystem & Reference Guide ([`docs/ecosystem/kmp-ecosystem-state.md`](docs/ecosystem/kmp-ecosystem-state.md))
@@ -47,6 +48,17 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
   - [x] `kmp-cli` (Procedural guide for AI agents and developers using KMP CLI)
 - [x] **[#9](https://github.com/jesusdmedinac/KMP-CLI/issues/9)** Skills Repository Engine & Local Installer in `kmp-core`
 - [x] **[#10](https://github.com/jesusdmedinac/KMP-CLI/issues/10)** `kmp skills` CLI Subcommands (`list`, `find`, `describe`, `add`) in `kmp-cli`
+
+---
+
+## Skills Hub: Canonical Expansion (Planned Milestone)
+### Feature: Canonical KMP Skills Curation & Ethical Attribution (`docs/features/04_kmp_skills_curation.feature`)
+- [ ] **[#25](https://github.com/jesusdmedinac/KMP-CLI/issues/25)** Curate `kmp-koin-di` skill (Multiplatform dependency injection with Koin)
+- [ ] **[#26](https://github.com/jesusdmedinac/KMP-CLI/issues/26)** Curate `kmp-swift-interop` skill (Swift export & Touchlab SKIE bridge)
+- [ ] **[#27](https://github.com/jesusdmedinac/KMP-CLI/issues/27)** Curate `kmp-testing-architecture` skill (Turbine flows & multiplatform fakes)
+- [ ] **[#28](https://github.com/jesusdmedinac/KMP-CLI/issues/28)** Curate `kmp-decompose-navigation` skill (Multiplatform component stack & lifecycle)
+- [ ] **[#29](https://github.com/jesusdmedinac/KMP-CLI/issues/29)** Curate `kmp-multiplatform-settings` skill (Cross-platform key-value persistence)
+- [ ] **[#30](https://github.com/jesusdmedinac/KMP-CLI/issues/30)** Curate `kmp-coil-media` skill (Asynchronous image loading & caching in Compose MP)
 
 ---
 
