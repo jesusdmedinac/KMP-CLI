@@ -5,6 +5,7 @@ import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.versionOption
 import com.jesusdmedinac.kmp.cli.command.DoctorCommand
+import com.jesusdmedinac.kmp.cli.command.SkillsCommand
 import com.jesusdmedinac.kmp.core.KmpCore
 
 class KmpCommand : CliktCommand(
@@ -12,7 +13,7 @@ class KmpCommand : CliktCommand(
 ) {
     init {
         versionOption(KmpCore.VERSION)
-        subcommands(DoctorCommand())
+        subcommands(DoctorCommand(), SkillsCommand())
     }
 
     override fun run() = Unit
