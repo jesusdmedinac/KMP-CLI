@@ -36,4 +36,7 @@ class FakeSystemEnvironment(
     override fun getEnv(name: String): String? = environmentVariables[name]
 
     override fun fileExists(path: String): Boolean = files.contains(path)
+
+    var fixedTimestamp: String = "2026-09-11T12:00:00Z"
+    override fun nowIso8601(): String = fixedTimestamp
 }

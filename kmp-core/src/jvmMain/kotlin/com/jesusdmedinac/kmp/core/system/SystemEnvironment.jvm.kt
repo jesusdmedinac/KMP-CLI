@@ -19,6 +19,8 @@ class JvmSystemEnvironment : SystemEnvironment {
 
     override fun fileExists(path: String): Boolean = File(path).exists()
 
+    override fun nowIso8601(): String = java.time.Instant.now().toString()
+
     override val operatingSystem: OperatingSystem
         get() {
             val osName = System.getProperty("os.name")?.lowercase() ?: ""

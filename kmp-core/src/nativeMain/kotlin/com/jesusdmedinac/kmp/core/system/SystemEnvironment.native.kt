@@ -44,6 +44,16 @@ class NativeSystemEnvironment : SystemEnvironment {
         return access(path, F_OK) == 0
     }
 
+    @OptIn(ExperimentalForeignApi::class)
+    override fun nowIso8601(): String = memScoped {
+        val now = alloc<time_tVar>()
+        now.value = time(null)
+        val tm = gmtime(now.ptr)
+        val buf = allocArray<ByteVar>(64)
+        strftime(buf, 64.convert(), "%Y-%m-%dT%H:%M:%SZ", tm)
+        buf.toKString()
+    }
+
     override val operatingSystem: OperatingSystem
         get() = when (Platform.osFamily) {
             OsFamily.MACOSX -> OperatingSystem.MACOS

@@ -143,6 +143,91 @@ For the full living progress tracker, see **[PROGRESS.md](PROGRESS.md)**.
 
 ---
 
+## 💻 Developer Guide: Building & Using `kmp-core` & `kmp-cli`
+
+### 1. Prerequisites
+- **Java Development Kit (JDK)**: OpenJDK 17 or 21 (required by Gradle 8.14+ and Kotlin 2.1+).
+- **Host OS**: macOS (Apple Silicon `macosArm64` or Intel `macosX64`) or Linux (`linuxX64`).
+- **Optional**: JetBrains `kdoctor` (`brew install kdoctor`) for delegated mobile/Xcode diagnostics.
+
+### 2. Running Automated Tests
+Run the full verification suite across all multiplatform targets (JVM, macOS Arm64, macOS x64, Linux x64):
+```bash
+# Run all tests across both modules
+./gradlew check
+
+# Run only kmp-core tests
+./gradlew :kmp-core:allTests
+
+# Run tests on specific target
+./gradlew :kmp-core:jvmTest
+./gradlew :kmp-core:macosArm64Test
+```
+
+### 3. Using `kmp-core` (Library Module)
+`kmp-core` is the engine containing diagnostic models, system abstractions, and the diagnostic checkers. It does not contain any terminal formatting or CLI parsing dependencies.
+
+To consume `kmp-core` programmatically in Kotlin Multiplatform:
+```kotlin
+import com.jesusdmedinac.kmp.core.engine.DiagnosticEngine
+import com.jesusdmedinac.kmp.core.model.CheckStatus
+
+suspend fun runDiagnosis() {
+    val engine = DiagnosticEngine()
+    val report = engine.diagnose()
+
+    println("Overall Status: ${report.overallStatus}")
+    report.checks.forEach { check ->
+        val icon = when (check.status) {
+            CheckStatus.SUCCESS -> "✓"
+            CheckStatus.WARNING -> "!"
+            CheckStatus.FAILURE -> "✗"
+        }
+        println("[$icon] ${check.title}: ${check.message}")
+        check.remediation?.let { remediation ->
+            println("    ↳ Fix: ${remediation.description}")
+            remediation.command?.let { println("    ↳ Run: $it") }
+        }
+    }
+}
+```
+
+### 4. Building & Running `kmp-cli` (Native Binary)
+`kmp-cli` compiles to a standalone native binary with sub-second startup times and zero JVM overhead.
+
+#### Step 4.1: Build Native Executable
+```bash
+# Debug executable for macOS Apple Silicon (M1/M2/M3/M4)
+./gradlew :kmp-cli:linkDebugExecutableMacosArm64
+
+# Release executable for macOS Apple Silicon
+./gradlew :kmp-cli:linkReleaseExecutableMacosArm64
+
+# Universal macOS Binary (Apple Silicon + Intel x86_64 via lipo)
+./gradlew :kmp-cli:assembleReleaseExecutableMacos
+```
+
+#### Step 4.2: Execute the Binary Directly
+```bash
+# Check version
+./kmp-cli/build/bin/macosArm64/debugExecutable/kmp.kexe --version
+
+# View help and registered commands
+./kmp-cli/build/bin/macosArm64/debugExecutable/kmp.kexe --help
+```
+
+#### Step 4.3: Add to PATH (Optional Local Install)
+To invoke `kmp` from anywhere during local development, create a symlink in your local bin directory:
+```bash
+mkdir -p ~/.local/bin
+ln -sf "$(pwd)/kmp-cli/build/bin/macosArm64/debugExecutable/kmp.kexe" ~/.local/bin/kmp
+
+# Verify
+kmp --version
+```
+
+---
+
 ## 📂 Repository Structure
 
 ```text
