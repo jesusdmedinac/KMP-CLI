@@ -44,7 +44,7 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
   - [x] `kmp-sqldelight-database` (SQLDelight driver setup per target & migrations)
   - [x] `kmp-toolchain-migration` (Step-by-step migration from `build.gradle.kts` to Kotlin Toolchain `module.yaml`)
   - [x] `kmp-coroutines-concurrency` (Best practices for multiplatform async/flows)
-- [ ] **[#9](https://github.com/jesusdmedinac/KMP-CLI/issues/9)** Skills Repository Engine & Local Installer in `kmp-core`
+- [x] **[#9](https://github.com/jesusdmedinac/KMP-CLI/issues/9)** Skills Repository Engine & Local Installer in `kmp-core`
 - [ ] **[#10](https://github.com/jesusdmedinac/KMP-CLI/issues/10)** `kmp skills` CLI Subcommands (`list`, `find`, `describe`, `add`) in `kmp-cli`
 
 ---
