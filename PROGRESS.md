@@ -25,13 +25,13 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 - [x] **[#2](https://github.com/jesusdmedinac/KMP-CLI/issues/2)** Core Diagnostic Data Models & Serialization in `kmp-core`
 - [x] **[#3](https://github.com/jesusdmedinac/KMP-CLI/issues/3)** System Diagnostics Engine (`JdkChecker` & `KotlinToolchainChecker`)
 - [x] **[#4](https://github.com/jesusdmedinac/KMP-CLI/issues/4)** Upstream macOS Delegation: `KDoctor` Integration Wrapper
-- [ ] **[#5](https://github.com/jesusdmedinac/KMP-CLI/issues/5)** Clikt Doctor Command with Dual Output in `kmp-cli` (Human TUI & `--json`)
-- [ ] **[#6](https://github.com/jesusdmedinac/KMP-CLI/issues/6)** Universal macOS Binary Assembly Task (`assembleReleaseExecutableMacos`)
-- [ ] Scenarios in `01_kmp_doctor.feature`:
-  - [ ] Scenario: Run doctor delegating to kdoctor on macOS when available
-  - [ ] Scenario: Run doctor with JSON output for AI agent consumption (`--json`)
-  - [ ] Scenario: Run doctor when kdoctor is not installed on macOS (native fallback & brew hint)
-  - [ ] Scenario: Run doctor when a critical requirement is missing (with actionable remediations)
+- [x] **[#5](https://github.com/jesusdmedinac/KMP-CLI/issues/5)** Clikt Doctor Command with Dual Output in `kmp-cli` (Human TUI & `--json`)
+- [x] **[#6](https://github.com/jesusdmedinac/KMP-CLI/issues/6)** Universal macOS Binary Assembly Task (`assembleReleaseExecutableMacos`)
+- [x] Scenarios in `01_kmp_doctor.feature`:
+  - [x] Scenario: Run doctor delegating to kdoctor on macOS when available
+  - [x] Scenario: Run doctor with JSON output for AI agent consumption (`--json`)
+  - [x] Scenario: Run doctor when kdoctor is not installed on macOS (native fallback & brew hint)
+  - [x] Scenario: Run doctor when a critical requirement is missing (with actionable remediations)
 
 ---
 

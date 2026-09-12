@@ -42,8 +42,12 @@ class KDoctorChecker(
         }
 
         val runResult = systemEnvironment.execute(listOf("kdoctor"))
-        val output = runResult.output
-        val cleanedLines = output.lines().map { cleanSpinner(it) }
+        val rawOutput = runResult.output
+        val cleanedLines = rawOutput
+            .replace("\r", "\n")
+            .lines()
+            .map { cleanSpinner(it) }
+            .filter { it.isNotBlank() }
 
         val hasFailure = runResult.exitCode != 0 || cleanedLines.any { line ->
             line.contains("[x]") || line.contains("[✕]") || line.contains("[✖]")
@@ -53,8 +57,8 @@ class KDoctorChecker(
         val summaryDetails = cleanedLines
             .filter { line ->
                 line.startsWith("[✓]") || line.startsWith("[!]") || line.startsWith("[x]") ||
-                        line.startsWith("[✕]") || line.startsWith("[✖]") || line.startsWith("  !") ||
-                        line.startsWith("  x")
+                        line.startsWith("[✕]") || line.startsWith("[✖]") || line.startsWith("!") ||
+                        line.startsWith("x") || line.startsWith("Install")
             }
 
         return when {
@@ -63,7 +67,7 @@ class KDoctorChecker(
                 title = title,
                 status = CheckStatus.FAILURE,
                 message = "kdoctor reported failures in mobile development environment.",
-                details = summaryDetails.ifEmpty { listOf(output) },
+                details = summaryDetails.ifEmpty { listOf(rawOutput) },
                 remediation = Remediation(
                     description = "Review kdoctor failure details above and resolve missing requirements",
                     command = "kdoctor -v",
@@ -75,7 +79,7 @@ class KDoctorChecker(
                 title = title,
                 status = CheckStatus.WARNING,
                 message = "kdoctor reported warnings in mobile environment.",
-                details = summaryDetails.ifEmpty { listOf(output) },
+                details = summaryDetails.ifEmpty { listOf(rawOutput) },
                 remediation = Remediation(
                     description = "Review kdoctor recommendations or run verbose diagnosis",
                     command = "kdoctor -v",
@@ -87,14 +91,15 @@ class KDoctorChecker(
                 title = title,
                 status = CheckStatus.SUCCESS,
                 message = "kdoctor: Environment is ready for Kotlin Multiplatform Mobile development.",
-                details = summaryDetails.ifEmpty { listOf(output) },
+                details = summaryDetails.ifEmpty { listOf(rawOutput) },
                 remediation = null
             )
         }
     }
 
     private fun cleanSpinner(line: String): String {
-        val cleaned = line.replace(Regex("""\[[\u2800-\u28FF]\]\s*[^\[]*"""), "").trim()
-        return cleaned.ifBlank { line.trim() }
+        val noAnsi = line.replace(Regex("""\u001B\[[0-9;]*[a-zA-Z]"""), "")
+        val cleaned = noAnsi.replace(Regex("""\[[\u2800-\u28FF]\]\s*[^\[]*"""), "").trim()
+        return cleaned.ifBlank { noAnsi.trim() }
     }
 }
