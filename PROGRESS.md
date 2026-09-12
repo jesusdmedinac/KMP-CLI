@@ -38,12 +38,12 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 ## Phase 2: KMP Skills Hub & Management
 ### Feature: KMP Skills Repository (`docs/features/02_kmp_skills_management.feature`)
 - [x] **[#7](https://github.com/jesusdmedinac/KMP-CLI/issues/7)** Open `SKILL.md` Schema, Data Models & Registry Catalog in `kmp-core`
-- [ ] **[#8](https://github.com/jesusdmedinac/KMP-CLI/issues/8)** Curate Official Seed KMP Skills (Adaptive Compose, Ktor, SQLDelight, Toolchain, Coroutines)
-  - [ ] `kmp-compose-adaptive` (Responsive & adaptive Compose Multiplatform patterns)
-  - [ ] `kmp-ktor-networking` (Ktor client setup, native engines, serialization)
-  - [ ] `kmp-sqldelight-database` (SQLDelight driver setup per target & migrations)
-  - [ ] `kmp-toolchain-migration` (Step-by-step migration from `build.gradle.kts` to Kotlin Toolchain `module.yaml`)
-  - [ ] `kmp-coroutines-concurrency` (Best practices for multiplatform async/flows)
+- [x] **[#8](https://github.com/jesusdmedinac/KMP-CLI/issues/8)** Curate Official Seed KMP Skills (Adaptive Compose, Ktor, SQLDelight, Toolchain, Coroutines)
+  - [x] `kmp-compose-adaptive` (Responsive & adaptive Compose Multiplatform patterns)
+  - [x] `kmp-ktor-networking` (Ktor client setup, native engines, serialization)
+  - [x] `kmp-sqldelight-database` (SQLDelight driver setup per target & migrations)
+  - [x] `kmp-toolchain-migration` (Step-by-step migration from `build.gradle.kts` to Kotlin Toolchain `module.yaml`)
+  - [x] `kmp-coroutines-concurrency` (Best practices for multiplatform async/flows)
 - [ ] **[#9](https://github.com/jesusdmedinac/KMP-CLI/issues/9)** Skills Repository Engine & Local Installer in `kmp-core`
 - [ ] **[#10](https://github.com/jesusdmedinac/KMP-CLI/issues/10)** `kmp skills` CLI Subcommands (`list`, `find`, `describe`, `add`) in `kmp-cli`
 
