@@ -12,6 +12,7 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
   - [x] [`docs/features/01_kmp_doctor.feature`](docs/features/01_kmp_doctor.feature)
   - [x] [`docs/features/02_kmp_skills_management.feature`](docs/features/02_kmp_skills_management.feature)
   - [x] [`docs/features/03_kmp_project_analysis.feature`](docs/features/03_kmp_project_analysis.feature)
+  - [x] [`docs/features/04_kmp_skills_curation.feature`](docs/features/04_kmp_skills_curation.feature)
 - [x] Progress Tracker (`PROGRESS.md`) setup
 - [x] Community Landing Page & Guide (`README.md`)
 - [x] Living KMP Ecosystem & Reference Guide ([`docs/ecosystem/kmp-ecosystem-state.md`](docs/ecosystem/kmp-ecosystem-state.md))
@@ -37,15 +38,27 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 
 ## Phase 2: KMP Skills Hub & Management
 ### Feature: KMP Skills Repository (`docs/features/02_kmp_skills_management.feature`)
-- [ ] **[#7](https://github.com/jesusdmedinac/KMP-CLI/issues/7)** Open `SKILL.md` Schema, Data Models & Registry Catalog in `kmp-core`
-- [ ] **[#8](https://github.com/jesusdmedinac/KMP-CLI/issues/8)** Curate Official Seed KMP Skills (Adaptive Compose, Ktor, SQLDelight, Toolchain, Coroutines)
-  - [ ] `kmp-compose-adaptive` (Responsive & adaptive Compose Multiplatform patterns)
-  - [ ] `kmp-ktor-networking` (Ktor client setup, native engines, serialization)
-  - [ ] `kmp-sqldelight-database` (SQLDelight driver setup per target & migrations)
-  - [ ] `kmp-toolchain-migration` (Step-by-step migration from `build.gradle.kts` to Kotlin Toolchain `module.yaml`)
-  - [ ] `kmp-coroutines-concurrency` (Best practices for multiplatform async/flows)
-- [ ] **[#9](https://github.com/jesusdmedinac/KMP-CLI/issues/9)** Skills Repository Engine & Local Installer in `kmp-core`
-- [ ] **[#10](https://github.com/jesusdmedinac/KMP-CLI/issues/10)** `kmp skills` CLI Subcommands (`list`, `find`, `describe`, `add`) in `kmp-cli`
+- [x] **[#7](https://github.com/jesusdmedinac/KMP-CLI/issues/7)** Open `SKILL.md` Schema, Data Models & Registry Catalog in `kmp-core`
+- [x] **[#8](https://github.com/jesusdmedinac/KMP-CLI/issues/8)** Curate Official Seed KMP Skills (Adaptive Compose, Ktor, SQLDelight, Toolchain, Coroutines)
+  - [x] `kmp-compose-adaptive` (Responsive & adaptive Compose Multiplatform patterns)
+  - [x] `kmp-ktor-networking` (Ktor client setup, native engines, serialization)
+  - [x] `kmp-sqldelight-database` (SQLDelight driver setup per target & migrations)
+  - [x] `kmp-toolchain-migration` (Step-by-step migration from `build.gradle.kts` to Kotlin Toolchain `module.yaml`)
+  - [x] `kmp-coroutines-concurrency` (Best practices for multiplatform async/flows)
+  - [x] `kmp-cli` (Procedural guide for AI agents and developers using KMP CLI)
+- [x] **[#9](https://github.com/jesusdmedinac/KMP-CLI/issues/9)** Skills Repository Engine & Local Installer in `kmp-core`
+- [x] **[#10](https://github.com/jesusdmedinac/KMP-CLI/issues/10)** `kmp skills` CLI Subcommands (`list`, `find`, `describe`, `add`) in `kmp-cli`
+
+---
+
+## Skills Hub: Canonical Expansion (Planned Milestone)
+### Feature: Canonical KMP Skills Curation & Ethical Attribution (`docs/features/04_kmp_skills_curation.feature`)
+- [ ] **[#25](https://github.com/jesusdmedinac/KMP-CLI/issues/25)** Curate `kmp-koin-di` skill (Multiplatform dependency injection with Koin)
+- [ ] **[#26](https://github.com/jesusdmedinac/KMP-CLI/issues/26)** Curate `kmp-swift-interop` skill (Swift export & Touchlab SKIE bridge)
+- [ ] **[#27](https://github.com/jesusdmedinac/KMP-CLI/issues/27)** Curate `kmp-testing-architecture` skill (Turbine flows & multiplatform fakes)
+- [ ] **[#28](https://github.com/jesusdmedinac/KMP-CLI/issues/28)** Curate `kmp-decompose-navigation` skill (Multiplatform component stack & lifecycle)
+- [ ] **[#29](https://github.com/jesusdmedinac/KMP-CLI/issues/29)** Curate `kmp-multiplatform-settings` skill (Cross-platform key-value persistence)
+- [ ] **[#30](https://github.com/jesusdmedinac/KMP-CLI/issues/30)** Curate `kmp-coil-media` skill (Asynchronous image loading & caching in Compose MP)
 
 ---
 
@@ -73,4 +86,12 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 - [ ] **[#18](https://github.com/jesusdmedinac/KMP-CLI/issues/18)** Native Gradle Plugin (`kmp-gradle-plugin`) for CI/CD Quality Gates (`kmpDoctor`, `kmpAnalyze`, `kmpSkillsVerify`)
 - [ ] **[#19](https://github.com/jesusdmedinac/KMP-CLI/issues/19)** IDE Plugin for IntelliJ IDEA, Android Studio & Fleet (Diagnostics toolwindow & in-IDE skills browser)
 - [ ] **[#20](https://github.com/jesusdmedinac/KMP-CLI/issues/20)** Web Skills Hub Portal (`skills.kmp-cli.org`) & Community Registry Pipeline
+
+---
+
+## Technical Debt & Enhancements Backlog
+- [ ] **[#23](https://github.com/jesusdmedinac/KMP-CLI/issues/23)** Atomic File Writes: Use temporary files and atomic POSIX rename in `SystemEnvironment.writeFileText`
+- [ ] **[#24](https://github.com/jesusdmedinac/KMP-CLI/issues/24)** Remote Skills Registry HTTP Resolver via Ktor Client
+- [x] **[#31](https://github.com/jesusdmedinac/KMP-CLI/issues/31)** Local Installation Automation: Add `installLocal` Gradle tasks and refine local PATH documentation
+
 

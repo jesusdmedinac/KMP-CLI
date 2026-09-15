@@ -19,6 +19,22 @@ class JvmSystemEnvironment : SystemEnvironment {
 
     override fun fileExists(path: String): Boolean = File(path).exists()
 
+    override fun readFileText(path: String): String? = try {
+        val file = File(path)
+        if (file.exists()) file.readText() else null
+    } catch (e: Exception) {
+        null
+    }
+
+    override fun writeFileText(path: String, content: String): Boolean = try {
+        val file = File(path)
+        file.parentFile?.mkdirs()
+        file.writeText(content)
+        true
+    } catch (e: Exception) {
+        false
+    }
+
     override fun nowIso8601(): String = java.time.Instant.now().toString()
 
     override val operatingSystem: OperatingSystem
