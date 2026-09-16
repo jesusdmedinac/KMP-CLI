@@ -37,6 +37,16 @@ class FakeSystemEnvironment(
 
     override fun fileExists(path: String): Boolean = files.contains(path)
 
+    val fileContents = mutableMapOf<String, String>()
+
+    override fun readFileText(path: String): String? = fileContents[path]
+
+    override fun writeFileText(path: String, content: String): Boolean {
+        fileContents[path] = content
+        files.add(path)
+        return true
+    }
+
     var fixedTimestamp: String = "2026-09-11T12:00:00Z"
     override fun nowIso8601(): String = fixedTimestamp
 }

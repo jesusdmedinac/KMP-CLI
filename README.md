@@ -216,14 +216,29 @@ suspend fun runDiagnosis() {
 ./kmp-cli/build/bin/macosArm64/debugExecutable/kmp.kexe --help
 ```
 
-#### Step 4.3: Add to PATH (Optional Local Install)
-To invoke `kmp` from anywhere during local development, create a symlink in your local bin directory:
-```bash
-mkdir -p ~/.local/bin
-ln -sf "$(pwd)/kmp-cli/build/bin/macosArm64/debugExecutable/kmp.kexe" ~/.local/bin/kmp
+#### Step 4.3: Add to PATH (Local Installation)
+To invoke `kmp` from anywhere on your machine, install it into your local user bin directory (`~/.local/bin`):
 
-# Verify
+```bash
+# Option A: Install optimized release binary (survives ./gradlew clean)
+./gradlew installLocal
+
+# Option B: Install live development symlink (instant hot-reload for active development)
+./gradlew installDebugLocal
+```
+
+> [!TIP]
+> **Ensure `~/.local/bin` is in your `$PATH`**:
+> If running `kmp --version` returns `command not found: kmp`, add `~/.local/bin` to your shell configuration:
+> ```bash
+> echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc   # or ~/.bashrc
+> source ~/.zshrc
+> ```
+
+```bash
+# Verify installation
 kmp --version
+kmp doctor
 ```
 
 ---

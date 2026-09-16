@@ -45,6 +45,39 @@ class NativeSystemEnvironment : SystemEnvironment {
     }
 
     @OptIn(ExperimentalForeignApi::class)
+    override fun readFileText(path: String): String? {
+        val fp = fopen(path, "r") ?: return null
+        try {
+            fseek(fp, 0, SEEK_END)
+            val size = ftell(fp)
+            fseek(fp, 0, SEEK_SET)
+            if (size <= 0) return ""
+            val buffer = ByteArray(size.toInt())
+            val read = fread(buffer.refTo(0), 1.convert(), size.convert(), fp)
+            return buffer.take(read.toInt()).toByteArray().decodeToString()
+        } finally {
+            fclose(fp)
+        }
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    override fun writeFileText(path: String, content: String): Boolean {
+        val lastSlash = path.lastIndexOf('/')
+        if (lastSlash > 0) {
+            val parent = path.substring(0, lastSlash)
+            execute(listOf("mkdir", "-p", parent))
+        }
+        val fp = fopen(path, "w") ?: return false
+        try {
+            val bytes = content.encodeToByteArray()
+            val written = fwrite(bytes.refTo(0), 1.convert(), bytes.size.convert(), fp)
+            return written.toInt() == bytes.size
+        } finally {
+            fclose(fp)
+        }
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
     override fun nowIso8601(): String = memScoped {
         val now = alloc<time_tVar>()
         now.value = time(null)
