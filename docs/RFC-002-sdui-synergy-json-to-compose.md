@@ -106,17 +106,20 @@ A dedicated command namespace within `kmp-cli`:
 1. **Decoupled Architecture**: `KMP-CLI` interacts with `json-to-compose` via well-defined contracts (JSON Schema and CLI commands). It does not require hardcoding runtime UI rendering into the CLI binary itself.
 2. **Progressive Adoption**: Developers can use `kmp create --template sdui-starter` for new apps, or install `kmp-sdui-compose` skill into existing codebases to add SDUI capabilities incrementally.
 3. **Transpiler Output Quality**: `kmp sdui convert` generates idiomatic Compose code formatted per Kotlin conventions (nested layouts, named arguments, trailing lambdas, `Modifier` chains) rather than raw machine-generated syntax.
+4. **Transpiler Architecture (Issue #35)**: Phase 1 of `kmp sdui convert` focuses on pure declarative `@Composable` function generation with local state (`remember { mutableStateOf(...) }`). Future iterations can introduce an optional `--architecture mvi|viewmodel` flag for enterprise state holders.
+5. **Skills Catalog Test Pre-condition (Issue #32)**: Prior to registering `kmp-sdui-compose` in the compiled `DefaultSkillsCatalog`, `SkillsRepositoryTest.kt` must be refactored from `assertEquals(1, composeSkills.size)` to a flexible predicate (`assertTrue(composeSkills.any { ... })`) to cleanly support multiple skills tagged with `compose`.
 
 ---
 
 ## 4. Implementation Phasing
 
-1. **Specification & Feature Modeling** (This Phase):
-   - RFC-002 and BDD Feature Specification (`05_kmp_sdui_integration.feature`).
+1. **Specification & Feature Modeling** (Completed):
+   - RFC-002 and BDD Feature Specification ([`05_kmp_sdui_integration.feature`](features/05_kmp_sdui_integration.feature)).
    - GitHub Issues creation and progress tracking sync.
 2. **Skill Hub Seed Curation**:
-   - Author `kmp-sdui-compose` skill and register in `KmpSkillsCatalog`.
+   - **[Issue #32](https://github.com/jesusdmedinac/KMP-CLI/issues/32)**: Curate `kmp-sdui-compose` canonical skill for Server-Driven UI and register in `DefaultSkillsCatalog`.
 3. **Template Scaffolding**:
-   - Implement `sdui-starter` in `kmp-core` template engine.
+   - **[Issue #33](https://github.com/jesusdmedinac/KMP-CLI/issues/33)**: Add `sdui-starter` template powered by `json-to-compose` in `kmp-core` template engine.
 4. **CLI Tooling & Transpiler**:
-   - Implement `kmp sdui schema`, `kmp sdui validate`, and `kmp sdui convert`.
+   - **[Issue #34](https://github.com/jesusdmedinac/KMP-CLI/issues/34)**: Add `kmp sdui` command with `schema` export and `validate` subcommands.
+   - **[Issue #35](https://github.com/jesusdmedinac/KMP-CLI/issues/35)**: Implement static Compose Kotlin code transpiler in `kmp sdui convert`.

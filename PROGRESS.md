@@ -79,7 +79,7 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 
 ## Server-Driven UI Synergy: json-to-compose & Composy
 ### Feature: Server-Driven UI Integration (`docs/features/05_kmp_sdui_integration.feature`)
-- [ ] **[#32](https://github.com/jesusdmedinac/KMP-CLI/issues/32)** Curate `kmp-sdui-compose` canonical skill for Server-Driven UI
+- [ ] **[#32](https://github.com/jesusdmedinac/KMP-CLI/issues/32)** Curate `kmp-sdui-compose` canonical skill for Server-Driven UI *(Pre-condition: refactor `SkillsRepositoryTest` `compose` assertion predicate to accommodate multiple compose skills)*
 - [ ] **[#33](https://github.com/jesusdmedinac/KMP-CLI/issues/33)** Add `sdui-starter` template powered by json-to-compose
 - [ ] **[#34](https://github.com/jesusdmedinac/KMP-CLI/issues/34)** Add `kmp sdui` command with schema export and validation
 - [ ] **[#35](https://github.com/jesusdmedinac/KMP-CLI/issues/35)** Implement static Compose Kotlin code transpiler in `kmp sdui convert`
