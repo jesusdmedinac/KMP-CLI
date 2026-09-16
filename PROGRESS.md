@@ -8,11 +8,13 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 - [x] Repository initialization & Git setup
 - [x] Baseline `.gitignore` configuration
 - [x] [RFC-001: Vision, Architecture, and Roadmap](docs/RFC-001-vision-and-architecture.md) (aligned with Kotlin Toolchain 0.12 & KDoctor)
+- [x] [RFC-002: Server-Driven UI Synergy with json-to-compose](docs/RFC-002-sdui-synergy-json-to-compose.md)
 - [x] Initial Gherkin Features:
   - [x] [`docs/features/01_kmp_doctor.feature`](docs/features/01_kmp_doctor.feature)
   - [x] [`docs/features/02_kmp_skills_management.feature`](docs/features/02_kmp_skills_management.feature)
   - [x] [`docs/features/03_kmp_project_analysis.feature`](docs/features/03_kmp_project_analysis.feature)
   - [x] [`docs/features/04_kmp_skills_curation.feature`](docs/features/04_kmp_skills_curation.feature)
+  - [x] [`docs/features/05_kmp_sdui_integration.feature`](docs/features/05_kmp_sdui_integration.feature)
 - [x] Progress Tracker (`PROGRESS.md`) setup
 - [x] Community Landing Page & Guide (`README.md`)
 - [x] Living KMP Ecosystem & Reference Guide ([`docs/ecosystem/kmp-ecosystem-state.md`](docs/ecosystem/kmp-ecosystem-state.md))
@@ -71,6 +73,22 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
   - [ ] Template: `toolchain-app` (`module.yaml` + Compose Hot Reload)
   - [ ] Template: `kmp-library` (cross-platform library skeleton)
   - [ ] Template: `fullstack` (Ktor backend + Compose client)
+  - [ ] Template: `sdui-starter` (Server-Driven UI app powered by json-to-compose & caching)
+
+---
+
+## Server-Driven UI Synergy: json-to-compose & Composy
+### Feature: Server-Driven UI Integration (`docs/features/05_kmp_sdui_integration.feature`)
+- [ ] **[#32](https://github.com/jesusdmedinac/KMP-CLI/issues/32)** Curate `kmp-sdui-compose` canonical skill for Server-Driven UI
+- [ ] **[#33](https://github.com/jesusdmedinac/KMP-CLI/issues/33)** Add `sdui-starter` template powered by json-to-compose
+- [ ] **[#34](https://github.com/jesusdmedinac/KMP-CLI/issues/34)** Add `kmp sdui` command with schema export and validation
+- [ ] **[#35](https://github.com/jesusdmedinac/KMP-CLI/issues/35)** Implement static Compose Kotlin code transpiler in `kmp sdui convert`
+- Scenarios in `05_kmp_sdui_integration.feature`:
+  - [ ] Scenario: Scaffold a new multiplatform project using the sdui-starter template (#33)
+  - [ ] Scenario: Discover, inspect, and install the canonical kmp-sdui-compose skill (#32)
+  - [ ] Scenario: Export the json-to-compose JSON schema for IDE and AI validation (#34)
+  - [ ] Scenario: Validate a local or remote SDUI JSON document against the schema (#34)
+  - [ ] Scenario: Transpile dynamic SDUI JSON into static Jetpack Compose Kotlin code (#35)
 
 ---
 
