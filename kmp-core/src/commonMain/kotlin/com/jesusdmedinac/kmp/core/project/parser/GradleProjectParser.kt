@@ -6,9 +6,22 @@ import com.jesusdmedinac.kmp.core.project.model.ProjectModule
 import com.jesusdmedinac.kmp.core.system.SystemEnvironment
 import com.jesusdmedinac.kmp.core.system.createDefaultSystemEnvironment
 
+/**
+ * Parses Gradle-based Kotlin Multiplatform projects.
+ *
+ * Inspects `settings.gradle(.kts)` for root project names and included modules,
+ * scans `build.gradle(.kts)` files for declared target platforms and Kotlin versions,
+ * and falls back to `gradle/libs.versions.toml` to extract version catalogs and Kotlin dependencies.
+ */
 class GradleProjectParser(
     private val systemEnvironment: SystemEnvironment = createDefaultSystemEnvironment(),
 ) {
+    /**
+     * Parses the Gradle project located at [projectRoot].
+     *
+     * @param projectRoot Relative or absolute path to the project root directory. Defaults to `.`.
+     * @return A [ProjectDescriptor] if a valid Gradle project is found, or `null` otherwise.
+     */
     fun parse(projectRoot: String = "."): ProjectDescriptor? {
         val root = if (projectRoot == "." || projectRoot.isEmpty()) "" else projectRoot.trimEnd('/') + "/"
 
@@ -83,14 +96,12 @@ class GradleProjectParser(
     }
 
     private fun parseRootProjectName(content: String): String? {
-        val regex = Regex("""rootProject\.name\s*=\s*["']([^"']+)["']""")
-        return regex.find(content)?.groupValues?.get(1)
+        return ROOT_PROJECT_NAME_REGEX.find(content)?.groupValues?.get(1)
     }
 
     private fun parseIncludedModules(content: String): List<String> {
         val modules = mutableListOf<String>()
-        val regex = Regex("""include\s*\(?\s*["']([^"']+)["']\s*\)?""")
-        for (match in regex.findAll(content)) {
+        for (match in INCLUDE_MODULES_REGEX.findAll(content)) {
             val path = match.groupValues[1].trim()
             if (path.isNotEmpty()) {
                 modules.add(path)
@@ -103,11 +114,9 @@ class GradleProjectParser(
         if (!systemEnvironment.fileExists(path)) return null
         val content = systemEnvironment.readFileText(path) ?: return null
 
-        val multiplatformRegex = Regex("""(?:id\("org\.jetbrains\.kotlin\.multiplatform"\)|kotlin\("multiplatform"\))\s+version\s+["']([^"']+)["']""")
-        multiplatformRegex.find(content)?.groupValues?.get(1)?.let { return it }
+        MULTIPLATFORM_PLUGIN_REGEX.find(content)?.groupValues?.get(1)?.let { return it }
 
-        val aliasRegex = Regex("""alias\(libs\.plugins\.kotlin(?:Multiplatform|\.multiplatform)\)""")
-        // Handled via version catalog
+        // Handled via version catalog fallback
         return null
     }
 
@@ -117,7 +126,21 @@ class GradleProjectParser(
 
         val targets = mutableSetOf<String>()
 
-        val targetMatchers = listOf(
+        for ((regex, targetName) in TARGET_MATCHERS) {
+            if (regex.containsMatchIn(content)) {
+                targets.add(targetName)
+            }
+        }
+
+        return targets
+    }
+
+    companion object {
+        private val ROOT_PROJECT_NAME_REGEX = Regex("""rootProject\.name\s*=\s*["']([^"']+)["']""")
+        private val INCLUDE_MODULES_REGEX = Regex("""include\s*\(?\s*["']([^"']+)["']\s*\)?""")
+        private val MULTIPLATFORM_PLUGIN_REGEX = Regex("""(?:id\("org\.jetbrains\.kotlin\.multiplatform"\)|kotlin\("multiplatform"\))\s+version\s+["']([^"']+)["']""")
+
+        private val TARGET_MATCHERS: List<Pair<Regex, String>> = listOf(
             Regex("""\bandroidTarget\b""") to "android",
             Regex("""\bandroid\s*\{""") to "android",
             Regex("""\biosX64\b""") to "iosX64",
@@ -133,13 +156,5 @@ class GradleProjectParser(
             Regex("""\bmacosX64\b""") to "macosX64",
             Regex("""\bmingwX64\b""") to "mingwX64",
         )
-
-        for ((regex, targetName) in targetMatchers) {
-            if (regex.containsMatchIn(content)) {
-                targets.add(targetName)
-            }
-        }
-
-        return targets
     }
 }

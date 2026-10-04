@@ -6,9 +6,21 @@ import com.jesusdmedinac.kmp.core.project.model.ProjectDependencies
 import com.jesusdmedinac.kmp.core.system.SystemEnvironment
 import com.jesusdmedinac.kmp.core.system.createDefaultSystemEnvironment
 
+/**
+ * Parses Gradle TOML version catalogs (`gradle/libs.versions.toml`).
+ *
+ * Extracts versions, declared libraries, and plugins, automatically resolving
+ * `version.ref` references against the parsed `[versions]` table.
+ */
 class VersionCatalogParser(
     private val systemEnvironment: SystemEnvironment = createDefaultSystemEnvironment(),
 ) {
+    /**
+     * Parses the TOML version catalog at [path].
+     *
+     * @param path Relative or absolute path to the TOML file. Defaults to `gradle/libs.versions.toml`.
+     * @return A [ProjectDependencies] descriptor if the file exists and is valid, or `null` otherwise.
+     */
     fun parse(path: String = "gradle/libs.versions.toml"): ProjectDependencies? {
         if (!systemEnvironment.fileExists(path)) return null
         val content = systemEnvironment.readFileText(path) ?: return null
@@ -127,12 +139,15 @@ class VersionCatalogParser(
 
     private fun parseKeyValuePairs(content: String): Map<String, String> {
         val map = mutableMapOf<String, String>()
-        val regex = Regex("""([a-zA-Z0-9_.-]+)\s*=\s*("[^"]*"|'[^']*'|[a-zA-Z0-9_.-]+)""")
-        for (match in regex.findAll(content)) {
+        for (match in KEY_VALUE_REGEX.findAll(content)) {
             val k = match.groupValues[1]
             val v = match.groupValues[2].removeSurrounding("\"").removeSurrounding("'")
             map[k] = v
         }
         return map
+    }
+
+    companion object {
+        private val KEY_VALUE_REGEX = Regex("""([a-zA-Z0-9_.-]+)\s*=\s*("[^"]*"|'[^']*'|[a-zA-Z0-9_.-]+)""")
     }
 }

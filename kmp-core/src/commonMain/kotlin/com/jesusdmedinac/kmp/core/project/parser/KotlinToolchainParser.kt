@@ -6,9 +6,21 @@ import com.jesusdmedinac.kmp.core.project.model.ProjectModule
 import com.jesusdmedinac.kmp.core.system.SystemEnvironment
 import com.jesusdmedinac.kmp.core.system.createDefaultSystemEnvironment
 
+/**
+ * Parses declarative JetBrains Kotlin Toolchain (Amper) multiplatform projects.
+ *
+ * Inspects root `project.yaml` and module-level `module.yaml` files to extract
+ * declared platform targets, modules, and Kotlin compiler settings.
+ */
 class KotlinToolchainParser(
     private val systemEnvironment: SystemEnvironment = createDefaultSystemEnvironment(),
 ) {
+    /**
+     * Parses the Kotlin Toolchain project located at [projectRoot].
+     *
+     * @param projectRoot Relative or absolute path to the project root directory. Defaults to `.`.
+     * @return A [ProjectDescriptor] if a valid Toolchain project is found, or `null` otherwise.
+     */
     fun parse(projectRoot: String = "."): ProjectDescriptor? {
         val root = if (projectRoot == "." || projectRoot.isEmpty()) "" else projectRoot.trimEnd('/') + "/"
 
@@ -74,13 +86,11 @@ class KotlinToolchainParser(
     }
 
     private fun parseProjectName(content: String): String? {
-        val regex = Regex("""name:\s*["']?([a-zA-Z0-9_.-]+)["']?""")
-        return regex.find(content)?.groupValues?.get(1)
+        return PROJECT_NAME_REGEX.find(content)?.groupValues?.get(1)
     }
 
     private fun parseKotlinVersionFromYaml(content: String): String? {
-        val versionRegex = Regex("""(?:kotlin|version):\s*["']?([0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9_.-]+)?)["']?""")
-        return versionRegex.find(content)?.groupValues?.get(1)
+        return KOTLIN_VERSION_REGEX.find(content)?.groupValues?.get(1)
     }
 
     private fun parseModulesFromProjectYaml(content: String): List<String> {
@@ -137,5 +147,10 @@ class KotlinToolchainParser(
         }
 
         return platforms
+    }
+
+    companion object {
+        private val PROJECT_NAME_REGEX = Regex("""name:\s*["']?([a-zA-Z0-9_.-]+)["']?""")
+        private val KOTLIN_VERSION_REGEX = Regex("""(?:kotlin|version):\s*["']?([0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9_.-]+)?)["']?""")
     }
 }
