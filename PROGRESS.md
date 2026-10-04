@@ -66,7 +66,7 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 
 ## Phase 3: Project Analysis & Modern Templates
 ### Feature: KMP Project Analysis (`docs/features/03_kmp_project_analysis.feature`)
-- [ ] **[#11](https://github.com/jesusdmedinac/KMP-CLI/issues/11)** Dual Build System Parser (Gradle & Kotlin Toolchain `module.yaml`) in `kmp-core`
+- [x] **[#11](https://github.com/jesusdmedinac/KMP-CLI/issues/11)** Dual Build System Parser (Gradle & Kotlin Toolchain `module.yaml`) in `kmp-core`
 - [ ] **[#12](https://github.com/jesusdmedinac/KMP-CLI/issues/12)** Project Inspection & Dependency Analysis CLI Commands (`kmp describe` & `kmp analyze`)
 - [ ] **[#13](https://github.com/jesusdmedinac/KMP-CLI/issues/13)** Multiplatform Project Scaffolding Engine & `kmp create` Subcommand
   - [ ] Template: `compose-multiplatform` (Android, iOS, Desktop, Wasm)
