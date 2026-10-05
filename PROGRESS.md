@@ -15,6 +15,8 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
   - [x] [`docs/features/03_kmp_project_analysis.feature`](docs/features/03_kmp_project_analysis.feature)
   - [x] [`docs/features/04_kmp_skills_curation.feature`](docs/features/04_kmp_skills_curation.feature)
   - [x] [`docs/features/05_kmp_sdui_integration.feature`](docs/features/05_kmp_sdui_integration.feature)
+  - [x] [`docs/features/06_agency_kmp_architect_agent.feature`](docs/features/06_agency_kmp_architect_agent.feature)
+  - [x] [`docs/features/07_cross_platform_modernization_and_migration.feature`](docs/features/07_cross_platform_modernization_and_migration.feature)
 - [x] Progress Tracker (`PROGRESS.md`) setup
 - [x] Community Landing Page & Guide (`README.md`)
 - [x] Living KMP Ecosystem & Reference Guide ([`docs/ecosystem/kmp-ecosystem-state.md`](docs/ecosystem/kmp-ecosystem-state.md))
@@ -67,7 +69,10 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 ## Phase 3: Project Analysis & Modern Templates
 ### Feature: KMP Project Analysis (`docs/features/03_kmp_project_analysis.feature`)
 - [x] **[#11](https://github.com/jesusdmedinac/KMP-CLI/issues/11)** Dual Build System Parser (Gradle & Kotlin Toolchain `module.yaml`) in `kmp-core`
-- [ ] **[#12](https://github.com/jesusdmedinac/KMP-CLI/issues/12)** Project Inspection & Dependency Analysis CLI Commands (`kmp describe` & `kmp analyze`)
+- [x] **[#12](https://github.com/jesusdmedinac/KMP-CLI/issues/12)** Project Inspection & Dependency Analysis CLI Commands (`kmp describe` & `kmp analyze`)
+  - [x] Scenario: Describe KMP project modules and targets from standard Gradle configuration
+  - [x] Scenario: Describe KMP project modules and targets from Kotlin Toolchain module.yaml
+  - [x] Scenario: Analyze dependencies from version catalog
 - [ ] **[#13](https://github.com/jesusdmedinac/KMP-CLI/issues/13)** Multiplatform Project Scaffolding Engine & `kmp create` Subcommand
   - [ ] Template: `compose-multiplatform` (Android, iOS, Desktop, Wasm)
   - [ ] Template: `toolchain-app` (`module.yaml` + Compose Hot Reload)
@@ -97,6 +102,32 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 - [ ] **[#15](https://github.com/jesusdmedinac/KMP-CLI/issues/15)** Dynamic Subcommand Plugin Discovery Architecture (`kmp-*`)
 - [ ] **[#16](https://github.com/jesusdmedinac/KMP-CLI/issues/16)** Self-Update Mechanism (`kmp update`) & GitHub Release Downloads
 - [ ] **[#17](https://github.com/jesusdmedinac/KMP-CLI/issues/17)** Distribution Packaging (Homebrew Tap Formula & Maven Central Publishing)
+
+---
+
+## Agentic Ecosystem: Agency Agents Synergy
+### Feature: Kotlin Multiplatform Architect Agent (`docs/features/06_agency_kmp_architect_agent.feature`)
+- [ ] **[#39](https://github.com/jesusdmedinac/KMP-CLI/issues/39)** Kotlin Multiplatform Architect Agent Persona for `agency-agents`
+  - [ ] Scenario: Validate agent metadata and YAML frontmatter schema
+  - [ ] Scenario: Define specialized persona identity, memory, and core mission
+  - [ ] Scenario: Enforce critical KMP architecture rules and anti-patterns
+  - [ ] Scenario: Provide idiomatic technical deliverables
+  - [ ] Scenario: Integrate KMP-CLI dual DX diagnostic and skills workflows
+  - [ ] Scenario: Verify multi-tool agency compatibility and conversion
+
+---
+
+## Cross-Platform Modernization: React Native & Flutter Migration Engine
+### Feature: Cross-Platform Modernization & Migration Analysis (`docs/features/07_cross_platform_modernization_and_migration.feature`)
+- [ ] **[#40](https://github.com/jesusdmedinac/KMP-CLI/issues/40)** Cross-Platform Modernization & Audit Engine
+  - [ ] Scenario: Audit React Native codebase and generate dependency replacement matrix
+  - [ ] Scenario: Audit Flutter codebase and generate dependency replacement matrix
+  - [ ] Scenario: Smart redirect from kmp analyze when detecting legacy cross-platform codebases
+  - [ ] Scenario: Recommend architectural modernization pathway
+  - [ ] Scenario: Generate phased Strangler Fig migration roadmap
+  - [ ] Scenario: Provide canonical migration skills in KMP Skills Hub
+  - [ ] Scenario: Scaffold Shared KMP Core bridge template
+  - [ ] Scenario: Output migration audit in dual formats for humans and AI agents
 
 ---
 
