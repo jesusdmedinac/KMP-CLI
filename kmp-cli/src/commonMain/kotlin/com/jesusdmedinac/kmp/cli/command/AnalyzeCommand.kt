@@ -48,7 +48,7 @@ class AnalyzeDependenciesCommand(
 
     val projectPath by argument(
         "path",
-        help = "Path to the KMP project root. Defaults to current directory.",
+        help = "Path to the KMP project root or directly to a version catalog .toml file. Defaults to current directory.",
     ).default(".")
 
     private val json = Json {
@@ -57,8 +57,12 @@ class AnalyzeDependenciesCommand(
     }
 
     override fun run() {
-        val root = if (projectPath == "." || projectPath.isEmpty()) "" else projectPath.trimEnd('/') + "/"
-        val catalogPath = "${root}gradle/libs.versions.toml"
+        val catalogPath = if (projectPath.endsWith(".toml")) {
+            projectPath
+        } else {
+            val root = if (projectPath == "." || projectPath.isEmpty()) "" else projectPath.trimEnd('/') + "/"
+            "${root}gradle/libs.versions.toml"
+        }
         val catalog = versionCatalogParser.parse(catalogPath)
 
         if (catalog == null) {

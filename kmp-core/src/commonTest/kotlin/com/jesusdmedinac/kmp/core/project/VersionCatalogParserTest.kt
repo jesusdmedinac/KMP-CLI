@@ -5,7 +5,6 @@ import com.jesusdmedinac.kmp.core.test.FakeSystemEnvironment
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 class VersionCatalogParserTest {
     private val fakeEnv = FakeSystemEnvironment()

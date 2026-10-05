@@ -8,7 +8,6 @@ import com.jesusdmedinac.kmp.core.skill.model.SkillCatalogEntry
 import com.jesusdmedinac.kmp.core.test.FakeSystemEnvironment
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class SkillsCommandTest {

@@ -86,6 +86,31 @@ class AnalyzeCommandTest {
     }
 
     @Test
+    fun `analyze dependencies accepts direct toml file path`() {
+        val tomlContent = """
+            [versions]
+            koin = "4.0.0"
+
+            [libraries]
+            koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+        """.trimIndent()
+
+        fakeEnv.writeFileText("custom/my-catalog.toml", tomlContent)
+
+        val command = AnalyzeCommand(versionCatalogParser = parser, terminal = terminal)
+        CommandLineParser.parseAndRun(command, listOf("dependencies", "custom/my-catalog.toml", "--json")) { it.run() }
+
+        val output = recorder.output().trim()
+        val dependencies = Json.decodeFromString<ProjectDependencies>(output)
+
+        assertNotNull(dependencies)
+        assertEquals(1, dependencies.versions.size)
+        assertEquals("4.0.0", dependencies.versions["koin"])
+        assertEquals(1, dependencies.libraries.size)
+        assertEquals("koin-core", dependencies.libraries.first().alias)
+    }
+
+    @Test
     fun `analyze dependencies fails with exit code 1 when no version catalog found`() {
         val command = AnalyzeCommand(versionCatalogParser = parser, terminal = terminal)
         val exception = assertFailsWith<ProgramResult> {
