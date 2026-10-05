@@ -1,50 +1,34 @@
 package com.jesusdmedinac.kmp.core.scaffold.generator
 
+import com.jesusdmedinac.kmp.core.scaffold.model.ProjectTemplate
 import com.jesusdmedinac.kmp.core.scaffold.model.ScaffoldingOptions
+import com.jesusdmedinac.kmp.core.scaffold.template.TemplateContext
+import com.jesusdmedinac.kmp.core.scaffold.template.TemplateProcessor
+import com.jesusdmedinac.kmp.core.scaffold.template.TemplateSource
 
-class ToolchainAppGenerator : TemplateGenerator {
+class ToolchainAppGenerator(
+    private val templateSource: TemplateSource,
+) : TemplateGenerator {
     override fun generate(options: ScaffoldingOptions): Map<String, String> {
-        val files = mutableMapOf<String, String>()
+        val rawFiles = templateSource.loadRawTemplateFiles(ProjectTemplate.TOOLCHAIN_APP)
         val packagePath = options.packageName.replace('.', '/')
-        val platforms = options.targets.map { it.lowercase().trim() }
 
-        files[".gitignore"] = """
-            .idea
-            .kotlin
-            /build
-            /app/build
-            .DS_Store
-        """.trimIndent()
+        val targets = options.targets.map { it.lowercase().trim() }.toSet()
+        val normalizedTargets = mutableSetOf<String>()
+        if (targets.contains("android")) normalizedTargets.add("android")
+        if (targets.any { it.startsWith("ios") }) normalizedTargets.add("ios")
+        if (targets.any { it == "desktop" || it == "jvm" }) normalizedTargets.add("desktop")
+        if (targets.any { it.startsWith("wasm") }) normalizedTargets.add("wasm")
 
-        files["project.yaml"] = """
-            modules:
-              - app
-            settings:
-              kotlin:
-                version: 2.2.0
-        """.trimIndent()
+        val context = TemplateContext(
+            variables = mapOf(
+                "PROJECT_NAME" to options.name,
+                "PACKAGE_NAME" to options.packageName,
+                "PACKAGE_PATH" to packagePath,
+            ),
+            activeTargets = normalizedTargets,
+        )
 
-        val platformsYaml = platforms.joinToString("\n") { "    - $it" }
-
-        files["app/module.yaml"] = """
-            product:
-              type: app
-              platforms:
-            $platformsYaml
-            dependencies:
-              - org.jetbrains.compose.runtime:runtime:1.8.0
-              - org.jetbrains.compose.foundation:foundation:1.8.0
-              - org.jetbrains.compose.material3:material3:1.8.0
-        """.trimIndent()
-
-        files["app/src/commonMain/kotlin/$packagePath/Main.kt"] = """
-            package ${options.packageName}
-
-            fun main() {
-                println("Hello from Declarative Kotlin Toolchain App!")
-            }
-        """.trimIndent()
-
-        return files
+        return TemplateProcessor.process(rawFiles, context)
     }
 }

@@ -191,4 +191,38 @@ class ScaffoldingEngineTest {
         assertEquals("FAILED", result.status)
         assertNotNull(result.errorMessage)
     }
+
+    @Test
+    fun `scaffold loads templates from physical disk directory when present`() {
+        fakeEnv.writeFileText(
+            "templates/compose-multiplatform/settings.gradle.kts",
+            "// Custom physical template\nrootProject.name = \"{{PROJECT_NAME}}\""
+        )
+        fakeEnv.writeFileText(
+            "templates/compose-multiplatform/build.gradle.kts",
+            "// Physical build.gradle.kts"
+        )
+        fakeEnv.writeFileText(
+            "templates/compose-multiplatform/composeApp/build.gradle.kts",
+            "// Physical composeApp build"
+        )
+        fakeEnv.writeFileText(
+            "templates/compose-multiplatform/gradle/libs.versions.toml",
+            "[versions]\ncustom = \"1.0.0\""
+        )
+
+        val options = ScaffoldingOptions(
+            name = "PhysicalApp",
+            packageName = "com.example.physical",
+            template = ProjectTemplate.COMPOSE_MULTIPLATFORM,
+        )
+
+        val result = engine.scaffold(options)
+        assertEquals("SUCCESS", result.status)
+
+        val settings = fakeEnv.readFileText("PhysicalApp/settings.gradle.kts")
+        assertNotNull(settings)
+        assertTrue(settings.contains("// Custom physical template"))
+        assertTrue(settings.contains("rootProject.name = \"PhysicalApp\""))
+    }
 }

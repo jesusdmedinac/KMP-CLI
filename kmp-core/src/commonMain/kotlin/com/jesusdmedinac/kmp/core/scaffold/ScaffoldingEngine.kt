@@ -12,9 +12,14 @@ import com.jesusdmedinac.kmp.core.scaffold.model.ScaffoldingResult
 import com.jesusdmedinac.kmp.core.system.SystemEnvironment
 import com.jesusdmedinac.kmp.core.system.createDefaultSystemEnvironment
 
+import com.jesusdmedinac.kmp.core.scaffold.template.TemplateSource
+
 class ScaffoldingEngine(
     private val systemEnvironment: SystemEnvironment = createDefaultSystemEnvironment(),
+    customTemplatePath: String? = null,
 ) {
+    private val templateSource = TemplateSource(systemEnvironment, customTemplatePath)
+
     fun scaffold(options: ScaffoldingOptions): ScaffoldingResult {
         if (options.name.isBlank()) {
             return ScaffoldingResult(
@@ -27,11 +32,11 @@ class ScaffoldingEngine(
 
         val outDir = options.outputDir.trim()
         val generator: TemplateGenerator = when (options.template) {
-            ProjectTemplate.COMPOSE_MULTIPLATFORM -> ComposeMultiplatformGenerator()
-            ProjectTemplate.TOOLCHAIN_APP -> ToolchainAppGenerator()
-            ProjectTemplate.KMP_LIBRARY -> KmpLibraryGenerator()
-            ProjectTemplate.FULLSTACK -> FullstackGenerator()
-            ProjectTemplate.SDUI_STARTER -> SduiStarterGenerator()
+            ProjectTemplate.COMPOSE_MULTIPLATFORM -> ComposeMultiplatformGenerator(templateSource)
+            ProjectTemplate.TOOLCHAIN_APP -> ToolchainAppGenerator(templateSource)
+            ProjectTemplate.KMP_LIBRARY -> KmpLibraryGenerator(templateSource)
+            ProjectTemplate.FULLSTACK -> FullstackGenerator(templateSource)
+            ProjectTemplate.SDUI_STARTER -> SduiStarterGenerator(templateSource)
         }
 
         val generatedFiles = generator.generate(options)

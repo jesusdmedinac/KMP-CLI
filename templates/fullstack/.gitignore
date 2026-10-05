@@ -1,0 +1,11 @@
+*.iml
+.gradle
+/build
+!/gradle/wrapper/gradle-wrapper.jar
+.idea
+local.properties
+.DS_Store
+/composeApp/build
+/server/build
+/shared/build
+.kotlin
