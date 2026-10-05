@@ -73,12 +73,14 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
   - [x] Scenario: Describe KMP project modules and targets from standard Gradle configuration
   - [x] Scenario: Describe KMP project modules and targets from Kotlin Toolchain module.yaml
   - [x] Scenario: Analyze dependencies from version catalog
-- [ ] **[#13](https://github.com/jesusdmedinac/KMP-CLI/issues/13)** Multiplatform Project Scaffolding Engine & `kmp create` Subcommand
-  - [ ] Template: `compose-multiplatform` (Android, iOS, Desktop, Wasm)
-  - [ ] Template: `toolchain-app` (`module.yaml` + Compose Hot Reload)
-  - [ ] Template: `kmp-library` (cross-platform library skeleton)
-  - [ ] Template: `fullstack` (Ktor backend + Compose client)
-  - [ ] Template: `sdui-starter` (Server-Driven UI app powered by json-to-compose & caching)
+- [x] **[#13](https://github.com/jesusdmedinac/KMP-CLI/issues/13)** Multiplatform Project Scaffolding Engine & `kmp create` Subcommand (`docs/features/08_kmp_project_scaffolding.feature`)
+  - [x] Scenario: Scaffold a Compose Multiplatform project with Gradle
+  - [x] Scenario: Scaffold a Declarative Kotlin Toolchain project
+  - [x] Scenario: Scaffold a multiplatform library ready for publishing
+  - [x] Scenario: Scaffold a Fullstack project with Ktor backend and Compose client
+  - [x] Scenario: Scaffold a project with customized target platforms
+  - [x] Scenario: Scaffold project with JSON output for AI agent automation
+  - [x] Template: `sdui-starter` (Server-Driven UI app powered by json-to-compose & caching)
 
 ---
 
