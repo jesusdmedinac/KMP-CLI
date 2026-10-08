@@ -73,12 +73,17 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
   - [x] Scenario: Describe KMP project modules and targets from standard Gradle configuration
   - [x] Scenario: Describe KMP project modules and targets from Kotlin Toolchain module.yaml
   - [x] Scenario: Analyze dependencies from version catalog
-- [ ] **[#13](https://github.com/jesusdmedinac/KMP-CLI/issues/13)** Multiplatform Project Scaffolding Engine & `kmp create` Subcommand
-  - [ ] Template: `compose-multiplatform` (Android, iOS, Desktop, Wasm)
-  - [ ] Template: `toolchain-app` (`module.yaml` + Compose Hot Reload)
-  - [ ] Template: `kmp-library` (cross-platform library skeleton)
-  - [ ] Template: `fullstack` (Ktor backend + Compose client)
-  - [ ] Template: `sdui-starter` (Server-Driven UI app powered by json-to-compose & caching)
+- [x] **[#13](https://github.com/jesusdmedinac/KMP-CLI/issues/13)** Multiplatform Project Scaffolding Engine & JetBrains Wizard (`docs/features/08_kmp_project_scaffolding.feature`)
+  - [x] Scenario: Scaffold from Official JetBrains Shared UI Multiplatform App template
+  - [x] Scenario: Scaffold from Official JetBrains Native UI Multiplatform App template
+  - [x] Scenario: Scaffold from Official JetBrains Multiplatform Library template
+  - [x] Scenario: Scaffold from Official JetBrains Toolchain App template
+  - [x] Scenario: Scaffold specialized Server-Driven UI starter template for json-to-compose
+  - [x] Scenario: Scaffold specialized Fullstack KMP template
+  - [x] Scenario: Run interactive wizard configuring React Web and Ktor Server
+  - [x] Scenario: Scaffold project with customized target platforms
+  - [x] Scenario: Scaffold project with JSON output for AI agent automation
+  - [x] Scenario: Preserve and enforce execution permissions on wrappers
 
 ---
 
@@ -94,6 +99,19 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
   - [ ] Scenario: Export the json-to-compose JSON schema for IDE and AI validation (#34)
   - [ ] Scenario: Validate a local or remote SDUI JSON document against the schema (#34)
   - [ ] Scenario: Transpile dynamic SDUI JSON into static Jetpack Compose Kotlin code (#35)
+
+---
+
+## Commercial Ecosystem: Zora KMP Kits Hub, Licensing & Copilot
+### Feature: Zora KMP Kits Hub & Copilot (`docs/features/09_zora_kits_licensing_and_copilot.feature`)
+- [ ] **[RFC-003](docs/RFC-003-zora-kits-licensing-and-copilot.md)** Zora KMP Kits Hub, Licensing Engine, and Copilot Integration
+  - [ ] Scenario: Discover and inspect available Zora KMP Starter Kits in the CLI
+  - [ ] Scenario: Scaffold a free open-source project using Zora Community Kit
+  - [ ] Scenario: Prompt developer with concierge acquisition screen when selecting paid kit without license
+  - [ ] Scenario: Activate a valid commercial license key
+  - [ ] Scenario: Scaffold a project using Zora Basic or Premium kit with valid license
+  - [ ] Scenario: Customize a Zora kit configuration for licensed developers
+  - [ ] Scenario: Execute KMP Copilot architectural guidance for licensed developers
 
 ---
 
@@ -131,6 +149,16 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 
 ---
 
+## Visual Branding & Multiplatform Asset Ecosystem
+### Feature: Zora Brand Identity & Multiplatform Assets (`docs/features/10_zora_branding_and_assets.feature`)
+- [x] Scenario: Generate standardized multi-platform assets from Zora master icons
+- [x] Scenario: Update Android launcher and adaptive icons across all project templates
+- [x] Scenario: Update iOS AppIcon asset catalog across all project templates
+- [x] Scenario: Integrate Zora vector drawable into Compose Multiplatform template UI
+- [x] Scenario: Embed official Zora branding into documentation
+
+---
+
 ## Phase 5: Ecosystem Expansions & IDE Tooling (Future Outcomes / Nice-to-Haves)
 - [ ] **[#18](https://github.com/jesusdmedinac/KMP-CLI/issues/18)** Native Gradle Plugin (`kmp-gradle-plugin`) for CI/CD Quality Gates (`kmpDoctor`, `kmpAnalyze`, `kmpSkillsVerify`)
 - [ ] **[#19](https://github.com/jesusdmedinac/KMP-CLI/issues/19)** IDE Plugin for IntelliJ IDEA, Android Studio & Fleet (Diagnostics toolwindow & in-IDE skills browser)
@@ -142,5 +170,6 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 - [ ] **[#23](https://github.com/jesusdmedinac/KMP-CLI/issues/23)** Atomic File Writes: Use temporary files and atomic POSIX rename in `SystemEnvironment.writeFileText`
 - [ ] **[#24](https://github.com/jesusdmedinac/KMP-CLI/issues/24)** Remote Skills Registry HTTP Resolver via Ktor Client
 - [x] **[#31](https://github.com/jesusdmedinac/KMP-CLI/issues/31)** Local Installation Automation: Add `installLocal` Gradle tasks and refine local PATH documentation
+- [ ] **[#43](https://github.com/jesusdmedinac/KMP-CLI/issues/43)** Template Freshness & Autonomous Sync: Add upstream check in 'kmp doctor', add 'kmp templates' command, and instruct AI agent skill to verify template freshness
 
 

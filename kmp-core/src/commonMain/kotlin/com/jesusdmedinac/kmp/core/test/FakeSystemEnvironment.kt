@@ -49,4 +49,28 @@ class FakeSystemEnvironment(
 
     var fixedTimestamp: String = "2026-09-11T12:00:00Z"
     override fun nowIso8601(): String = fixedTimestamp
+
+    val executableFiles = mutableSetOf<String>()
+
+    override fun listFilesRecursively(dir: String): List<String> {
+        val prefix = if (dir.endsWith("/")) dir else "$dir/"
+        return files
+            .filter { it.startsWith(prefix) }
+            .map { it.removePrefix(prefix) }
+    }
+
+    override fun setExecutable(path: String): Boolean {
+        executableFiles.add(path)
+        return true
+    }
+
+    override fun copyFile(source: String, destination: String): Boolean {
+        val content = fileContents[source]
+        if (content != null) {
+            writeFileText(destination, content)
+        } else if (fileExists(source)) {
+            files.add(destination)
+        }
+        return true
+    }
 }
