@@ -149,7 +149,7 @@ Emits a structured JSON payload adhering to `ProjectDependencies`:
 
 ## 4. Multiplatform Project Scaffolding (`kmp create`)
 
-Generate clean, compiling, production-grade Kotlin Multiplatform project hierarchies using customizable architecture templates.
+Generate clean, compiling, production-grade Kotlin Multiplatform project hierarchies using the official JetBrains templates gallery or an interactive step-by-step console wizard.
 
 ### Syntax:
 ```bash
@@ -157,42 +157,54 @@ kmp create [project-name] [flags]
 ```
 
 ### Flags:
-- `--template <id>`: Scaffolding template (default: `compose-multiplatform`).
-  - `compose-multiplatform`: Adaptive Compose UI (Android, iOS, Desktop, Wasm) with Version Catalog.
-  - `toolchain-app`: Declarative Kotlin Toolchain with `project.yaml` and `module.yaml`.
-  - `kmp-library`: Library configured with `maven-publish` and expect/actual skeletons.
-  - `fullstack`: Ktor backend server + Compose client sharing models in `:shared`.
+- `--wizard`: Launch interactive project creation wizard in terminal.
+- `--template <id>`: Scaffolding template (auto-resolved based on target options or defaults to `shared-ui`):
+  - `shared-ui`: Official JetBrains Compose Multiplatform Shared UI template (Android, Desktop, iOS Compose, Web Wasm).
+  - `native-ui`: Official JetBrains Native UI template (Android/Desktop Compose, iOS SwiftUI, Web React with TypeScript, Ktor Server).
+  - `multiplatform-library`: Official JetBrains Multiplatform Library configured with Maven publishing.
+  - `toolchain-shared-ui`: Official JetBrains Kotlin Toolchain declarative app with Compose Multiplatform.
+  - `toolchain-native-ui`: Official JetBrains Kotlin Toolchain declarative app with SwiftUI.
   - `sdui-starter`: Dynamic Server-Driven UI starter powered by `json-to-compose`.
+  - `fullstack`: Specialized Ktor backend server + Compose client sharing models in `:shared`.
 - `--name <name>`: Project name (or specify as positional argument).
 - `--package <package>`: Application package name (default: `com.example.<sanitizedName>`).
-- `--targets <list>`: Comma-separated target platforms (e.g. `android,ios,desktop,wasm`).
-- `--format <gradle|toolchain>`: Build system format (default: `gradle`).
+- `--build-system <gradle|toolchain>`: Build system alias.
+- `--ios-ui <compose|swiftui>`: iOS UI framework (prompted in wizard when build system is Gradle).
+- `--web-ui <compose|react>`: Web UI framework (prompted in wizard when build system is Gradle).
+- `--targets <list>`: Comma-separated target platforms (e.g. `android,ios,desktop,wasm,server`).
+- `--remote`: Fetch latest upstream template from GitHub with local fallback.
 - `--output, -o <dir>`: Destination directory (default: project name).
 - `--json`: Emit structured machine JSON output for AI agent automation.
 
 ### Examples:
 ```bash
-# Scaffold an adaptive Compose Multiplatform application
-kmp create MyMobileApp --template compose-multiplatform --targets android,ios
+# Launch interactive console wizard
+kmp create --wizard
 
-# Scaffold a declarative Kotlin Toolchain application
-kmp create MyToolchainApp --template toolchain-app
+# Scaffold official JetBrains Shared UI application
+kmp create MyMobileApp --template shared-ui --targets android,ios,desktop,wasm
+
+# Scaffold official JetBrains Native UI application (SwiftUI + React Vite + Ktor Server)
+kmp create MyNativeApp --build-system gradle --ios-ui swiftui --web-ui react --targets android,ios,web,server
+
+# Scaffold declarative Kotlin Toolchain application
+kmp create MyToolchainApp --template toolchain-shared-ui
 
 # Scaffold a publishable multiplatform library
-kmp create MyKmpLib --template kmp-library --package com.myorg.kmplib
+kmp create MyKmpLib --template multiplatform-library --package com.myorg.kmplib
 
 # Scaffold a fullstack Ktor + Compose application
 kmp create MyFullstackApp --template fullstack
 
 # Headless execution for AI Agent automation
-kmp create MyAgentApp --template kmp-library --json
+kmp create MyAgentApp --template multiplatform-library --json
 ```
 
 Agent JSON Output:
 ```json
 {
   "status": "SUCCESS",
-  "template": "kmp-library",
+  "template": "multiplatform-library",
   "projectPath": "MyAgentApp",
   "createdFiles": [
     "MyAgentApp/.gitignore",

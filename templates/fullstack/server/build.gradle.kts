@@ -1,18 +1,19 @@
 plugins {
     alias(libs.plugins.kotlinJvm)
-    alias(libs.plugins.kotlinSerialization)
-    application
+    alias(libs.plugins.ktor)
 }
 
+group = "org.example.project"
+version = "1.0.0"
 application {
-    mainClass.set("{{PACKAGE_NAME}}.server.ApplicationKt")
+    mainClass = "org.example.project.ApplicationKt"
 }
 
 dependencies {
-    implementation(project(":shared"))
-    implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.netty)
-    implementation(libs.ktor.server.content.negotiation)
-    implementation(libs.ktor.serialization.kotlinx.json)
+    api(project(":core"))
     implementation(libs.logback)
+    implementation(libs.ktor.serverCore)
+    implementation(libs.ktor.serverNetty)
+    testImplementation(libs.ktor.serverTestHost)
+    testImplementation(libs.kotlin.testJunit)
 }

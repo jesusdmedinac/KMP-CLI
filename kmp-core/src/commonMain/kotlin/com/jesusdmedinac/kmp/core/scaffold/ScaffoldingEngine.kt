@@ -2,6 +2,7 @@ package com.jesusdmedinac.kmp.core.scaffold
 
 import com.jesusdmedinac.kmp.core.scaffold.generator.ComposeMultiplatformGenerator
 import com.jesusdmedinac.kmp.core.scaffold.generator.FullstackGenerator
+import com.jesusdmedinac.kmp.core.scaffold.generator.GenericTemplateGenerator
 import com.jesusdmedinac.kmp.core.scaffold.generator.KmpLibraryGenerator
 import com.jesusdmedinac.kmp.core.scaffold.generator.SduiStarterGenerator
 import com.jesusdmedinac.kmp.core.scaffold.generator.TemplateGenerator
@@ -32,9 +33,11 @@ class ScaffoldingEngine(
 
         val outDir = options.outputDir.trim()
         val generator: TemplateGenerator = when (options.template) {
-            ProjectTemplate.COMPOSE_MULTIPLATFORM -> ComposeMultiplatformGenerator(templateSource)
-            ProjectTemplate.TOOLCHAIN_APP -> ToolchainAppGenerator(templateSource)
-            ProjectTemplate.KMP_LIBRARY -> KmpLibraryGenerator(templateSource)
+            ProjectTemplate.SHARED_UI -> ComposeMultiplatformGenerator(templateSource)
+            ProjectTemplate.NATIVE_UI -> GenericTemplateGenerator(ProjectTemplate.NATIVE_UI, templateSource)
+            ProjectTemplate.MULTIPLATFORM_LIBRARY -> KmpLibraryGenerator(templateSource)
+            ProjectTemplate.TOOLCHAIN_SHARED_UI -> ToolchainAppGenerator(templateSource)
+            ProjectTemplate.TOOLCHAIN_NATIVE_UI -> GenericTemplateGenerator(ProjectTemplate.TOOLCHAIN_NATIVE_UI, templateSource)
             ProjectTemplate.FULLSTACK -> FullstackGenerator(templateSource)
             ProjectTemplate.SDUI_STARTER -> SduiStarterGenerator(templateSource)
         }
@@ -54,7 +57,30 @@ class ScaffoldingEngine(
                     errorMessage = "Failed to write file '$fullPath'.",
                 )
             }
+            if (relPath == "gradlew" || relPath == "kotlin") {
+                systemEnvironment.setExecutable(fullPath)
+            }
             writtenFiles.add(fullPath)
+        }
+
+        // Copy binary files (images, gradle-wrapper.jar, etc.) directly without text corruption
+        val templateDirs = listOf(
+            "templates/${options.template.id}",
+            *options.template.aliases.map { "templates/$it" }.toTypedArray()
+        )
+        for (dir in templateDirs) {
+            val allFiles = systemEnvironment.listFilesRecursively(dir)
+            if (allFiles.isNotEmpty()) {
+                for (relPath in allFiles) {
+                    if (TemplateSource.isBinaryFile(relPath)) {
+                        val src = "$dir/$relPath"
+                        val dest = if (outDir == "." || outDir.isEmpty()) relPath else "$outDir/$relPath"
+                        systemEnvironment.copyFile(src, dest)
+                        writtenFiles.add(dest)
+                    }
+                }
+                break
+            }
         }
 
         return ScaffoldingResult(

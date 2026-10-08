@@ -25,7 +25,7 @@ class ScaffoldingEngineTest {
         val result = engine.scaffold(options)
 
         assertEquals("SUCCESS", result.status)
-        assertEquals("compose-multiplatform", result.template)
+        assertEquals("shared-ui", result.template)
         assertEquals("MyComposeApp", result.projectPath)
         assertTrue(result.createdFiles.isNotEmpty())
 
@@ -63,7 +63,7 @@ class ScaffoldingEngineTest {
         val result = engine.scaffold(options)
 
         assertEquals("SUCCESS", result.status)
-        assertEquals("toolchain-app", result.template)
+        assertEquals("toolchain-shared-ui", result.template)
 
         val projectYaml = fakeEnv.readFileText("MyToolchainApp/project.yaml")
         assertNotNull(projectYaml)
@@ -95,7 +95,7 @@ class ScaffoldingEngineTest {
         val result = engine.scaffold(options)
 
         assertEquals("SUCCESS", result.status)
-        assertEquals("kmp-library", result.template)
+        assertEquals("multiplatform-library", result.template)
 
         val buildGradle = fakeEnv.readFileText("MyKmpLib/build.gradle.kts")
         assertNotNull(buildGradle)
@@ -126,18 +126,18 @@ class ScaffoldingEngineTest {
 
         val settingsGradle = fakeEnv.readFileText("MyFullstackApp/settings.gradle.kts")
         assertNotNull(settingsGradle)
-        assertTrue(settingsGradle.contains("include(\":shared\")"))
         assertTrue(settingsGradle.contains("include(\":server\")"))
-        assertTrue(settingsGradle.contains("include(\":composeApp\")"))
+        assertTrue(settingsGradle.contains("include(\":app:androidApp\")"))
+        assertTrue(settingsGradle.contains("include(\":app:desktopApp\")"))
 
         val serverApp = fakeEnv.readFileText("MyFullstackApp/server/src/main/kotlin/com/example/fullstack/server/Application.kt")
         assertNotNull(serverApp)
         assertTrue(serverApp.contains("embeddedServer"))
         assertTrue(serverApp.contains("routing {"))
 
-        val sharedMessage = fakeEnv.readFileText("MyFullstackApp/shared/src/commonMain/kotlin/com/example/fullstack/shared/Message.kt")
-        assertNotNull(sharedMessage)
-        assertTrue(sharedMessage.contains("data class Message"))
+        assertTrue(fakeEnv.fileExists("MyFullstackApp/app/desktopApp/build.gradle.kts"))
+        val desktopBuild = fakeEnv.readFileText("MyFullstackApp/app/desktopApp/build.gradle.kts") ?: ""
+        assertTrue(desktopBuild.contains("compose.desktop"))
     }
 
     @Test
@@ -224,5 +224,50 @@ class ScaffoldingEngineTest {
         assertNotNull(settings)
         assertTrue(settings.contains("// Custom physical template"))
         assertTrue(settings.contains("rootProject.name = \"PhysicalApp\""))
+    }
+
+    @Test
+    fun `scaffold sets executable permissions on gradlew and kotlin scripts`() {
+        fakeEnv.writeFileText(
+            "templates/shared-ui/gradlew",
+            "#!/usr/bin/env sh\nexec gradle"
+        )
+        fakeEnv.writeFileText(
+            "templates/shared-ui/settings.gradle.kts",
+            "rootProject.name = \"{{PROJECT_NAME}}\""
+        )
+
+        val options = ScaffoldingOptions(
+            name = "ExecApp",
+            template = ProjectTemplate.SHARED_UI,
+        )
+
+        val result = engine.scaffold(options)
+        assertEquals("SUCCESS", result.status)
+        assertTrue(fakeEnv.executableFiles.contains("ExecApp/gradlew"))
+    }
+
+    @Test
+    fun `scaffold native-ui template generates native ios target`() {
+        val options = ScaffoldingOptions(
+            name = "MyNativeApp",
+            template = ProjectTemplate.NATIVE_UI,
+        )
+
+        val result = engine.scaffold(options)
+        assertEquals("SUCCESS", result.status)
+        assertEquals("native-ui", result.template)
+    }
+
+    @Test
+    fun `scaffold toolchain-native-ui template generates toolchain native target`() {
+        val options = ScaffoldingOptions(
+            name = "MyToolchainNative",
+            template = ProjectTemplate.TOOLCHAIN_NATIVE_UI,
+        )
+
+        val result = engine.scaffold(options)
+        assertEquals("SUCCESS", result.status)
+        assertEquals("toolchain-native-ui", result.template)
     }
 }

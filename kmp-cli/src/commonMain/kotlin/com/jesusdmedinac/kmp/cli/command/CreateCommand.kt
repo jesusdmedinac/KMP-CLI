@@ -26,6 +26,10 @@ import kotlinx.serialization.json.Json
 class CreateCommand(
     private val engine: ScaffoldingEngine = ScaffoldingEngine(),
     private val terminal: Terminal = Terminal(),
+    private val readInput: (prompt: String) -> String? = { prompt ->
+        terminal.print(prompt)
+        readlnOrNull()?.trim()
+    },
 ) : CliktCommand(
     name = "create",
 ) {
@@ -42,7 +46,12 @@ class CreateCommand(
     val templateOption by option(
         "--template",
         help = "Project template: ${ProjectTemplate.entries.joinToString(", ") { it.id }}",
-    ).default("compose-multiplatform")
+    )
+
+    val wizardOption by option(
+        "--wizard",
+        help = "Launch interactive project creation wizard.",
+    ).flag(default = false)
 
     val packageOption by option(
         "--package",
@@ -51,13 +60,33 @@ class CreateCommand(
 
     val targetsOption by option(
         "--targets",
-        help = "Comma-separated target platforms (e.g. android,ios,desktop,wasm).",
+        help = "Comma-separated target platforms (e.g. android,ios,desktop,wasm,server).",
     ).default("android,ios,desktop,wasm")
 
     val formatOption by option(
         "--format",
         help = "Build format: gradle or toolchain.",
     ).default("gradle")
+
+    val buildSystemOption by option(
+        "--build-system",
+        help = "Build system alias: gradle or toolchain.",
+    )
+
+    val iosUiOption by option(
+        "--ios-ui",
+        help = "iOS UI framework: compose or swiftui.",
+    )
+
+    val webUiOption by option(
+        "--web-ui",
+        help = "Web UI framework: compose or react.",
+    )
+
+    val remoteOption by option(
+        "--remote",
+        help = "Fetch latest upstream template from GitHub with local fallback.",
+    ).flag(default = false)
 
     val outputOption by option(
         "--output",
@@ -76,21 +105,94 @@ class CreateCommand(
     }
 
     override fun run() {
-        val projectName = nameOption ?: nameArgument
+        var projectName = nameOption ?: nameArgument
+        var buildSystem = buildSystemOption ?: formatOption
+        var iosUi = iosUiOption
+        var webUi = webUiOption
+        var packageName = packageOption
+        var targets = targetsOption
+
+        if (wizardOption && !jsonOutput) {
+            terminal.println(bold(cyan("\n✨ Kotlin Multiplatform Project Wizard ✨\n")))
+
+            if (projectName.isNullOrBlank()) {
+                val inputName = readInput("Project Name [KotlinProject]: ")
+                projectName = if (!inputName.isNullOrBlank()) inputName else "KotlinProject"
+            }
+
+            if (packageName.isNullOrBlank()) {
+                val defaultPkg = "com.example.${projectName.lowercase().replace("-", "").replace("_", "")}"
+                val inputPkg = readInput("Project ID / Package [$defaultPkg]: ")
+                packageName = if (!inputPkg.isNullOrBlank()) inputPkg else defaultPkg
+            }
+
+            terminal.println("\nBuild System:")
+            terminal.println("  1) Gradle (Flexible and backed by a mature plugin ecosystem) [Default]")
+            terminal.println("  2) Kotlin Toolchain (Easy to use, declarative, and AI-friendly)")
+            val bsInput = readInput("Select build system [1]: ")
+            buildSystem = if (bsInput == "2" || bsInput?.lowercase() == "toolchain") "toolchain" else "gradle"
+
+            val isToolchainChoice = buildSystem.equals("toolchain", ignoreCase = true)
+
+            if (!isToolchainChoice) {
+                terminal.println("\niOS UI framework:")
+                terminal.println("  1) Share UI via Compose Multiplatform [Default]")
+                terminal.println("  2) Do not share UI - Use SwiftUI")
+                val iosInput = readInput("Select iOS UI [1]: ")
+                iosUi = if (iosInput == "2" || iosInput?.lowercase() in listOf("swiftui", "native")) "swiftui" else "compose"
+
+                terminal.println("\nWeb UI framework:")
+                terminal.println("  1) Share UI via Compose Multiplatform (Wasm) [Default]")
+                terminal.println("  2) Do not share UI - Use React with TypeScript")
+                val webInput = readInput("Select Web UI [1]: ")
+                webUi = if (webInput == "2" || webInput?.lowercase() in listOf("react", "vite")) "react" else "compose"
+            } else {
+                iosUi = "compose"
+                webUi = "compose"
+            }
+
+            val includeDesktop = readInput("\nInclude Desktop target? (Y/n) [Y]: ")
+            val hasDesktop = includeDesktop?.lowercase() != "n"
+
+            val includeServer = readInput("Include Ktor Server backend? (y/N) [N]: ")
+            val hasServer = includeServer?.lowercase() == "y"
+
+            val targetList = mutableListOf("android", "ios")
+            if (hasDesktop) targetList.add("desktop")
+            targetList.add("web")
+            if (hasServer) targetList.add("server")
+            targets = targetList.joinToString(",")
+        }
 
         if (projectName.isNullOrBlank()) {
             if (jsonOutput) {
                 terminal.println("""{"error":"Project name is required. Use --name <name> or specify as an argument."}""")
             } else {
-                terminal.danger("Project name is required. Use --name <name> or specify as an argument.")
+                terminal.danger("Project name is required. Use --name <name>, specify as an argument, or use --wizard.")
             }
             throw ProgramResult(1)
         }
 
-        val template = if (formatOption.equals("toolchain", ignoreCase = true) && templateOption == "compose-multiplatform") {
-            ProjectTemplate.TOOLCHAIN_APP
+        val isToolchain = buildSystem.equals("toolchain", ignoreCase = true)
+        val isNativeIos = iosUi?.lowercase() in listOf("swiftui", "native")
+        val isReactWeb = webUi?.lowercase() in listOf("react", "vite")
+        val hasServerTarget = targets.split(',').any { it.trim().equals("server", ignoreCase = true) }
+
+        val template = if (templateOption != null) {
+            when {
+                isToolchain && isNativeIos -> ProjectTemplate.TOOLCHAIN_NATIVE_UI
+                isToolchain && (templateOption in listOf("shared-ui", "compose-app", "compose-multiplatform")) -> ProjectTemplate.TOOLCHAIN_SHARED_UI
+                !isToolchain && isNativeIos && (templateOption in listOf("shared-ui", "compose-app", "compose-multiplatform")) -> ProjectTemplate.NATIVE_UI
+                else -> ProjectTemplate.fromId(templateOption!!)
+            }
         } else {
-            ProjectTemplate.fromId(templateOption)
+            when {
+                isToolchain && isNativeIos -> ProjectTemplate.TOOLCHAIN_NATIVE_UI
+                isToolchain -> ProjectTemplate.TOOLCHAIN_SHARED_UI
+                isNativeIos || isReactWeb -> ProjectTemplate.NATIVE_UI
+                hasServerTarget -> ProjectTemplate.FULLSTACK
+                else -> ProjectTemplate.SHARED_UI
+            }
         }
 
         if (template == null) {
@@ -103,13 +205,13 @@ class CreateCommand(
             throw ProgramResult(1)
         }
 
-        val packageName = packageOption ?: "com.example.${projectName.lowercase().replace("-", "").replace("_", "")}"
-        val targetList = targetsOption.split(',').map { it.trim() }.filter { it.isNotEmpty() }
+        val resolvedPackage = packageName ?: "com.example.${projectName.lowercase().replace("-", "").replace("_", "")}"
+        val targetList = targets.split(',').map { it.trim() }.filter { it.isNotEmpty() }
         val outputDirectory = outputOption ?: projectName
 
         val options = ScaffoldingOptions(
             name = projectName,
-            packageName = packageName,
+            packageName = resolvedPackage,
             template = template,
             targets = targetList,
             outputDir = outputDirectory,
@@ -129,7 +231,7 @@ class CreateCommand(
         if (jsonOutput) {
             terminal.println(json.encodeToString(result))
         } else {
-            renderSuccessSummary(result, options, template)
+            renderSuccessSummary(result, options, template, isToolchain)
         }
     }
 
@@ -137,6 +239,7 @@ class CreateCommand(
         result: ScaffoldingResult,
         options: ScaffoldingOptions,
         template: ProjectTemplate,
+        isToolchain: Boolean,
     ) {
         terminal.println(bold(green("✔ Project created successfully!")))
         terminal.println("${cyan("  • Project Name:")} ${bold(options.name)}")
@@ -149,6 +252,12 @@ class CreateCommand(
         terminal.println(bold("\nNext steps to get started:"))
         terminal.println("  1. ${cyan("cd")} ${result.projectPath}")
         terminal.println("  2. ${cyan("kmp describe")}")
-        terminal.println("  3. ${cyan("./gradlew check")}")
+        if (isToolchain) {
+            terminal.println("  3. ${cyan("./kotlin run")}")
+            terminal.println(dim("\n💡 Tip: Ensure execution permissions with: chmod +x kotlin"))
+        } else {
+            terminal.println("  3. ${cyan("./gradlew check")}")
+            terminal.println(dim("\n💡 Tip: Ensure execution permissions with: chmod +x gradlew"))
+        }
     }
 }

@@ -28,7 +28,7 @@ kotlin {
     // {{/TARGET:desktop}}
 
     // {{#TARGET:wasm}}
-    @OptIn(org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl::class)
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs {
         browser()
         binaries.executable()
@@ -41,9 +41,14 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.ui)
-            implementation(libs.json.to.compose.core)
+            // implementation(libs.json.to.compose.core)
             implementation(libs.ktor.client.core)
         }
+        // {{#TARGET:android}}
+        androidMain.dependencies {
+            implementation(libs.androidx.activity.compose)
+        }
+        // {{/TARGET:android}}
     }
 }
 

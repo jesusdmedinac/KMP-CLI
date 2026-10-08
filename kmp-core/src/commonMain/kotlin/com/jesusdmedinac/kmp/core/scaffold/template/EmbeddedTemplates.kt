@@ -4,9 +4,11 @@ import com.jesusdmedinac.kmp.core.scaffold.model.ProjectTemplate
 
 object EmbeddedTemplates {
     fun get(template: ProjectTemplate): Map<String, String> = when (template) {
-        ProjectTemplate.COMPOSE_MULTIPLATFORM -> composeMultiplatform
-        ProjectTemplate.TOOLCHAIN_APP -> toolchainApp
-        ProjectTemplate.KMP_LIBRARY -> kmpLibrary
+        ProjectTemplate.SHARED_UI -> composeMultiplatform
+        ProjectTemplate.NATIVE_UI -> nativeUi
+        ProjectTemplate.MULTIPLATFORM_LIBRARY -> kmpLibrary
+        ProjectTemplate.TOOLCHAIN_SHARED_UI -> toolchainApp
+        ProjectTemplate.TOOLCHAIN_NATIVE_UI -> toolchainApp
         ProjectTemplate.FULLSTACK -> fullstack
         ProjectTemplate.SDUI_STARTER -> sduiStarter
     }
@@ -22,6 +24,15 @@ object EmbeddedTemplates {
             .DS_Store
             /composeApp/build
             .kotlin
+        """.trimIndent(),
+        "gradle.properties" to """
+            kotlin.code.style=official
+            kotlin.daemon.jvmargs=-Xmx3072M
+            org.gradle.jvmargs=-Xmx4096M -Dfile.encoding=UTF-8
+            org.gradle.configuration-cache=true
+            org.gradle.caching=true
+            android.nonTransitiveRClass=true
+            android.useAndroidX=true
         """.trimIndent(),
         "settings.gradle.kts" to """
             rootProject.name = "{{PROJECT_NAME}}"
@@ -126,14 +137,9 @@ object EmbeddedTemplates {
                 // {{/TARGET:desktop}}
 
                 // {{#TARGET:wasm}}
-                @OptIn(org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl::class)
+                @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
                 wasmJs {
-                    moduleName = "composeApp"
-                    browser {
-                        commonWebpackConfig {
-                            outputFileName = "composeApp.js"
-                        }
-                    }
+                    browser()
                     binaries.executable()
                 }
                 // {{/TARGET:wasm}}
@@ -274,6 +280,14 @@ object EmbeddedTemplates {
             fun main() {
                 println("Hello from Declarative Kotlin Toolchain App!")
             }
+        """.trimIndent(),
+        "kotlin" to """
+            #!/bin/sh
+            echo "Kotlin Toolchain"
+        """.trimIndent(),
+        "kotlin.bat" to """
+            @echo off
+            echo Kotlin Toolchain
         """.trimIndent()
     )
 
@@ -443,6 +457,15 @@ object EmbeddedTemplates {
             /shared/build
             .kotlin
         """.trimIndent(),
+        "gradle.properties" to """
+            kotlin.code.style=official
+            kotlin.daemon.jvmargs=-Xmx3072M
+            org.gradle.jvmargs=-Xmx4096M -Dfile.encoding=UTF-8
+            org.gradle.configuration-cache=true
+            org.gradle.caching=true
+            android.nonTransitiveRClass=true
+            android.useAndroidX=true
+        """.trimIndent(),
         "settings.gradle.kts" to """
             rootProject.name = "{{PROJECT_NAME}}"
             enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
@@ -474,9 +497,12 @@ object EmbeddedTemplates {
                 }
             }
 
-            include(":shared")
+            include(":app:androidApp")
+            include(":app:desktopApp")
+            include(":app:shared")
+            include(":app:webApp")
+            include(":core")
             include(":server")
-            include(":composeApp")
         """.trimIndent(),
         "gradle/libs.versions.toml" to """
             [versions]
@@ -503,6 +529,7 @@ object EmbeddedTemplates {
             kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
             kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
             kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+            ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
         """.trimIndent(),
         "build.gradle.kts" to """
             plugins {
@@ -513,85 +540,28 @@ object EmbeddedTemplates {
                 alias(libs.plugins.kotlinMultiplatform) apply false
                 alias(libs.plugins.kotlinJvm) apply false
                 alias(libs.plugins.kotlinSerialization) apply false
+                alias(libs.plugins.ktor) apply false
             }
         """.trimIndent(),
-        "shared/build.gradle.kts" to """
+        "core/build.gradle.kts" to """
             plugins {
                 alias(libs.plugins.kotlinMultiplatform)
-                alias(libs.plugins.kotlinSerialization)
             }
 
             kotlin {
                 jvm()
-                iosArm64()
-                iosX64()
-                iosSimulatorArm64()
-
-                sourceSets {
-                    commonMain.dependencies {
-                        implementation(libs.kotlinx.serialization.json)
-                    }
+                androidLibrary {
+                    namespace = "{{PACKAGE_NAME}}.core"
+                    compileSdk = 35
                 }
             }
         """.trimIndent(),
-        "shared/src/commonMain/kotlin/{{PACKAGE_PATH}}/shared/Message.kt" to """
-            package {{PACKAGE_NAME}}.shared
+        "core/src/commonMain/kotlin/{{PACKAGE_PATH}}/GreetingUtil.kt" to """
+            package {{PACKAGE_NAME}}
 
-            import kotlinx.serialization.Serializable
-
-            @Serializable
-            data class Message(
-                val id: String,
-                val text: String,
-                val timestamp: Long,
-            )
+            fun sayHello(name: String): String = "Hello, ${'$'}name from Core!"
         """.trimIndent(),
-        "server/build.gradle.kts" to """
-            plugins {
-                alias(libs.plugins.kotlinJvm)
-                alias(libs.plugins.kotlinSerialization)
-                application
-            }
-
-            application {
-                mainClass.set("{{PACKAGE_NAME}}.server.ApplicationKt")
-            }
-
-            dependencies {
-                implementation(project(":shared"))
-                implementation(libs.ktor.server.core)
-                implementation(libs.ktor.server.netty)
-                implementation(libs.ktor.server.content.negotiation)
-                implementation(libs.ktor.serialization.kotlinx.json)
-                implementation(libs.logback)
-            }
-        """.trimIndent(),
-        "server/src/main/kotlin/{{PACKAGE_PATH}}/server/Application.kt" to """
-            package {{PACKAGE_NAME}}.server
-
-            import {{PACKAGE_NAME}}.shared.Message
-            import io.ktor.server.application.*
-            import io.ktor.server.engine.*
-            import io.ktor.server.netty.*
-            import io.ktor.server.plugins.contentnegotiation.*
-            import io.ktor.server.response.*
-            import io.ktor.server.routing.*
-            import io.ktor.serialization.kotlinx.json.*
-
-            fun main() {
-                embeddedServer(Netty, port = 8080) {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                    routing {
-                        get("/api/hello") {
-                            call.respond(Message(id = "1", text = "Hello from Ktor Server!", timestamp = System.currentTimeMillis()))
-                        }
-                    }
-                }.start(wait = true)
-            }
-        """.trimIndent(),
-        "composeApp/build.gradle.kts" to """
+        "app/shared/build.gradle.kts" to """
             plugins {
                 alias(libs.plugins.kotlinMultiplatform)
                 alias(libs.plugins.composeMultiplatform)
@@ -599,11 +569,25 @@ object EmbeddedTemplates {
             }
 
             kotlin {
-                jvm("desktop")
+                jvm()
+                androidLibrary {
+                    namespace = "{{PACKAGE_NAME}}.shared"
+                    compileSdk = 35
+                }
+                listOf(
+                    iosArm64(),
+                    iosSimulatorArm64()
+                ).forEach { iosTarget ->
+                    iosTarget.binaries.framework {
+                        baseName = "Shared"
+                        isStatic = true
+                    }
+                }
+                wasmJs { browser() }
 
                 sourceSets {
                     commonMain.dependencies {
-                        implementation(project(":shared"))
+                        implementation(project(":core"))
                         implementation(compose.runtime)
                         implementation(compose.foundation)
                         implementation(compose.material3)
@@ -612,7 +596,7 @@ object EmbeddedTemplates {
                 }
             }
         """.trimIndent(),
-        "composeApp/src/commonMain/kotlin/{{PACKAGE_PATH}}/App.kt" to """
+        "app/shared/src/commonMain/kotlin/{{PACKAGE_PATH}}/App.kt" to """
             package {{PACKAGE_NAME}}
 
             import androidx.compose.foundation.layout.Column
@@ -628,9 +612,191 @@ object EmbeddedTemplates {
             fun App() {
                 MaterialTheme {
                     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                        Text("Fullstack KMP Client")
+                        Text(sayHello("Fullstack KMP"))
                     }
                 }
+            }
+        """.trimIndent(),
+        "app/androidApp/build.gradle.kts" to """
+            plugins {
+                alias(libs.plugins.androidApplication)
+                alias(libs.plugins.composeCompiler)
+            }
+
+            android {
+                namespace = "{{PACKAGE_NAME}}"
+                compileSdk = 35
+
+                defaultConfig {
+                    applicationId = "{{PACKAGE_NAME}}"
+                    minSdk = 24
+                    targetSdk = 35
+                    versionCode = 1
+                    versionName = "1.0"
+                }
+            }
+
+            dependencies {
+                implementation(project(":app:shared"))
+            }
+        """.trimIndent(),
+        "app/androidApp/src/main/AndroidManifest.xml" to """
+            <?xml version="1.0" encoding="utf-8"?>
+            <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+                <application
+                    android:allowBackup="true"
+                    android:label="{{PROJECT_NAME}}"
+                    android:supportsRtl="true"
+                    android:theme="@android:style/Theme.Material.Light.NoActionBar">
+                    <activity
+                        android:name=".MainActivity"
+                        android:exported="true">
+                        <intent-filter>
+                            <action android:name="android.intent.action.MAIN" />
+                            <category android:name="android.intent.category.LAUNCHER" />
+                        </intent-filter>
+                    </activity>
+                </application>
+            </manifest>
+        """.trimIndent(),
+        "app/androidApp/src/main/kotlin/{{PACKAGE_PATH}}/MainActivity.kt" to """
+            package {{PACKAGE_NAME}}
+
+            import android.os.Bundle
+            import androidx.activity.ComponentActivity
+            import androidx.activity.compose.setContent
+
+            class MainActivity : ComponentActivity() {
+                override fun onCreate(savedInstanceState: Bundle?) {
+                    super.onCreate(savedInstanceState)
+                    setContent {
+                        App()
+                    }
+                }
+            }
+        """.trimIndent(),
+        "app/desktopApp/build.gradle.kts" to """
+            import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+
+            plugins {
+                alias(libs.plugins.kotlinJvm)
+                alias(libs.plugins.composeMultiplatform)
+                alias(libs.plugins.composeCompiler)
+            }
+
+            dependencies {
+                implementation(project(":app:shared"))
+                implementation(compose.desktop.currentOs)
+            }
+
+            compose.desktop {
+                application {
+                    mainClass = "{{PACKAGE_NAME}}.MainKt"
+
+                    nativeDistributions {
+                        targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+                        packageName = "{{PROJECT_NAME}}"
+                        packageVersion = "1.0.0"
+                    }
+                }
+            }
+        """.trimIndent(),
+        "app/desktopApp/src/main/kotlin/{{PACKAGE_PATH}}/main.kt" to """
+            package {{PACKAGE_NAME}}
+
+            import androidx.compose.ui.window.Window
+            import androidx.compose.ui.window.application
+
+            fun main() = application {
+                Window(onCloseRequest = ::exitApplication, title = "{{PROJECT_NAME}}") {
+                    App()
+                }
+            }
+        """.trimIndent(),
+        "app/webApp/build.gradle.kts" to """
+            import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
+            plugins {
+                alias(libs.plugins.kotlinMultiplatform)
+                alias(libs.plugins.composeMultiplatform)
+                alias(libs.plugins.composeCompiler)
+            }
+
+            kotlin {
+                @OptIn(ExperimentalWasmDsl::class)
+                wasmJs {
+                    browser()
+                    binaries.executable()
+                }
+
+                sourceSets {
+                    commonMain.dependencies {
+                        implementation(project(":app:shared"))
+                    }
+                }
+            }
+        """.trimIndent(),
+        "app/webApp/src/webMain/resources/index.html" to """
+            <!doctype html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <title>{{PROJECT_NAME}}</title>
+            </head>
+            <body>
+                <canvas id="ComposeTarget"></canvas>
+                <script src="webApp.js"></script>
+            </body>
+            </html>
+        """.trimIndent(),
+        "app/webApp/src/webMain/kotlin/{{PACKAGE_PATH}}/main.kt" to """
+            package {{PACKAGE_NAME}}
+
+            import androidx.compose.ui.ExperimentalComposeUiApi
+            import androidx.compose.ui.window.CanvasBasedWindow
+
+            @OptIn(ExperimentalComposeUiApi::class)
+            fun main() {
+                CanvasBasedWindow("{{PROJECT_NAME}}", canvasElementId = "ComposeTarget") {
+                    App()
+                }
+            }
+        """.trimIndent(),
+        "server/build.gradle.kts" to """
+            plugins {
+                alias(libs.plugins.kotlinJvm)
+                alias(libs.plugins.ktor)
+            }
+
+            application {
+                mainClass.set("{{PACKAGE_NAME}}.server.ApplicationKt")
+            }
+
+            dependencies {
+                implementation(project(":core"))
+                implementation(libs.ktor.server.core)
+                implementation(libs.ktor.server.netty)
+                implementation(libs.logback)
+            }
+        """.trimIndent(),
+        "server/src/main/kotlin/{{PACKAGE_PATH}}/server/Application.kt" to """
+            package {{PACKAGE_NAME}}.server
+
+            import {{PACKAGE_NAME}}.sayHello
+            import io.ktor.server.application.*
+            import io.ktor.server.engine.*
+            import io.ktor.server.netty.*
+            import io.ktor.server.response.*
+            import io.ktor.server.routing.*
+
+            fun main() {
+                embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
+                    routing {
+                        get("/") {
+                            call.respondText(sayHello("Ktor Server"))
+                        }
+                    }
+                }.start(wait = true)
             }
         """.trimIndent()
     )
@@ -646,6 +812,15 @@ object EmbeddedTemplates {
             .DS_Store
             /composeApp/build
             .kotlin
+        """.trimIndent(),
+        "gradle.properties" to """
+            kotlin.code.style=official
+            kotlin.daemon.jvmargs=-Xmx3072M
+            org.gradle.jvmargs=-Xmx4096M -Dfile.encoding=UTF-8
+            org.gradle.configuration-cache=true
+            org.gradle.caching=true
+            android.nonTransitiveRClass=true
+            android.useAndroidX=true
         """.trimIndent(),
         "settings.gradle.kts" to """
             rootProject.name = "{{PROJECT_NAME}}"
@@ -738,7 +913,7 @@ object EmbeddedTemplates {
                 // {{/TARGET:desktop}}
 
                 // {{#TARGET:wasm}}
-                @OptIn(org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl::class)
+                @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
                 wasmJs {
                     browser()
                     binaries.executable()
@@ -781,6 +956,240 @@ object EmbeddedTemplates {
                 MaterialTheme {
                     Text("Server-Driven UI Ready Application")
                 }
+            }
+        """.trimIndent()
+    )
+
+    private val nativeUi = mapOf(
+        ".gitignore" to """
+            *.iml
+            .gradle
+            /build
+            !/gradle/wrapper/gradle-wrapper.jar
+            .idea
+            local.properties
+            .DS_Store
+            .kotlin
+            node_modules
+            dist
+        """.trimIndent(),
+        "gradle.properties" to """
+            kotlin.code.style=official
+            kotlin.daemon.jvmargs=-Xmx3072M
+            org.gradle.jvmargs=-Xmx4096M -Dfile.encoding=UTF-8
+            org.gradle.configuration-cache=true
+            org.gradle.caching=true
+            android.nonTransitiveRClass=true
+            android.useAndroidX=true
+        """.trimIndent(),
+        "gradlew" to """
+            #!/bin/sh
+            exec gradle "$@"
+        """.trimIndent(),
+        "gradlew.bat" to """
+            @echo off
+            gradle %*
+        """.trimIndent(),
+        "package.json" to """
+            {
+              "name": "{{PROJECT_NAME}}",
+              "private": true,
+              "workspaces": [
+                "webApp"
+              ]
+            }
+        """.trimIndent(),
+        "settings.gradle.kts" to """
+            rootProject.name = "{{PROJECT_NAME}}"
+            enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+            pluginManagement {
+                repositories {
+                    google()
+                    mavenCentral()
+                    gradlePluginPortal()
+                }
+            }
+
+            dependencyResolutionManagement {
+                repositories {
+                    google()
+                    mavenCentral()
+                }
+            }
+
+            include(":shared")
+            include(":sharedUI")
+            include(":androidApp")
+            include(":desktopApp")
+            include(":server")
+        """.trimIndent(),
+        "build.gradle.kts" to """
+            plugins {
+                alias(libs.plugins.androidApplication) apply false
+                alias(libs.plugins.androidMultiplatformLibrary) apply false
+                alias(libs.plugins.composeCompiler) apply false
+                alias(libs.plugins.composeMultiplatform) apply false
+                alias(libs.plugins.kotlinJvm) apply false
+                alias(libs.plugins.kotlinMultiplatform) apply false
+                alias(libs.plugins.kotlinxSerialization) apply false
+            }
+        """.trimIndent(),
+        "gradle/libs.versions.toml" to """
+            [versions]
+            agp = "8.9.0"
+            kotlin = "2.2.0"
+            compose-multiplatform = "1.8.0"
+            ktor = "3.1.0"
+            logback = "1.5.16"
+
+            [libraries]
+            ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+            ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+            logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
+            [plugins]
+            androidApplication = { id = "com.android.application", version.ref = "agp" }
+            androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+            composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+            composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+            kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+            kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+            kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+        """.trimIndent(),
+        "shared/build.gradle.kts" to """
+            plugins {
+                alias(libs.plugins.kotlinMultiplatform)
+                alias(libs.plugins.androidMultiplatformLibrary)
+                alias(libs.plugins.kotlinxSerialization)
+            }
+
+            kotlin {
+                androidLibrary {
+                    namespace = "{{PACKAGE_NAME}}.shared"
+                    compileSdk = 35
+                    minSdk = 24
+                }
+
+                listOf(
+                    iosArm64(),
+                    iosSimulatorArm64()
+                ).forEach { iosTarget ->
+                    iosTarget.binaries.framework {
+                        baseName = "Shared"
+                        isStatic = true
+                    }
+                }
+
+                jvm()
+
+                js {
+                    outputModuleName = "shared"
+                    browser()
+                    binaries.library()
+                    generateTypeScriptDefinitions()
+                }
+
+                sourceSets {
+                    commonMain.dependencies {
+                    }
+                }
+            }
+        """.trimIndent(),
+        "shared/src/commonMain/kotlin/{{PACKAGE_PATH}}/Platform.kt" to """
+            package {{PACKAGE_NAME}}.shared
+
+            expect fun getPlatformName(): String
+        """.trimIndent(),
+        "webApp/package.json" to """
+            {
+              "name": "webApp",
+              "private": true,
+              "version": "0.0.0",
+              "type": "module",
+              "scripts": {
+                "dev": "vite",
+                "build": "tsc && vite build",
+                "preview": "vite preview"
+              },
+              "dependencies": {
+                "react": "^18.2.0",
+                "react-dom": "^18.2.0"
+              },
+              "devDependencies": {
+                "@types/react": "^18.2.0",
+                "@types/react-dom": "^18.2.0",
+                "@vitejs/plugin-react": "^4.2.0",
+                "typescript": "^5.2.0",
+                "vite": "^5.1.0"
+              }
+            }
+        """.trimIndent(),
+        "webApp/vite.config.ts" to """
+            import { defineConfig } from 'vite'
+            import react from '@vitejs/plugin-react'
+
+            export default defineConfig({
+              plugins: [react()],
+            })
+        """.trimIndent(),
+        "webApp/index.html" to """
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="UTF-8" />
+                <title>{{PROJECT_NAME}}</title>
+              </head>
+              <body>
+                <div id="root"></div>
+                <script type="module" src="/src/main.tsx"></script>
+              </body>
+            </html>
+        """.trimIndent(),
+        "iosApp/ContentView.swift" to """
+            import SwiftUI
+
+            struct ContentView: View {
+                var body: some View {
+                    Text("Hello from SwiftUI!")
+                        .padding()
+                }
+            }
+        """.trimIndent(),
+        "server/build.gradle.kts" to """
+            plugins {
+                alias(libs.plugins.kotlinJvm)
+                application
+            }
+
+            application {
+                mainClass.set("{{PACKAGE_NAME}}.server.ApplicationKt")
+            }
+
+            dependencies {
+                implementation(project(":shared"))
+                implementation(libs.ktor.server.core)
+                implementation(libs.ktor.server.netty)
+                implementation(libs.logback)
+            }
+        """.trimIndent(),
+        "server/src/main/kotlin/{{PACKAGE_PATH}}/server/Application.kt" to """
+            package {{PACKAGE_NAME}}.server
+
+            import io.ktor.server.application.*
+            import io.ktor.server.engine.*
+            import io.ktor.server.netty.*
+            import io.ktor.server.response.*
+            import io.ktor.server.routing.*
+
+            fun main() {
+                embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
+                    routing {
+                        get("/") {
+                            call.respondText("Hello from Ktor Server!")
+                        }
+                    }
+                }.start(wait = true)
             }
         """.trimIndent()
     )

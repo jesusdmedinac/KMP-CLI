@@ -21,3 +21,9 @@ local.properties
 *.kexe
 *.klib
 *.dSYM/
+
+# Local Testing Playgrounds & Reference Archives
+/playground/
+/jetbrains/
+/wizard/
+/kmp

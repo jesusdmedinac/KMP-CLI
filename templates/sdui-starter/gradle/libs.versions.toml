@@ -3,9 +3,11 @@ agp = "8.9.0"
 kotlin = "2.2.0"
 compose-multiplatform = "1.8.0"
 json-to-compose = "0.1.0"
+androidx-activity = "1.10.1"
 ktor = "3.1.1"
 
 [libraries]
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 json-to-compose-core = { module = "com.jesusdmedinac:json-to-compose", version.ref = "json-to-compose" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }

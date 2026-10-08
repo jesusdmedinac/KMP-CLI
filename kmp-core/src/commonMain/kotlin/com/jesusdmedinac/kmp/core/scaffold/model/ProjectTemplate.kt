@@ -3,36 +3,61 @@ package com.jesusdmedinac.kmp.core.scaffold.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class ProjectTemplate(val id: String, val displayName: String, val description: String) {
-    COMPOSE_MULTIPLATFORM(
-        id = "compose-multiplatform",
-        displayName = "Compose Multiplatform",
-        description = "Adaptive Compose UI targeting Android, iOS, Desktop, and Wasm",
+enum class ProjectTemplate(
+    val id: String,
+    val displayName: String,
+    val description: String,
+    val aliases: List<String> = emptyList(),
+) {
+    SHARED_UI(
+        id = "shared-ui",
+        displayName = "Shared UI Multiplatform App",
+        description = "Official JetBrains template with Compose Multiplatform on all platforms",
+        aliases = listOf("compose-app", "compose-multiplatform"),
     ),
-    TOOLCHAIN_APP(
-        id = "toolchain-app",
-        displayName = "Kotlin Toolchain App",
-        description = "Declarative Kotlin Toolchain project with module.yaml",
+    NATIVE_UI(
+        id = "native-ui",
+        displayName = "Native UI Multiplatform App",
+        description = "Official JetBrains template with Compose Desktop/Web and native SwiftUI on iOS",
+        aliases = listOf("compose-native"),
     ),
-    KMP_LIBRARY(
-        id = "kmp-library",
-        displayName = "KMP Library",
-        description = "Cross-platform library skeleton ready for Maven publishing",
+    MULTIPLATFORM_LIBRARY(
+        id = "multiplatform-library",
+        displayName = "Multiplatform Library",
+        description = "Official JetBrains template ready for Maven Central publishing via vanniktech",
+        aliases = listOf("kmp-library"),
+    ),
+    TOOLCHAIN_SHARED_UI(
+        id = "toolchain-shared-ui",
+        displayName = "Shared UI Multiplatform App configured with Kotlin Toolchain",
+        description = "Official JetBrains declarative Kotlin Toolchain app with Compose UI",
+        aliases = listOf("toolchain-app"),
+    ),
+    TOOLCHAIN_NATIVE_UI(
+        id = "toolchain-native-ui",
+        displayName = "Native UI Multiplatform App configured with Kotlin Toolchain",
+        description = "Official JetBrains declarative Kotlin Toolchain app with native iOS UI",
+        aliases = listOf("toolchain-native"),
     ),
     FULLSTACK(
         id = "fullstack",
         displayName = "Fullstack KMP",
-        description = "Ktor backend server and Compose Multiplatform client sharing models",
+        description = "Fullstack Kotlin with Ktor backend server and Compose Multiplatform client sharing models",
     ),
     SDUI_STARTER(
         id = "sdui-starter",
         displayName = "Server-Driven UI Starter",
-        description = "Dynamic Server-Driven UI app powered by json-to-compose & caching",
+        description = "Dynamic Server-Driven UI starter powered by json-to-compose & caching",
     );
 
     companion object {
-        fun fromId(id: String): ProjectTemplate? = entries.find {
-            it.id.equals(id.trim(), ignoreCase = true)
+        val COMPOSE_MULTIPLATFORM = SHARED_UI
+        val TOOLCHAIN_APP = TOOLCHAIN_SHARED_UI
+        val KMP_LIBRARY = MULTIPLATFORM_LIBRARY
+
+        fun fromId(id: String): ProjectTemplate? = entries.find { entry ->
+            entry.id.equals(id.trim(), ignoreCase = true) ||
+                entry.aliases.any { it.equals(id.trim(), ignoreCase = true) }
         }
     }
 }

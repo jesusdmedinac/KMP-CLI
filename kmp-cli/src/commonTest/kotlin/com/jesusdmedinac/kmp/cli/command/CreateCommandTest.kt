@@ -25,7 +25,7 @@ class CreateCommandTest {
         val command = CreateCommand(engine = engine, terminal = terminal)
         CommandLineParser.parseAndRun(
             command,
-            listOf("--name", "MyJsonApp", "--template", "compose-multiplatform", "--json")
+            listOf("--name", "MyJsonApp", "--template", "shared-ui", "--json")
         ) { it.run() }
 
         val output = recorder.output().trim()
@@ -33,7 +33,7 @@ class CreateCommandTest {
 
         assertNotNull(result)
         assertEquals("SUCCESS", result.status)
-        assertEquals("compose-multiplatform", result.template)
+        assertEquals("shared-ui", result.template)
         assertEquals("MyJsonApp", result.projectPath)
         assertTrue(result.createdFiles.isNotEmpty())
         assertTrue(fakeEnv.fileExists("MyJsonApp/settings.gradle.kts"))
@@ -44,13 +44,28 @@ class CreateCommandTest {
         val command = CreateCommand(engine = engine, terminal = terminal)
         CommandLineParser.parseAndRun(
             command,
-            listOf("--name", "MyCliApp", "--template", "kmp-library")
+            listOf("--name", "MyCliApp", "--template", "multiplatform-library")
         ) { it.run() }
 
         val output = recorder.output()
         assertTrue(output.contains("Project created successfully") || output.contains("MyCliApp"))
-        assertTrue(output.contains("kmp-library"))
+        assertTrue(output.contains("multiplatform-library"))
         assertTrue(fakeEnv.fileExists("MyCliApp/build.gradle.kts"))
+    }
+
+    @Test
+    fun `create with legacy alias compose-multiplatform maps to shared-ui`() {
+        val command = CreateCommand(engine = engine, terminal = terminal)
+        CommandLineParser.parseAndRun(
+            command,
+            listOf("--name", "LegacyApp", "--template", "compose-multiplatform", "--json")
+        ) { it.run() }
+
+        val output = recorder.output().trim()
+        val result = Json.decodeFromString<ScaffoldingResult>(output)
+
+        assertEquals("SUCCESS", result.status)
+        assertEquals("shared-ui", result.template)
     }
 
     @Test
@@ -78,7 +93,7 @@ class CreateCommandTest {
         val command = CreateCommand(engine = engine, terminal = terminal)
         CommandLineParser.parseAndRun(
             command,
-            listOf("PositionalApp", "--template", "kmp-library", "--json")
+            listOf("PositionalApp", "--template", "multiplatform-library", "--json")
         ) { it.run() }
 
         val output = recorder.output().trim()
@@ -90,7 +105,7 @@ class CreateCommandTest {
     }
 
     @Test
-    fun `create with format toolchain selects toolchain-app template`() {
+    fun `create with format toolchain selects toolchain-shared-ui template`() {
         val command = CreateCommand(engine = engine, terminal = terminal)
         CommandLineParser.parseAndRun(
             command,
@@ -101,8 +116,23 @@ class CreateCommandTest {
         val result = Json.decodeFromString<ScaffoldingResult>(output)
 
         assertEquals("SUCCESS", result.status)
-        assertEquals("toolchain-app", result.template)
+        assertEquals("toolchain-shared-ui", result.template)
         assertTrue(fakeEnv.fileExists("ToolchainApp/project.yaml"))
+    }
+
+    @Test
+    fun `create with ios-ui swiftui selects native-ui template`() {
+        val command = CreateCommand(engine = engine, terminal = terminal)
+        CommandLineParser.parseAndRun(
+            command,
+            listOf("--name", "NativeApp", "--ios-ui", "swiftui", "--json")
+        ) { it.run() }
+
+        val output = recorder.output().trim()
+        val result = Json.decodeFromString<ScaffoldingResult>(output)
+
+        assertEquals("SUCCESS", result.status)
+        assertEquals("native-ui", result.template)
     }
 
     @Test
@@ -185,4 +215,87 @@ class CreateCommandTest {
         assertEquals(1, ex.statusCode)
         assertTrue(recorder.output().contains("\"error\""))
     }
+
+    @Test
+    fun `create with wizard flag prompts interactively and scaffolds native react server project`() {
+        val simulatedInputs = mutableListOf(
+            "MyWizardApp",
+            "com.example.wizard",
+            "1",
+            "2",
+            "2",
+            "y",
+            "y",
+        )
+        val command = CreateCommand(
+            engine = engine,
+            terminal = terminal,
+            readInput = { simulatedInputs.removeFirstOrNull() ?: "" },
+        )
+        CommandLineParser.parseAndRun(
+            command,
+            listOf("--wizard")
+        ) { it.run() }
+
+        val output = recorder.output()
+        assertTrue(output.contains("Kotlin Multiplatform Project Wizard"))
+        assertTrue(output.contains("Project created successfully"))
+        assertTrue(fakeEnv.fileExists("MyWizardApp/settings.gradle.kts"))
+        assertTrue(fakeEnv.fileExists("MyWizardApp/webApp/package.json"))
+        assertTrue(fakeEnv.fileExists("MyWizardApp/webApp/vite.config.ts"))
+        assertTrue(fakeEnv.fileExists("MyWizardApp/shared/build.gradle.kts"))
+        val sharedBuild = fakeEnv.readFileText("MyWizardApp/shared/build.gradle.kts") ?: ""
+        assertTrue(sharedBuild.contains("generateTypeScriptDefinitions"))
+        assertTrue(fakeEnv.fileExists("MyWizardApp/server/build.gradle.kts"))
+    }
+
+    @Test
+    fun `create with wizard flag for Kotlin Toolchain scaffolds toolchain project`() {
+        val simulatedInputs = mutableListOf(
+            "MyToolchainWizardApp",
+            "com.example.toolchain",
+            "2",
+            "y",
+            "n",
+        )
+        val command = CreateCommand(
+            engine = engine,
+            terminal = terminal,
+            readInput = { simulatedInputs.removeFirstOrNull() ?: "" },
+        )
+        CommandLineParser.parseAndRun(
+            command,
+            listOf("--wizard")
+        ) { it.run() }
+
+        val output = recorder.output()
+        assertTrue(output.contains("Kotlin Multiplatform Project Wizard"))
+        assertTrue(fakeEnv.fileExists("MyToolchainWizardApp/project.yaml"))
+        assertTrue(fakeEnv.fileExists("MyToolchainWizardApp/kotlin"))
+    }
+
+    @Test
+    fun `create with flags selecting gradle native ios react web and server maps to native-ui`() {
+        val command = CreateCommand(engine = engine, terminal = terminal)
+        CommandLineParser.parseAndRun(
+            command,
+            listOf(
+                "--name", "ConfiguredWizardApp",
+                "--build-system", "gradle",
+                "--ios-ui", "swiftui",
+                "--web-ui", "react",
+                "--targets", "android,ios,web,server",
+                "--json"
+            )
+        ) { it.run() }
+
+        val output = recorder.output().trim()
+        val result = Json.decodeFromString<ScaffoldingResult>(output)
+
+        assertEquals("SUCCESS", result.status)
+        assertEquals("native-ui", result.template)
+        assertTrue(fakeEnv.fileExists("ConfiguredWizardApp/webApp/vite.config.ts"))
+        assertTrue(fakeEnv.fileExists("ConfiguredWizardApp/server/build.gradle.kts"))
+    }
 }
+

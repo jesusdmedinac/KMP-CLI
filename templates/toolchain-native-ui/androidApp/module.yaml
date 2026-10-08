@@ -1,0 +1,11 @@
+product: android/app
+
+dependencies:
+  - ../sharedUI
+  - $libs.androidx.activity.compose
+
+settings:
+  compose: enabled
+  android:
+    applicationId: com.jetbrains.kmpapp
+    namespace: com.jetbrains.kmpapp

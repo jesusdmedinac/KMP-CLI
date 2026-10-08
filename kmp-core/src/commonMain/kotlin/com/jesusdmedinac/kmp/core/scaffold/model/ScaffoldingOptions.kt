@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class ScaffoldingOptions(
     val name: String,
     val packageName: String = "com.example.${name.lowercase().replace("-", "").replace("_", "")}",
-    val template: ProjectTemplate = ProjectTemplate.COMPOSE_MULTIPLATFORM,
+    val template: ProjectTemplate = ProjectTemplate.SHARED_UI,
     val targets: List<String> = listOf("android", "ios", "desktop", "wasm"),
     val outputDir: String = name,
 )
