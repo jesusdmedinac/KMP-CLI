@@ -64,6 +64,13 @@ kotlin {
             implementation(libs.androidx.activity.compose)
         }
         // {{/TARGET:android}}
+        // {{#TARGET:desktop}}
+        val desktopMain by getting {
+            dependencies {
+                implementation(compose.desktop.currentOs)
+            }
+        }
+        // {{/TARGET:desktop}}
     }
 }
 
@@ -95,3 +102,17 @@ android {
     }
 }
 // {{/TARGET:android}}
+
+// {{#TARGET:desktop}}
+compose.desktop {
+    application {
+        mainClass = "{{PACKAGE_NAME}}.MainKt"
+
+        nativeDistributions {
+            targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb)
+            packageName = "{{PACKAGE_NAME}}"
+            packageVersion = "1.0.0"
+        }
+    }
+}
+// {{/TARGET:desktop}}

@@ -44,10 +44,11 @@ enum class ProjectTemplate(
         displayName = "Fullstack KMP",
         description = "Fullstack Kotlin with Ktor backend server and Compose Multiplatform client sharing models",
     ),
-    SDUI_STARTER(
-        id = "sdui-starter",
-        displayName = "Server-Driven UI Starter",
-        description = "Dynamic Server-Driven UI starter powered by json-to-compose & caching",
+    JSON_TO_COMPOSE_SAMPLE(
+        id = "json-to-compose-sample-app",
+        displayName = "JSON to Compose Sample App",
+        description = "Sample multiplatform app demonstrating Server-Driven UI with json-to-compose",
+        aliases = listOf("json-to-compose", "sdui-starter"),
     );
 
     companion object {

@@ -10,10 +10,60 @@ object EmbeddedTemplates {
         ProjectTemplate.TOOLCHAIN_SHARED_UI -> toolchainApp
         ProjectTemplate.TOOLCHAIN_NATIVE_UI -> toolchainApp
         ProjectTemplate.FULLSTACK -> fullstack
-        ProjectTemplate.SDUI_STARTER -> sduiStarter
+        ProjectTemplate.JSON_TO_COMPOSE_SAMPLE -> jsonToComposeSample
     }
 
     private val composeMultiplatform = mapOf(
+        ".run/desktopApp.run.xml" to """
+            <component name="ProjectRunConfigurationManager">
+              <configuration default="false" name="desktopApp" type="GradleRunConfiguration" factoryName="Gradle">
+                <ExternalSystemSettings>
+                  <option name="executionName" />
+                  <option name="externalProjectPath" value="${'$'}PROJECT_DIR${'$'}" />
+                  <option name="externalSystemIdString" value="GRADLE" />
+                  <option name="scriptParameters" value="" />
+                  <option name="taskDescriptions">
+                    <list />
+                  </option>
+                  <option name="taskNames">
+                    <list>
+                      <option value=":composeApp:desktopRun" />
+                    </list>
+                  </option>
+                  <option name="vmOptions" />
+                </ExternalSystemSettings>
+                <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+                <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+                <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+                <method v="2" />
+              </configuration>
+            </component>
+        """.trimIndent(),
+        ".run/wasmJs.run.xml" to """
+            <component name="ProjectRunConfigurationManager">
+              <configuration default="false" name="wasmJs" type="GradleRunConfiguration" factoryName="Gradle">
+                <ExternalSystemSettings>
+                  <option name="executionName" />
+                  <option name="externalProjectPath" value="${'$'}PROJECT_DIR${'$'}" />
+                  <option name="externalSystemIdString" value="GRADLE" />
+                  <option name="scriptParameters" value="" />
+                  <option name="taskDescriptions">
+                    <list />
+                  </option>
+                  <option name="taskNames">
+                    <list>
+                      <option value=":composeApp:wasmJsBrowserDevelopmentRun" />
+                    </list>
+                  </option>
+                  <option name="vmOptions" />
+                </ExternalSystemSettings>
+                <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+                <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+                <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+                <method v="2" />
+              </configuration>
+            </component>
+        """.trimIndent(),
         ".gitignore" to """
             *.iml
             .gradle
@@ -444,6 +494,106 @@ object EmbeddedTemplates {
     )
 
     private val fullstack = mapOf(
+        ".run/desktopApp.run.xml" to """
+            <component name="ProjectRunConfigurationManager">
+              <configuration default="false" name="desktopApp" type="GradleRunConfiguration" factoryName="Gradle">
+                <ExternalSystemSettings>
+                  <option name="executionName" />
+                  <option name="externalProjectPath" value="${'$'}PROJECT_DIR${'$'}" />
+                  <option name="externalSystemIdString" value="GRADLE" />
+                  <option name="scriptParameters" value="" />
+                  <option name="taskDescriptions">
+                    <list />
+                  </option>
+                  <option name="taskNames">
+                    <list>
+                      <option value=":app:desktopApp:run" />
+                    </list>
+                  </option>
+                  <option name="vmOptions" />
+                </ExternalSystemSettings>
+                <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+                <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+                <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+                <method v="2" />
+              </configuration>
+            </component>
+        """.trimIndent(),
+        ".run/server.run.xml" to """
+            <component name="ProjectRunConfigurationManager">
+              <configuration default="false" name="server" type="GradleRunConfiguration" factoryName="Gradle">
+                <ExternalSystemSettings>
+                  <option name="executionName" />
+                  <option name="externalProjectPath" value="${'$'}PROJECT_DIR${'$'}" />
+                  <option name="externalSystemIdString" value="GRADLE" />
+                  <option name="scriptParameters" value="" />
+                  <option name="taskDescriptions">
+                    <list />
+                  </option>
+                  <option name="taskNames">
+                    <list>
+                      <option value=":server:run" />
+                    </list>
+                  </option>
+                  <option name="vmOptions" />
+                </ExternalSystemSettings>
+                <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+                <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+                <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+                <method v="2" />
+              </configuration>
+            </component>
+        """.trimIndent(),
+        ".run/wasmJs.run.xml" to """
+            <component name="ProjectRunConfigurationManager">
+              <configuration default="false" name="wasmJs" type="GradleRunConfiguration" factoryName="Gradle">
+                <ExternalSystemSettings>
+                  <option name="executionName" />
+                  <option name="externalProjectPath" value="${'$'}PROJECT_DIR${'$'}" />
+                  <option name="externalSystemIdString" value="GRADLE" />
+                  <option name="scriptParameters" value="" />
+                  <option name="taskDescriptions">
+                    <list />
+                  </option>
+                  <option name="taskNames">
+                    <list>
+                      <option value=":app:webApp:wasmJsBrowserDevelopmentRun" />
+                    </list>
+                  </option>
+                  <option name="vmOptions" />
+                </ExternalSystemSettings>
+                <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+                <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+                <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+                <method v="2" />
+              </configuration>
+            </component>
+        """.trimIndent(),
+        ".run/js.run.xml" to """
+            <component name="ProjectRunConfigurationManager">
+              <configuration default="false" name="js" type="GradleRunConfiguration" factoryName="Gradle">
+                <ExternalSystemSettings>
+                  <option name="executionName" />
+                  <option name="externalProjectPath" value="${'$'}PROJECT_DIR${'$'}" />
+                  <option name="externalSystemIdString" value="GRADLE" />
+                  <option name="scriptParameters" value="" />
+                  <option name="taskDescriptions">
+                    <list />
+                  </option>
+                  <option name="taskNames">
+                    <list>
+                      <option value=":app:webApp:jsBrowserDevelopmentRun" />
+                    </list>
+                  </option>
+                  <option name="vmOptions" />
+                </ExternalSystemSettings>
+                <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+                <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+                <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+                <method v="2" />
+              </configuration>
+            </component>
+        """.trimIndent(),
         ".gitignore" to """
             *.iml
             .gradle
@@ -801,7 +951,57 @@ object EmbeddedTemplates {
         """.trimIndent()
     )
 
-    private val sduiStarter = mapOf(
+    private val jsonToComposeSample = mapOf(
+        ".run/desktopApp.run.xml" to """
+            <component name="ProjectRunConfigurationManager">
+              <configuration default="false" name="desktopApp" type="GradleRunConfiguration" factoryName="Gradle">
+                <ExternalSystemSettings>
+                  <option name="executionName" />
+                  <option name="externalProjectPath" value="${'$'}PROJECT_DIR${'$'}" />
+                  <option name="externalSystemIdString" value="GRADLE" />
+                  <option name="scriptParameters" value="" />
+                  <option name="taskDescriptions">
+                    <list />
+                  </option>
+                  <option name="taskNames">
+                    <list>
+                      <option value=":composeApp:desktopRun" />
+                    </list>
+                  </option>
+                  <option name="vmOptions" />
+                </ExternalSystemSettings>
+                <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+                <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+                <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+                <method v="2" />
+              </configuration>
+            </component>
+        """.trimIndent(),
+        ".run/wasmJs.run.xml" to """
+            <component name="ProjectRunConfigurationManager">
+              <configuration default="false" name="wasmJs" type="GradleRunConfiguration" factoryName="Gradle">
+                <ExternalSystemSettings>
+                  <option name="executionName" />
+                  <option name="externalProjectPath" value="${'$'}PROJECT_DIR${'$'}" />
+                  <option name="externalSystemIdString" value="GRADLE" />
+                  <option name="scriptParameters" value="" />
+                  <option name="taskDescriptions">
+                    <list />
+                  </option>
+                  <option name="taskNames">
+                    <list>
+                      <option value=":composeApp:wasmJsBrowserDevelopmentRun" />
+                    </list>
+                  </option>
+                  <option name="vmOptions" />
+                </ExternalSystemSettings>
+                <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+                <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+                <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+                <method v="2" />
+              </configuration>
+            </component>
+        """.trimIndent(),
         ".gitignore" to """
             *.iml
             .gradle

@@ -152,19 +152,21 @@ class CreateCommandTest {
     }
 
     @Test
-    fun `create with sdui-starter template generates sdui project`() {
+    fun `create with json-to-compose-sample-app template generates project`() {
         val command = CreateCommand(engine = engine, terminal = terminal)
         CommandLineParser.parseAndRun(
             command,
-            listOf("--name", "SduiApp", "--template", "sdui-starter", "--json")
+            listOf("--name", "SampleApp", "--template", "json-to-compose-sample-app", "--json")
         ) { it.run() }
 
         val output = recorder.output().trim()
         val result = Json.decodeFromString<ScaffoldingResult>(output)
 
         assertEquals("SUCCESS", result.status)
-        assertEquals("sdui-starter", result.template)
-        assertTrue(fakeEnv.fileExists("SduiApp/gradle/libs.versions.toml"))
+        assertEquals("json-to-compose-sample-app", result.template)
+        assertTrue(fakeEnv.fileExists("SampleApp/gradle/libs.versions.toml"))
+        assertTrue(fakeEnv.fileExists("SampleApp/.run/desktopApp.run.xml"))
+        assertTrue(fakeEnv.fileExists("SampleApp/.run/wasmJs.run.xml"))
     }
 
     @Test

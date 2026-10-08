@@ -6,11 +6,11 @@ import com.jesusdmedinac.kmp.core.scaffold.template.TemplateContext
 import com.jesusdmedinac.kmp.core.scaffold.template.TemplateProcessor
 import com.jesusdmedinac.kmp.core.scaffold.template.TemplateSource
 
-class SduiStarterGenerator(
+class JsonToComposeSampleGenerator(
     private val templateSource: TemplateSource,
 ) : TemplateGenerator {
     override fun generate(options: ScaffoldingOptions): Map<String, String> {
-        val rawFiles = templateSource.loadRawTemplateFiles(ProjectTemplate.SDUI_STARTER)
+        val rawFiles = templateSource.loadRawTemplateFiles(ProjectTemplate.JSON_TO_COMPOSE_SAMPLE)
         val packagePath = options.packageName.replace('.', '/')
 
         val targets = options.targets.map { it.lowercase().trim() }.toSet()

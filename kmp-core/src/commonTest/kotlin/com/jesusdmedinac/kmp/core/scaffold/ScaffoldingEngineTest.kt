@@ -161,23 +161,27 @@ class ScaffoldingEngineTest {
     }
 
     @Test
-    fun `scaffold sdui-starter generates json-to-compose dependency and sdui starter code`() {
+    fun `scaffold json-to-compose-sample-app generates json-to-compose dependency and run configurations`() {
         val options = ScaffoldingOptions(
-            name = "MySduiApp",
-            packageName = "com.example.sdui",
-            template = ProjectTemplate.SDUI_STARTER,
+            name = "MySampleApp",
+            packageName = "com.example.sample",
+            template = ProjectTemplate.JSON_TO_COMPOSE_SAMPLE,
         )
 
         val result = engine.scaffold(options)
         assertEquals("SUCCESS", result.status)
 
-        val catalog = fakeEnv.readFileText("MySduiApp/gradle/libs.versions.toml")
+        val catalog = fakeEnv.readFileText("MySampleApp/gradle/libs.versions.toml")
         assertNotNull(catalog)
         assertTrue(catalog.contains("json-to-compose"))
 
-        val sduiApp = fakeEnv.readFileText("MySduiApp/composeApp/src/commonMain/kotlin/com/example/sdui/SduiApp.kt")
-        assertNotNull(sduiApp)
-        assertTrue(sduiApp.contains("fun SduiApp()"))
+        val desktopRun = fakeEnv.readFileText("MySampleApp/.run/desktopApp.run.xml")
+        assertNotNull(desktopRun)
+        assertTrue(desktopRun.contains(":composeApp:desktopRun"))
+
+        val wasmRun = fakeEnv.readFileText("MySampleApp/.run/wasmJs.run.xml")
+        assertNotNull(wasmRun)
+        assertTrue(wasmRun.contains(":composeApp:wasmJsBrowserDevelopmentRun"))
     }
 
     @Test

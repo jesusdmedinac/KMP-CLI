@@ -3,8 +3,8 @@ package com.jesusdmedinac.kmp.core.scaffold
 import com.jesusdmedinac.kmp.core.scaffold.generator.ComposeMultiplatformGenerator
 import com.jesusdmedinac.kmp.core.scaffold.generator.FullstackGenerator
 import com.jesusdmedinac.kmp.core.scaffold.generator.GenericTemplateGenerator
+import com.jesusdmedinac.kmp.core.scaffold.generator.JsonToComposeSampleGenerator
 import com.jesusdmedinac.kmp.core.scaffold.generator.KmpLibraryGenerator
-import com.jesusdmedinac.kmp.core.scaffold.generator.SduiStarterGenerator
 import com.jesusdmedinac.kmp.core.scaffold.generator.TemplateGenerator
 import com.jesusdmedinac.kmp.core.scaffold.generator.ToolchainAppGenerator
 import com.jesusdmedinac.kmp.core.scaffold.model.ProjectTemplate
@@ -39,7 +39,7 @@ class ScaffoldingEngine(
             ProjectTemplate.TOOLCHAIN_SHARED_UI -> ToolchainAppGenerator(templateSource)
             ProjectTemplate.TOOLCHAIN_NATIVE_UI -> GenericTemplateGenerator(ProjectTemplate.TOOLCHAIN_NATIVE_UI, templateSource)
             ProjectTemplate.FULLSTACK -> FullstackGenerator(templateSource)
-            ProjectTemplate.SDUI_STARTER -> SduiStarterGenerator(templateSource)
+            ProjectTemplate.JSON_TO_COMPOSE_SAMPLE -> JsonToComposeSampleGenerator(templateSource)
         }
 
         val generatedFiles = generator.generate(options)

@@ -76,6 +76,9 @@ class TemplateSource(
 
         val knownTemplateFiles: List<String> = listOf(
             ".gitignore",
+            ".run/desktopApp.run.xml",
+            ".run/wasmJs.run.xml",
+            ".run/server.run.xml",
             "settings.gradle.kts",
             "build.gradle.kts",
             "project.yaml",
@@ -84,7 +87,6 @@ class TemplateSource(
             "app/src/commonMain/kotlin/{{PACKAGE_PATH}}/Main.kt",
             "composeApp/build.gradle.kts",
             "composeApp/src/commonMain/kotlin/{{PACKAGE_PATH}}/App.kt",
-            "composeApp/src/commonMain/kotlin/{{PACKAGE_PATH}}/SduiApp.kt",
             "shared/build.gradle.kts",
             "shared/src/commonMain/kotlin/{{PACKAGE_PATH}}/shared/Message.kt",
             "server/build.gradle.kts",
