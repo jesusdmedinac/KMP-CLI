@@ -1409,6 +1409,81 @@ object EmbeddedTemplates {
     )
 
     private val nativeUi = mapOf(
+        ".run/desktopApp.run.xml" to """
+            <component name="ProjectRunConfigurationManager">
+              <configuration default="false" name="desktopApp" type="GradleRunConfiguration" factoryName="Gradle">
+                <ExternalSystemSettings>
+                  <option name="executionName" />
+                  <option name="externalProjectPath" value="${'$'}PROJECT_DIR${'$'}" />
+                  <option name="externalSystemIdString" value="GRADLE" />
+                  <option name="scriptParameters" value="" />
+                  <option name="taskDescriptions">
+                    <list />
+                  </option>
+                  <option name="taskNames">
+                    <list>
+                      <option value=":desktopApp:run" />
+                    </list>
+                  </option>
+                  <option name="vmOptions" />
+                </ExternalSystemSettings>
+                <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+                <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+                <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+                <method v="2" />
+              </configuration>
+            </component>
+        """.trimIndent(),
+        ".run/server.run.xml" to """
+            <component name="ProjectRunConfigurationManager">
+              <configuration default="false" name="server" type="GradleRunConfiguration" factoryName="Gradle">
+                <ExternalSystemSettings>
+                  <option name="executionName" />
+                  <option name="externalProjectPath" value="${'$'}PROJECT_DIR${'$'}" />
+                  <option name="externalSystemIdString" value="GRADLE" />
+                  <option name="scriptParameters" value="" />
+                  <option name="taskDescriptions">
+                    <list />
+                  </option>
+                  <option name="taskNames">
+                    <list>
+                      <option value=":server:run" />
+                    </list>
+                  </option>
+                  <option name="vmOptions" />
+                </ExternalSystemSettings>
+                <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+                <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+                <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+                <method v="2" />
+              </configuration>
+            </component>
+        """.trimIndent(),
+        ".run/webApp.run.xml" to """
+            <component name="ProjectRunConfigurationManager">
+              <configuration default="false" name="webApp" type="GradleRunConfiguration" factoryName="Gradle">
+                <ExternalSystemSettings>
+                  <option name="executionName" />
+                  <option name="externalProjectPath" value="${'$'}PROJECT_DIR${'$'}" />
+                  <option name="externalSystemIdString" value="GRADLE" />
+                  <option name="scriptParameters" value="" />
+                  <option name="taskDescriptions">
+                    <list />
+                  </option>
+                  <option name="taskNames">
+                    <list>
+                      <option value=":webRun" />
+                    </list>
+                  </option>
+                  <option name="vmOptions" />
+                </ExternalSystemSettings>
+                <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+                <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+                <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+                <method v="2" />
+              </configuration>
+            </component>
+        """.trimIndent(),
         ".gitignore" to """
             *.iml
             .gradle
@@ -1421,6 +1496,7 @@ object EmbeddedTemplates {
             node_modules
             dist
         """.trimIndent(),
+
         "gradle.properties" to """
             kotlin.code.style=official
             kotlin.daemon.jvmargs=-Xmx3072M
@@ -1481,30 +1557,79 @@ object EmbeddedTemplates {
                 alias(libs.plugins.kotlinJvm) apply false
                 alias(libs.plugins.kotlinMultiplatform) apply false
                 alias(libs.plugins.kotlinxSerialization) apply false
+                alias(libs.plugins.kmpNativeCoroutines) apply false
+            }
+
+            tasks.register<Exec>("webRun") {
+                group = "application"
+                description = "Builds the shared KMP JS library and starts the React web dev server"
+                dependsOn(":shared:jsBrowserDevelopmentLibraryDistribution")
+                commandLine("npm", "run", "start", "-w", "webApp")
             }
         """.trimIndent(),
+
         "gradle/libs.versions.toml" to """
             [versions]
-            agp = "8.9.0"
-            kotlin = "2.2.0"
-            compose-multiplatform = "1.8.0"
-            ktor = "3.1.0"
-            logback = "1.5.16"
+            agp = "9.1.1"
+            android-compileSdk = "37"
+            android-minSdk = "24"
+            android-targetSdk = "37"
+            androidx-activity = "1.13.0"
+            androidx-lifecycle = "2.11.0-beta01"
+            androidx-navigation = "2.9.2"
+            coil = "3.5.0"
+            compose-material-icons = "1.7.3"
+            compose-material3 = "1.11.0-alpha07"
+            compose-multiplatform = "1.11.1"
+            kmp-native-coroutines = "1.0.6"
+            kmp-observable-viewmodel = "1.1.0"
+            koin = "4.2.2"
+            kotlin = "2.4.10"
+            kotlinx-coroutines = "1.11.0"
+            kotlinx-serialization = "1.11.0"
+            ktor = "3.5.1"
 
             [libraries]
+            androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+            androidx-lifecycle-runtimeCompose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+            androidx-lifecycle-viewmodelCompose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
+            coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+            coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", version.ref = "coil" }
+            compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-multiplatform" }
+            compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-multiplatform" }
+            compose-material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "compose-material-icons" }
+            compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
+            compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
+            compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
+            compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
+            compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
+            kmp-observable-viewmodel = { module = "com.rickclephas.kmp:kmp-observableviewmodel-core", version.ref = "kmp-observable-viewmodel" }
+            koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
+            koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+            kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+            kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
+            ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+            ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+            ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+            ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
+            ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+            ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
             ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
             ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
-            logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+            logback = { module = "ch.qos.logback:logback-classic", version = "1.5.16" }
+            navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
 
             [plugins]
             androidApplication = { id = "com.android.application", version.ref = "agp" }
             androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
             composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
             composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+            kmpNativeCoroutines = { id = "com.rickclephas.kmp.nativecoroutines", version.ref = "kmp-native-coroutines" }
             kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
             kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
             kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
         """.trimIndent(),
+
         "shared/build.gradle.kts" to """
             plugins {
                 alias(libs.plugins.kotlinMultiplatform)

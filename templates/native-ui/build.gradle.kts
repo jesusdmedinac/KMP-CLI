@@ -8,3 +8,10 @@ plugins {
     alias(libs.plugins.kotlinxSerialization) apply false
     alias(libs.plugins.kmpNativeCoroutines) apply false
 }
+
+tasks.register<Exec>("webRun") {
+    group = "application"
+    description = "Builds the shared KMP JS library and starts the React web dev server"
+    dependsOn(":shared:jsBrowserDevelopmentLibraryDistribution")
+    commandLine("npm", "run", "start", "-w", "webApp")
+}
