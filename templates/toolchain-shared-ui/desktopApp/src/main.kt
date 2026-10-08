@@ -10,7 +10,7 @@ fun main() {
     application {
         Window(
             onCloseRequest = ::exitApplication,
-            title = "KMP-App-Template",
+            title = "{{PROJECT_NAME}}",
         ) {
             App()
         }

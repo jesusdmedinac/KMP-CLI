@@ -6,7 +6,7 @@ import androidx.compose.ui.window.application
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
-        title = "Gradle_Android_iOSCompose_Desktop_WebCompose_Server",
+        title = "{{PROJECT_NAME}}",
     ) {
         App()
     }

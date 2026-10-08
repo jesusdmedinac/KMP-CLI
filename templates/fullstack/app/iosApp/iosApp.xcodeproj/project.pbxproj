@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		47441D8DE357DFBD6F79688D /* Gradle_Android_iOSCompose_Desktop_WebCompose_Server.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gradle_Android_iOSCompose_Desktop_WebCompose_Server.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		47441D8DE357DFBD6F79688D /* {{PROJECT_NAME}}.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = {{PROJECT_NAME}}.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -59,7 +59,7 @@
 		23AB236D18B647027C1E56CF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				47441D8DE357DFBD6F79688D /* Gradle_Android_iOSCompose_Desktop_WebCompose_Server.app */,
+				47441D8DE357DFBD6F79688D /* {{PROJECT_NAME}}.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -87,7 +87,7 @@
 			packageProductDependencies = (
 			);
 			productName = iosApp;
-			productReference = 47441D8DE357DFBD6F79688D /* Gradle_Android_iOSCompose_Desktop_WebCompose_Server.app */;
+			productReference = 47441D8DE357DFBD6F79688D /* {{PROJECT_NAME}}.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
