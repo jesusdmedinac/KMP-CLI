@@ -1,11 +1,45 @@
-# KMP CLI & KMP Skills Hub
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="icons/zora-icon-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="icons/zora-icon-white.svg">
+    <img alt="Zora KMP" src="icons/zora-icon.svg" width="180">
+  </picture>
+</p>
 
-[![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin_Multiplatform-2.0%2B-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/docs/multiplatform.html)
-[![Status](https://img.shields.io/badge/Status-Phase_3:_Completed-brightgreen.svg)](PROGRESS.md)
-[![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](LICENSE)
-[![Protocol](https://img.shields.io/badge/Protocol-Model_Context_Protocol_(MCP)-orange.svg)](https://modelcontextprotocol.io/)
+<h1 align="center">KMP CLI & Zora Kits Hub</h1>
 
-> **A unified, extensible CLI and curated Agent Skills Hub for Kotlin Multiplatform — built for both human developers and AI coding agents.**
+<p align="center">
+  <em>A unified, extensible CLI and curated Agent Skills Hub for Kotlin Multiplatform — built for both human developers and AI coding agents.</em>
+</p>
+
+<p align="center">
+  <a href="https://kotlinlang.org/docs/multiplatform.html"><img src="https://img.shields.io/badge/Kotlin_Multiplatform-2.0%2B-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin Multiplatform" /></a>
+  <a href="PROGRESS.md"><img src="https://img.shields.io/badge/Status-Phase_3:_Completed-brightgreen.svg" alt="Status" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-green.svg" alt="License" /></a>
+  <a href="https://modelcontextprotocol.io/"><img src="https://img.shields.io/badge/Protocol-Model_Context_Protocol_(MCP)-orange.svg" alt="Protocol" /></a>
+</p>
+
+---
+
+## 🎨 Zora Brand Identity & Palette
+
+All scaffolding templates and tools feature the official **Zora** visual system:
+
+| Stop | Token | Hex | RGB | Rol en el Gradiente |
+| :---: | :--- | :---: | :---: | :--- |
+| **0%** | `ZoraPurple` | `#894CFF` | `(137, 76, 255)` | Origen del gradiente / Acento primario |
+| **25%** | `ZoraViolet` | `#A833FD` | `(168, 51, 253)` | Transición violeta |
+| **50%** | `ZoraMagenta` | `#CD00EB` | `(205, 0, 235)` | Magenta intermedio |
+| **75%** | `ZoraFuchsia` | `#E200C0` | `(226, 0, 192)` | Fucsia vibrante |
+| **100%** | `ZoraPink` | `#EC168A` | `(236, 22, 138)` | Destino del gradiente / Rosa intenso |
+
+Master vector assets and scripts are organized in [`icons/`](icons/):
+- [`zora-icon.svg`](icons/zora-icon.svg): Vectorial transparente con gradiente.
+- [`zora-icon-dark.svg`](icons/zora-icon-dark.svg): Versión modo oscuro (fondo `#000000`).
+- [`zora-icon-white.svg`](icons/zora-icon-white.svg): Versión modo claro (fondo `#FFFFFF`).
+- [`generate_assets.py`](icons/generate_assets.py): Generador automatizado de assets para Android, iOS, Web, Desktop y Compose.
+
+---
 
 Inspired by the developer experience of **Google Android CLI & Android Skills**, **Flutter CLI**, and **GitHub CLI**, this project unifies environment diagnostics, project inspection, dependency auditing, project scaffolding, and agent-driven development into a single, cohesive open-source ecosystem.
 
@@ -120,27 +154,55 @@ kmp analyze dependencies custom.toml
 kmp analyze dependencies gradle/libs.versions.toml --json
 ```
 
-#### 4. Project Scaffolding (`kmp create`)
-Scaffolds projects using physical, immutable templates from `templates/` with parameter customization:
+#### 4. Project Scaffolding & JetBrains Wizard (`kmp create`)
+Scaffolds modern projects using the official JetBrains templates gallery or an interactive step-by-step console wizard:
+
+##### Interactive Wizard:
 ```bash
-# Scaffold an adaptive Compose Multiplatform application
-kmp create MyApp --template compose-multiplatform --targets android,ios,desktop,wasm
+# Launch interactive terminal wizard (prompts for Name, Package, Build System, UI frameworks, Targets)
+kmp create --wizard
+```
 
-# Scaffold a declarative Kotlin Toolchain application
-kmp create MyToolchainApp --template toolchain-app
+##### Command-Line Execution:
+```bash
+# Scaffold official JetBrains Shared UI app (Android, iOS Compose, Desktop, Web Wasm)
+kmp create MyApp --template shared-ui --targets android,ios,desktop,wasm
 
-# Scaffold a publishable multiplatform library
-kmp create MyLib --template kmp-library --package com.example.mylib
+# Scaffold official JetBrains Native UI app (SwiftUI for iOS, React + Vite for Web, Ktor Server)
+kmp create MyNativeApp --template native-ui
 
-# Scaffold a Fullstack application (Ktor Server + Compose Client sharing models)
-kmp create MyFullstackApp --template fullstack
+# Scaffold full native stack using dedicated configuration flags
+kmp create MyCustomApp --build-system gradle --ios-ui swiftui --web-ui react --targets android,ios,web,server
 
-# Scaffold a Server-Driven UI starter powered by json-to-compose
+# Scaffold official JetBrains Multiplatform Library with Maven publishing
+kmp create MyLib --template multiplatform-library --package com.example.mylib
+
+# Scaffold declarative Kotlin Toolchain application (Compose Multiplatform)
+kmp create MyToolchainApp --template toolchain-shared-ui
+
+# Scaffold specialized Server-Driven UI starter powered by json-to-compose
 kmp create MySduiApp --template sdui-starter
 
-# Scripted execution for AI agents
-kmp create MyAgentApp --template kmp-library --json
+# Scaffold specialized Fullstack application (Ktor Server + Compose Multiplatform)
+kmp create MyFullstackApp --template fullstack
+
+# Headless execution with structured JSON output for AI agents and automation
+kmp create MyAgentApp --template multiplatform-library --json
 ```
+
+| Flag | Description | Default |
+| :--- | :--- | :--- |
+| `--wizard` | Launch interactive step-by-step project creation wizard | `false` |
+| `--name <name>` | Project name (can also be passed as positional argument) | Required |
+| `--template <id>` | `shared-ui`, `native-ui`, `multiplatform-library`, `toolchain-shared-ui`, `toolchain-native-ui`, `sdui-starter`, `fullstack` | Auto-resolved |
+| `--package <id>` | Base application package (e.g. `com.example.app`) | `com.example.<name>` |
+| `--build-system <system>` | Build system: `gradle` or `toolchain` | `gradle` |
+| `--ios-ui <ui>` | iOS UI framework: `compose` or `swiftui` | `compose` |
+| `--web-ui <ui>` | Web UI framework: `compose` (Wasm) or `react` (Vite) | `compose` |
+| `--targets <list>` | Comma-separated target platforms (`android,ios,desktop,wasm,server`) | `android,ios,desktop,wasm` |
+| `--remote` | Fetch latest upstream template from GitHub with local fallback | `false` |
+| `-o, --output <dir>` | Destination directory path | `<name>` |
+| `--json` | Emit structured `ScaffoldingResult` JSON output | `false` |
 
 #### 5. KMP Skills Hub (`kmp skills`)
 ```bash
