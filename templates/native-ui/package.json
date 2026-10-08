@@ -7,6 +7,7 @@
     "shared/build/dist/js/developmentLibrary"
   ],
   "scripts": {
+    "preinstall": "./gradlew :shared:jsBrowserDevelopmentLibraryDistribution",
     "build:shared": "./gradlew :shared:jsBrowserDevelopmentLibraryDistribution",
     "build": "npm run build:shared && npm run build -w webApp",
     "start": "npm run build:shared && npm run start -w webApp"
