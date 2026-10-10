@@ -134,18 +134,45 @@ class CreateCommand(
 
             val isToolchainChoice = buildSystem.equals("toolchain", ignoreCase = true)
 
+            var hasIos = true
+            var hasWeb = true
+
             if (!isToolchainChoice) {
                 terminal.println("\niOS UI framework:")
                 terminal.println("  1) Share UI via Compose Multiplatform [Default]")
                 terminal.println("  2) Do not share UI - Use SwiftUI")
+                terminal.println("  3) None - Do not include iOS target")
                 val iosInput = readInput("Select iOS UI [1]: ")
-                iosUi = if (iosInput == "2" || iosInput?.lowercase() in listOf("swiftui", "native")) "swiftui" else "compose"
+                when {
+                    iosInput == "3" || iosInput?.lowercase() in listOf("none", "n", "false") -> {
+                        hasIos = false
+                        iosUi = null
+                    }
+                    iosInput == "2" || iosInput?.lowercase() in listOf("swiftui", "native") -> {
+                        iosUi = "swiftui"
+                    }
+                    else -> {
+                        iosUi = "compose"
+                    }
+                }
 
                 terminal.println("\nWeb UI framework:")
                 terminal.println("  1) Share UI via Compose Multiplatform (Wasm) [Default]")
                 terminal.println("  2) Do not share UI - Use React with TypeScript")
+                terminal.println("  3) None - Do not include Web target")
                 val webInput = readInput("Select Web UI [1]: ")
-                webUi = if (webInput == "2" || webInput?.lowercase() in listOf("react", "vite")) "react" else "compose"
+                when {
+                    webInput == "3" || webInput?.lowercase() in listOf("none", "n", "false") -> {
+                        hasWeb = false
+                        webUi = null
+                    }
+                    webInput == "2" || webInput?.lowercase() in listOf("react", "vite") -> {
+                        webUi = "react"
+                    }
+                    else -> {
+                        webUi = "compose"
+                    }
+                }
             } else {
                 iosUi = "compose"
                 webUi = "compose"
@@ -157,9 +184,10 @@ class CreateCommand(
             val includeServer = readInput("Include Ktor Server backend? (y/N) [N]: ")
             val hasServer = includeServer?.lowercase() == "y"
 
-            val targetList = mutableListOf("android", "ios")
+            val targetList = mutableListOf("android")
+            if (hasIos) targetList.add("ios")
             if (hasDesktop) targetList.add("desktop")
-            targetList.add("web")
+            if (hasWeb) targetList.add(if (webUi == "compose") "wasm" else "web")
             if (hasServer) targetList.add("server")
             targets = targetList.joinToString(",")
         }
