@@ -15,11 +15,12 @@ BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
 OUTPUT_DIR = BASE_DIR / "generated"
 
-SVG_TRANSPARENT = BASE_DIR / "zora-icon.svg"
-SVG_DARK = BASE_DIR / "zora-icon-dark.svg"
-PNG_DARK = BASE_DIR / "zora-icon-dark.png"
-PNG_WHITE = BASE_DIR / "zora-icon-white.png"
-PNG_TRANSPARENT = BASE_DIR / "zora-icon.png"
+SVG_TRANSPARENT = BASE_DIR / "zora-transparent.svg"
+SVG_DARK = BASE_DIR / "zora-dark.svg"
+PNG_DARK = BASE_DIR / "zora-dark.png"
+PNG_WHITE = BASE_DIR / "zora-white.png"
+PNG_TRANSPARENT = BASE_DIR / "zora-transparent.png"
+
 
 # Zora Brand Colors
 ZORA_PURPLE = "#894CFF"
