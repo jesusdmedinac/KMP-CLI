@@ -106,12 +106,15 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 ### Feature: Zora KMP Kits Hub & Copilot (`docs/features/09_zora_kits_licensing_and_copilot.feature`)
 - [ ] **[RFC-003](docs/RFC-003-zora-kits-licensing-and-copilot.md)** Zora KMP Kits Hub, Licensing Engine, and Copilot Integration
   - [ ] Scenario: Discover and inspect available Zora KMP Starter Kits in the CLI
-  - [ ] Scenario: Scaffold a free open-source project using Zora Community Kit
+  - [ ] Scenario: Scaffold a free open-source project using Zora Community Kit without license
   - [ ] Scenario: Prompt developer with concierge acquisition screen when selecting paid kit without license
-  - [ ] Scenario: Activate a valid commercial license key
-  - [ ] Scenario: Scaffold a project using Zora Basic or Premium kit with valid license
-  - [ ] Scenario: Customize a Zora kit configuration for licensed developers
-  - [ ] Scenario: Execute KMP Copilot architectural guidance for licensed developers
+  - [ ] Scenario: Activate a commercial license key with hardware fingerprinting and two-seat limit
+  - [ ] Scenario: Reject license activation when seat limit is exceeded
+  - [ ] Scenario: Scaffold Zora Basic kit with valid license, remote delivery, and buyer watermarking
+  - [ ] Scenario: Scaffold Zora Premium Enterprise kit with valid license, remote delivery, and buyer watermarking
+  - [ ] Scenario: Inspect local license status and seat allocations
+  - [ ] Scenario: Deactivate license on current machine to release seat allocation
+
 
 ---
 
