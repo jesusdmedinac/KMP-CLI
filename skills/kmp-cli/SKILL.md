@@ -149,7 +149,24 @@ Emits a structured JSON payload adhering to `ProjectDependencies`:
 
 ## 4. Multiplatform Project Scaffolding (`kmp create`)
 
-Generate clean, compiling, production-grade Kotlin Multiplatform project hierarchies using the official JetBrains templates gallery or an interactive step-by-step console wizard.
+Generate clean, compiling, production-grade Kotlin Multiplatform project hierarchies using the official JetBrains templates gallery, composable custom scaffolding, or an interactive step-by-step console wizard.
+
+### Scaffolding Paradigms:
+
+1. **Gallery Mode / Immutable Templates (`--template <id>`)**:
+   - Deploys an exact, battle-tested starter from the templates gallery.
+   - Ideal when the user asks for a specific known template as-is (e.g. "Use the official Shared UI template" or "Scaffold the SDUI starter").
+   - **Important**: Multi-module gallery templates (like `native-ui` or `fullstack`) are pre-packaged reference architectures. Do not use gallery mode when the user requests a custom subset of platforms.
+
+2. **Customization Mode / Composable Scaffolding (Flags without `--template`)**:
+   - Tailors the project strictly to the declared target platforms and UI layers.
+   - Enforces the **Zero-Bloat Principle**: Never generate modules, targets, or package managers (such as Web Vite or Desktop JVM) that were not requested.
+   - Automatically prunes inactive target modules from `settings.gradle.kts` and build scripts.
+
+3. **Interactive Console Wizard (`--wizard`)**:
+   - Step-by-step interactive terminal walkthrough for human developers.
+   - Prompts individually for each target platform, build system, and UI framework.
+   - **Note for AI Agents**: The wizard is interactive via stdin (`readlnOrNull`). For automated AI execution, use **Customization Mode** with `--targets`, `--ios-ui`, and `--json`.
 
 ### Syntax:
 ```bash
@@ -157,8 +174,8 @@ kmp create [project-name] [flags]
 ```
 
 ### Flags:
-- `--wizard`: Launch interactive project creation wizard in terminal.
-- `--template <id>`: Scaffolding template (auto-resolved based on target options or defaults to `shared-ui`):
+- `--wizard`: Launch interactive project creation wizard in terminal (interactive humans only).
+- `--template <id>`: Immutable gallery template:
   - `shared-ui`: Official JetBrains Compose Multiplatform Shared UI template (Android, Desktop, iOS Compose, Web Wasm).
   - `native-ui`: Official JetBrains Native UI template (Android/Desktop Compose, iOS SwiftUI, Web React with TypeScript, Ktor Server).
   - `multiplatform-library`: Official JetBrains Multiplatform Library configured with Maven publishing.
@@ -169,32 +186,29 @@ kmp create [project-name] [flags]
 - `--name <name>`: Project name (or specify as positional argument).
 - `--package <package>`: Application package name (default: `com.example.<sanitizedName>`).
 - `--build-system <gradle|toolchain>`: Build system alias.
-- `--ios-ui <compose|swiftui>`: iOS UI framework (prompted in wizard when build system is Gradle).
-- `--web-ui <compose|react>`: Web UI framework (prompted in wizard when build system is Gradle).
-- `--targets <list>`: Comma-separated target platforms (e.g. `android,ios,desktop,wasm,server`).
+- `--ios-ui <compose|swiftui>`: iOS UI framework (Compose Multiplatform or native SwiftUI).
+- `--web-ui <compose|react>`: Web UI framework (Compose Multiplatform Wasm or React Vite).
+- `--targets <list>`: Comma-separated target platforms (`android`, `ios`, `desktop`, `wasm`, `server`). In Customization Mode, only declared targets are generated.
 - `--remote`: Fetch latest upstream template from GitHub with local fallback.
 - `--output, -o <dir>`: Destination directory (default: project name).
 - `--json`: Emit structured machine JSON output for AI agent automation.
 
 ### Examples:
 ```bash
-# Launch interactive console wizard
+# Human Developer: Interactive console wizard
 kmp create --wizard
 
-# Scaffold official JetBrains Shared UI application
-kmp create MyMobileApp --template shared-ui --targets android,ios,desktop,wasm
+# Gallery Template: Scaffold official JetBrains Shared UI application
+kmp create MyMobileApp --template shared-ui
 
-# Scaffold official JetBrains Native UI application (SwiftUI + React Vite + Ktor Server)
-kmp create MyNativeApp --build-system gradle --ios-ui swiftui --web-ui react --targets android,ios,web,server
+# Composable Customization: Mobile-only app with native SwiftUI on iOS (Zero-Bloat: no desktop, no web)
+kmp create MyMobileApp --targets android,ios --ios-ui swiftui --json
 
-# Scaffold declarative Kotlin Toolchain application
-kmp create MyToolchainApp --template toolchain-shared-ui
+# Composable Fullstack: Mobile + Ktor Server (Zero-Bloat: no desktop, no web)
+kmp create MyFullstackApp --targets android,ios,server --ios-ui swiftui --json
 
 # Scaffold a publishable multiplatform library
 kmp create MyKmpLib --template multiplatform-library --package com.myorg.kmplib
-
-# Scaffold a fullstack Ktor + Compose application
-kmp create MyFullstackApp --template fullstack
 
 # Headless execution for AI Agent automation
 kmp create MyAgentApp --template multiplatform-library --json
@@ -204,18 +218,56 @@ Agent JSON Output:
 ```json
 {
   "status": "SUCCESS",
-  "template": "multiplatform-library",
+  "template": "native-ui",
   "projectPath": "MyAgentApp",
   "createdFiles": [
     "MyAgentApp/.gitignore",
     "MyAgentApp/settings.gradle.kts",
     "MyAgentApp/build.gradle.kts",
-    "MyAgentApp/gradle/libs.versions.toml",
-    "MyAgentApp/src/commonMain/kotlin/com/example/myagentapp/Platform.kt"
+    "MyAgentApp/gradle/libs.versions.toml"
   ],
   "errorMessage": null
 }
 ```
+
+---
+
+## 4.1. Agent Scaffolding Protocol & Decision Tree
+
+When an AI coding agent is tasked with creating or scaffolding a Kotlin Multiplatform project, it must follow this protocol:
+
+```
+                      User requests new KMP project
+                                    │
+           ┌────────────────────────┴────────────────────────┐
+           ▼                                                 ▼
+Did user request an explicit                      Did user specify custom
+gallery template by name?                         requirements (targets, UI, server)?
+(e.g., "Usa el template native-ui")               (e.g., "Android y iOS con SwiftUI")
+           │                                                 │
+           ▼                                                 ▼
+   [Gallery Mode]                                   [Customization Mode]
+Pass `--template <id>`                            Omit `--template`.
+Deploy template as-is.                            Pass `--targets`, `--ios-ui`.
+Do not mutate or prune.                           Enforce Zero-Bloat: do NOT emit
+                                                  unrequested modules.
+                                                             │
+                                                             ▼
+                                                  Need extra capabilities?
+                                                  (Networking, DB, Navigation)
+                                                             │
+                                                             ▼
+                                                  Consult KMP Skills Hub!
+                                                  Apply recipes from:
+                                                  - `kmp-ktor-networking`
+                                                  - `kmp-sqldelight-database`
+                                                  - `kmp-compose-adaptive`
+```
+
+### Critical Rules for AI Agents:
+1. **Never Assume Surplus Platforms**: If the user asks for Android and iOS, never generate Desktop or Web modules.
+2. **Server Separation**: If the user requests fullstack with a Ktor server, include the `:server` module, but keep the mobile clients clean.
+3. **Skills are Construction Blueprints**: When the user asks for networking, local databases, or dependency injection, do not guess configurations—use the certified recipes documented in the respective `skills/<skill-id>/SKILL.md`.
 
 ---
 

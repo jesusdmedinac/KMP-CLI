@@ -81,6 +81,8 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
   - [x] Scenario: Scaffold specialized Server-Driven UI starter template for json-to-compose
   - [x] Scenario: Scaffold specialized Fullstack KMP template
   - [x] Scenario: Run interactive wizard configuring React Web and Ktor Server
+  - [x] Scenario: Run interactive wizard excluding web and desktop targets (Zero-Bloat)
+  - [x] Scenario: Scaffold project with headless custom targets enforcing zero-bloat
   - [x] Scenario: Scaffold project with customized target platforms
   - [x] Scenario: Scaffold project with JSON output for AI agent automation
   - [x] Scenario: Preserve and enforce execution permissions on wrappers

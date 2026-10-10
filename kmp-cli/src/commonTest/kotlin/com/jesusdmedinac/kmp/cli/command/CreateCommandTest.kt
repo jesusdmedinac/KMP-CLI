@@ -11,6 +11,7 @@ import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -298,6 +299,71 @@ class CreateCommandTest {
         assertEquals("native-ui", result.template)
         assertTrue(fakeEnv.fileExists("ConfiguredWizardApp/webApp/vite.config.ts"))
         assertTrue(fakeEnv.fileExists("ConfiguredWizardApp/server/build.gradle.kts"))
+    }
+
+    @Test
+    fun `create with wizard excluding web and desktop prunes unrequested modules`() {
+        val simulatedInputs = mutableListOf(
+            "MyCleanWizardApp",
+            "com.example.clean",
+            "1",
+            "2",
+            "3",
+            "n",
+            "y",
+        )
+        val command = CreateCommand(
+            engine = engine,
+            terminal = terminal,
+            readInput = { simulatedInputs.removeFirstOrNull() ?: "" },
+        )
+        CommandLineParser.parseAndRun(
+            command,
+            listOf("--wizard")
+        ) { it.run() }
+
+        val output = recorder.output()
+        assertTrue(output.contains("Kotlin Multiplatform Project Wizard"))
+        assertTrue(output.contains("Project created successfully"))
+
+        assertTrue(fakeEnv.fileExists("MyCleanWizardApp/settings.gradle.kts"))
+        assertTrue(fakeEnv.fileExists("MyCleanWizardApp/server/build.gradle.kts"))
+        assertTrue(fakeEnv.fileExists("MyCleanWizardApp/iosApp/ContentView.swift"))
+
+        assertFalse(fakeEnv.fileExists("MyCleanWizardApp/webApp/package.json"))
+        assertFalse(fakeEnv.fileExists("MyCleanWizardApp/package.json"))
+
+        val settingsGradle = fakeEnv.readFileText("MyCleanWizardApp/settings.gradle.kts") ?: ""
+        assertFalse(settingsGradle.contains("desktopApp"))
+        assertFalse(settingsGradle.contains("webApp"))
+        assertTrue(settingsGradle.contains("server"))
+    }
+
+    @Test
+    fun `create with targets android ios server prunes desktop and web modules in headless json mode`() {
+        val command = CreateCommand(engine = engine, terminal = terminal)
+        CommandLineParser.parseAndRun(
+            command,
+            listOf(
+                "--name", "HeadlessCustomApp",
+                "--targets", "android,ios,server",
+                "--ios-ui", "swiftui",
+                "--json"
+            )
+        ) { it.run() }
+
+        val output = recorder.output().trim()
+        val result = Json.decodeFromString<ScaffoldingResult>(output)
+
+        assertEquals("SUCCESS", result.status)
+        assertFalse(fakeEnv.fileExists("HeadlessCustomApp/webApp/package.json"))
+        assertTrue(fakeEnv.fileExists("HeadlessCustomApp/server/build.gradle.kts"))
+        assertTrue(fakeEnv.fileExists("HeadlessCustomApp/iosApp/ContentView.swift"))
+
+        val settingsGradle = fakeEnv.readFileText("HeadlessCustomApp/settings.gradle.kts") ?: ""
+        assertFalse(settingsGradle.contains("desktopApp"))
+        assertFalse(settingsGradle.contains("webApp"))
+        assertTrue(settingsGradle.contains("server"))
     }
 }
 

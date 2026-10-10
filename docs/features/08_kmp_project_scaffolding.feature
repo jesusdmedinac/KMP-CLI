@@ -57,6 +57,19 @@ Feature: KMP Project Scaffolding Engine & JetBrains Wizard
     And "shared/build.gradle.kts" should configure TypeScript definitions export
     And the project should contain a "server" module configuring Ktor
 
+  Scenario: Run interactive wizard excluding web and desktop targets
+    When the developer runs the wizard selecting build system "gradle", iOS UI "swiftui", Web UI "none", Desktop "n", Server "y"
+    Then the project should contain "settings.gradle.kts" including ":server" and not including ":desktopApp" or ":webApp"
+    And the project should contain "iosApp" with SwiftUI "ContentView.swift"
+    And the project should contain a "server" module configuring Ktor
+    And the project should not contain "desktopApp" or "webApp" directories
+
+  Scenario: Scaffold project with headless custom targets enforcing zero-bloat
+    When the developer executes "kmp create HeadlessApp --targets android,ios,server --ios-ui swiftui --json"
+    Then the output should be valid JSON with status "SUCCESS"
+    And the project should not contain "desktopApp" or "webApp" directories
+    And "settings.gradle.kts" should only declare requested modules
+
   # ─── Cross-Cutting Capabilities: Automation, Permissions, and Formats ───
 
   Scenario: Scaffold project with customized target platforms
