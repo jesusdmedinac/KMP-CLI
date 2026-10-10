@@ -78,6 +78,39 @@ class NativeSystemEnvironment : SystemEnvironment {
     }
 
     @OptIn(ExperimentalForeignApi::class)
+    override fun listFilesRecursively(dir: String): List<String> {
+        if (!fileExists(dir)) return emptyList()
+        val res = execute(listOf("find", dir, "-type", "f"))
+        if (res.exitCode != 0 || res.stdout.isBlank()) return emptyList()
+        val prefix = if (dir.endsWith("/")) dir else "$dir/"
+        return res.stdout.lines().mapNotNull { line ->
+            val trimmed = line.trim()
+            if (trimmed.startsWith(prefix)) {
+                trimmed.removePrefix(prefix)
+            } else if (trimmed.isNotBlank()) {
+                trimmed
+            } else null
+        }
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    override fun setExecutable(path: String): Boolean {
+        val res = execute(listOf("chmod", "+x", path))
+        return res.exitCode == 0
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    override fun copyFile(source: String, destination: String): Boolean {
+        val lastSlash = destination.lastIndexOf('/')
+        if (lastSlash > 0) {
+            val parent = destination.substring(0, lastSlash)
+            execute(listOf("mkdir", "-p", parent))
+        }
+        val res = execute(listOf("cp", source, destination))
+        return res.exitCode == 0
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
     override fun nowIso8601(): String = memScoped {
         val now = alloc<time_tVar>()
         now.value = time(null)

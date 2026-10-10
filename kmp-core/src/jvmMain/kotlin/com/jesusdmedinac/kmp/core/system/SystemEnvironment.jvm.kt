@@ -37,6 +37,31 @@ class JvmSystemEnvironment : SystemEnvironment {
 
     override fun nowIso8601(): String = java.time.Instant.now().toString()
 
+    override fun listFilesRecursively(dir: String): List<String> {
+        val dirFile = File(dir)
+        if (!dirFile.exists() || !dirFile.isDirectory) return emptyList()
+        return dirFile.walkTopDown()
+            .filter { it.isFile }
+            .map { it.relativeTo(dirFile).path.replace('\\', '/') }
+            .toList()
+    }
+
+    override fun setExecutable(path: String): Boolean = try {
+        File(path).setExecutable(true, false)
+    } catch (e: Exception) {
+        false
+    }
+
+    override fun copyFile(source: String, destination: String): Boolean = try {
+        val src = File(source)
+        val dest = File(destination)
+        dest.parentFile?.mkdirs()
+        src.copyTo(dest, overwrite = true)
+        true
+    } catch (e: Exception) {
+        false
+    }
+
     override val operatingSystem: OperatingSystem
         get() {
             val osName = System.getProperty("os.name")?.lowercase() ?: ""

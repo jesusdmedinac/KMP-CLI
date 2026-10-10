@@ -5,6 +5,7 @@ import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.versionOption
 import com.jesusdmedinac.kmp.cli.command.AnalyzeCommand
+import com.jesusdmedinac.kmp.cli.command.CreateCommand
 import com.jesusdmedinac.kmp.cli.command.DescribeCommand
 import com.jesusdmedinac.kmp.cli.command.DoctorCommand
 import com.jesusdmedinac.kmp.cli.command.SkillsCommand
@@ -20,6 +21,7 @@ class KmpCommand : CliktCommand(
             SkillsCommand(),
             DescribeCommand(),
             AnalyzeCommand(),
+            CreateCommand(),
         )
     }
 

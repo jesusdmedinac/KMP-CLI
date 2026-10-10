@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="zora_purple">#894CFF</color>
+    <color name="zora_violet">#A833FD</color>
+    <color name="zora_magenta">#CD00EB</color>
+    <color name="zora_fuchsia">#E200C0</color>
+    <color name="zora_pink">#EC168A</color>
+    <color name="zora_dark_background">#000000</color>
+    <color name="zora_light_background">#FFFFFF</color>
+</resources>

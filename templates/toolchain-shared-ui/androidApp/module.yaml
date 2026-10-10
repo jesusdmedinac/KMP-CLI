@@ -1,0 +1,14 @@
+product: android/app
+
+dependencies:
+  - ../shared
+  - $libs.androidx.activity.compose
+  - $compose.foundation
+  - $libs.ktor.client.okhttp
+
+settings:
+  compose:
+    enabled: true
+  android:
+    applicationId: com.jetbrains.kmpapp
+    namespace: com.jetbrains.kmpapp

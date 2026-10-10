@@ -1,0 +1,19 @@
+product:
+  type: app
+  platforms:
+    # {{#TARGET:android}}
+    - android
+    # {{/TARGET:android}}
+    # {{#TARGET:ios}}
+    - ios
+    # {{/TARGET:ios}}
+    # {{#TARGET:desktop}}
+    - desktop
+    # {{/TARGET:desktop}}
+    # {{#TARGET:wasm}}
+    - wasm
+    # {{/TARGET:wasm}}
+dependencies:
+  - org.jetbrains.compose.runtime:runtime:1.8.0
+  - org.jetbrains.compose.foundation:foundation:1.8.0
+  - org.jetbrains.compose.material3:material3:1.8.0

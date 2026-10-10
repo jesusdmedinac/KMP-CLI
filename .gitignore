@@ -6,6 +6,7 @@
 # Gradle
 .gradle/
 build/
+local.properties
 !gradle/wrapper/gradle-wrapper.jar
 
 # IDE & Editor
@@ -20,3 +21,9 @@ build/
 *.kexe
 *.klib
 *.dSYM/
+
+# Local Testing Playgrounds & Reference Archives
+/playground/
+/jetbrains/
+/wizard/
+/kmp
