@@ -19,7 +19,7 @@ class FullstackGenerator(
                 "PACKAGE_NAME" to options.packageName,
                 "PACKAGE_PATH" to packagePath,
             ),
-            activeTargets = options.targets.map { it.lowercase().trim() }.toSet(),
+            activeTargets = (options.targets.map { it.lowercase().trim() } + "server").toSet(),
         )
 
         return TemplateProcessor.process(rawFiles, context)

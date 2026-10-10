@@ -13,6 +13,7 @@ import com.jesusdmedinac.kmp.core.scaffold.model.ScaffoldingResult
 import com.jesusdmedinac.kmp.core.system.SystemEnvironment
 import com.jesusdmedinac.kmp.core.system.createDefaultSystemEnvironment
 
+import com.jesusdmedinac.kmp.core.scaffold.template.TemplateProcessor
 import com.jesusdmedinac.kmp.core.scaffold.template.TemplateSource
 
 class ScaffoldingEngine(
@@ -68,11 +69,16 @@ class ScaffoldingEngine(
             "templates/${options.template.id}",
             *options.template.aliases.map { "templates/$it" }.toTypedArray()
         )
+        val effectiveTargets = if (options.template == ProjectTemplate.FULLSTACK) {
+            (options.targets + "server").toSet()
+        } else {
+            options.targets.toSet()
+        }
         for (dir in templateDirs) {
             val allFiles = systemEnvironment.listFilesRecursively(dir)
             if (allFiles.isNotEmpty()) {
                 for (relPath in allFiles) {
-                    if (TemplateSource.isBinaryFile(relPath)) {
+                    if (TemplateSource.isBinaryFile(relPath) && TemplateProcessor.shouldIncludePath(relPath, effectiveTargets)) {
                         val src = "$dir/$relPath"
                         val dest = if (outDir == "." || outDir.isEmpty()) relPath else "$outDir/$relPath"
                         systemEnvironment.copyFile(src, dest)
