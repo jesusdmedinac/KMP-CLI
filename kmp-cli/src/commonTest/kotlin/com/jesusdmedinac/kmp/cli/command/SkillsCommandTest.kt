@@ -92,4 +92,45 @@ class SkillsCommandTest {
         assertTrue(output.contains("resolved from 'kmp-toolchain-migration'"))
         assertTrue(fakeEnv.fileExists(".agents/skills/kotlin-tooling-gradle-to-kotlin-toolchain/SKILL.md"))
     }
+
+    @Test
+    fun `skills add with remote repository coordinate installs remote skills`() {
+        val cloneDir = ".kmp-cache/remote/Kotlin-kotlin-agent-skills"
+        fakeEnv.whenCommand(
+            listOf("git", "clone", "--depth", "1", "https://github.com/Kotlin/kotlin-agent-skills.git", cloneDir),
+            com.jesusdmedinac.kmp.core.system.ProcessResult(0, "Cloned", "")
+        )
+        fakeEnv.writeFileText(
+            "$cloneDir/skills/kotlin-tooling-kotlin-toolchain/SKILL.md",
+            "---\nname: kotlin-tooling-kotlin-toolchain\ndescription: Toolchain\n---\n# Toolchain Content"
+        )
+
+        val command = SkillsCommand(repository, terminal)
+        CommandLineParser.parseAndRun(command, listOf("add", "Kotlin/kotlin-agent-skills")) { it.run() }
+
+        val output = recorder.output()
+        assertTrue(output.contains("Installed 1 skills from 'Kotlin/kotlin-agent-skills'"))
+        assertTrue(fakeEnv.fileExists(".agents/skills/kotlin-tooling-kotlin-toolchain/SKILL.md"))
+    }
+
+    @Test
+    fun `skills update refreshes registered remote skills`() {
+        val cloneDir = ".kmp-cache/remote/Kotlin-kotlin-agent-skills"
+        fakeEnv.whenCommand(
+            listOf("git", "clone", "--depth", "1", "https://github.com/Kotlin/kotlin-agent-skills.git", cloneDir),
+            com.jesusdmedinac.kmp.core.system.ProcessResult(0, "Cloned", "")
+        )
+        fakeEnv.writeFileText(
+            "$cloneDir/skills/kotlin-tooling-kotlin-toolchain/SKILL.md",
+            "---\nname: kotlin-tooling-kotlin-toolchain\ndescription: Toolchain\n---\n# Toolchain Content"
+        )
+
+        val command = SkillsCommand(repository, terminal)
+        CommandLineParser.parseAndRun(command, listOf("add", "Kotlin/kotlin-agent-skills")) { it.run() }
+
+        CommandLineParser.parseAndRun(command, listOf("update")) { it.run() }
+
+        val output = recorder.output()
+        assertTrue(output.contains("Updated 1 skills from 'Kotlin/kotlin-agent-skills'"))
+    }
 }

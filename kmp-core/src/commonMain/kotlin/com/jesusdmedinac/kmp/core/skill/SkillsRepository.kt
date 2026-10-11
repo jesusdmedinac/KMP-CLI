@@ -6,6 +6,8 @@ import com.jesusdmedinac.kmp.core.skill.model.SkillManifest
 import com.jesusdmedinac.kmp.core.skill.model.SkillMetadata
 import com.jesusdmedinac.kmp.core.system.SystemEnvironment
 import com.jesusdmedinac.kmp.core.system.createDefaultSystemEnvironment
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 sealed interface InstallResult {
@@ -84,6 +86,18 @@ class SkillsRepository(
         )
     }
 
+    fun resolveTargetDirectory(explicitDir: String? = null, isGlobal: Boolean = false): String {
+        if (explicitDir != null) return explicitDir
+        if (isGlobal) {
+            val home = systemEnvironment.getEnv("HOME") ?: "~"
+            return "$home/.kmp/skills"
+        }
+        if (systemEnvironment.fileExists(".claude/skills")) {
+            return ".claude/skills"
+        }
+        return ".agents/skills"
+    }
+
     fun installSkill(
         skillId: String,
         targetDirectory: String? = null,
@@ -93,14 +107,8 @@ class SkillsRepository(
         val entry = getSkill(skillId) ?: return InstallResult.NotFound(skillId)
         val manifest = loadSkillManifest(skillId) ?: return InstallResult.NotFound(skillId)
 
-        val destinationDir = when {
-            targetDirectory != null -> targetDirectory
-            isGlobal -> {
-                val home = systemEnvironment.getEnv("HOME") ?: "~"
-                "$home/.kmp/skills/${entry.id}"
-            }
-            else -> ".agents/skills/${entry.id}"
-        }
+        val baseDir = resolveTargetDirectory(targetDirectory, isGlobal)
+        val destinationDir = "$baseDir/${entry.id}"
 
         val targetFile = "$destinationDir/SKILL.md"
         val exists = systemEnvironment.fileExists(targetFile)
@@ -120,5 +128,152 @@ class SkillsRepository(
             installedPath = targetFile,
             isUpdate = exists,
         )
+    }
+
+    fun installRemoteSkill(
+        coordinate: String,
+        targetDirectory: String? = null,
+        isGlobal: Boolean = false,
+        force: Boolean = false,
+    ): RemoteInstallResult {
+        val spec = RemoteSkillSpec.parse(coordinate)
+            ?: return RemoteInstallResult.Error(coordinate, "Invalid repository coordinate: '$coordinate'")
+
+        val baseTargetDir = resolveTargetDirectory(targetDirectory, isGlobal)
+        val cloneTempDir = ".kmp-cache/remote/${spec.owner}-${spec.repo}"
+
+        val cloneCmd = listOf("git", "clone", "--depth", "1", "https://github.com/${spec.owner}/${spec.repo}.git", cloneTempDir)
+        val cloneResult = systemEnvironment.execute(cloneCmd)
+        if (cloneResult.exitCode != 0 && !systemEnvironment.fileExists("$cloneTempDir/SKILL.md") && !systemEnvironment.fileExists("$cloneTempDir/skills")) {
+            val errorMsg = cloneResult.stderr.ifBlank { cloneResult.stdout }.ifBlank { "git clone exited with code ${cloneResult.exitCode}" }
+            return RemoteInstallResult.Error(coordinate, errorMsg)
+        }
+
+        val candidateFiles = systemEnvironment.listFilesRecursively(cloneTempDir)
+            .filter { it.endsWith("SKILL.md") }
+
+        if (candidateFiles.isEmpty()) {
+            return RemoteInstallResult.Error(coordinate, "No SKILL.md files found in repository '${spec.owner}/${spec.repo}'")
+        }
+
+        val matchingFiles = if (spec.subSkill != null) {
+            candidateFiles.filter { relPath ->
+                relPath.contains("/${spec.subSkill}/") ||
+                        relPath.startsWith("${spec.subSkill}/") ||
+                        relPath == "${spec.subSkill}/SKILL.md" ||
+                        relPath == "skills/${spec.subSkill}/SKILL.md"
+            }
+        } else {
+            candidateFiles
+        }
+
+        if (matchingFiles.isEmpty()) {
+            return RemoteInstallResult.Error(coordinate, "Skill '${spec.subSkill}' not found in repository '${spec.owner}/${spec.repo}'")
+        }
+
+        val installedSkillNames = mutableListOf<String>()
+
+        for (relPath in matchingFiles) {
+            val fullSourcePath = "$cloneTempDir/$relPath"
+            val content = systemEnvironment.readFileText(fullSourcePath) ?: continue
+
+            val manifest = try {
+                SkillParser.parse(content)
+            } catch (e: Exception) {
+                null
+            }
+
+            val skillFolder = manifest?.metadata?.name
+                ?: relPath.split("/").dropLast(1).lastOrNull()?.ifBlank { null }
+                ?: spec.repo
+
+            val destFile = "$baseTargetDir/$skillFolder/SKILL.md"
+            systemEnvironment.writeFileText(destFile, content)
+            installedSkillNames.add(skillFolder)
+        }
+
+        recordRemoteInstalledSource(baseTargetDir, coordinate)
+
+        return RemoteInstallResult.Success(
+            source = coordinate,
+            installedSkills = installedSkillNames,
+            targetDirectory = baseTargetDir,
+        )
+    }
+
+    private fun recordRemoteInstalledSource(baseTargetDir: String, coordinate: String) {
+        val registryFile = "$baseTargetDir/.kmp-registry.json"
+        val existing = systemEnvironment.readFileText(registryFile)
+        val sources = mutableSetOf<String>()
+        if (!existing.isNullOrBlank()) {
+            try {
+                sources.addAll(json.decodeFromString<List<String>>(existing))
+            } catch (_: Exception) {}
+        }
+        sources.add(coordinate)
+        systemEnvironment.writeFileText(registryFile, json.encodeToString(sources.toList()))
+    }
+
+    fun updateRemoteSkills(
+        targetDirectory: String? = null,
+        isGlobal: Boolean = false,
+    ): List<RemoteInstallResult> {
+        val baseTargetDir = resolveTargetDirectory(targetDirectory, isGlobal)
+        val registryFile = "$baseTargetDir/.kmp-registry.json"
+        val content = systemEnvironment.readFileText(registryFile) ?: return emptyList()
+
+        val sources = try {
+            json.decodeFromString<List<String>>(content)
+        } catch (_: Exception) {
+            return emptyList()
+        }
+
+        return sources.map { coord ->
+            installRemoteSkill(coord, targetDirectory = baseTargetDir, isGlobal = isGlobal, force = true)
+        }
+    }
+}
+
+@Serializable
+sealed interface RemoteInstallResult {
+    @Serializable
+    data class Success(
+        val source: String,
+        val installedSkills: List<String>,
+        val targetDirectory: String,
+    ) : RemoteInstallResult
+
+    @Serializable
+    data class Error(val source: String, val message: String) : RemoteInstallResult
+}
+
+data class RemoteSkillSpec(
+    val owner: String,
+    val repo: String,
+    val subSkill: String? = null,
+) {
+    companion object {
+        fun parse(coordinate: String): RemoteSkillSpec? {
+            val clean = coordinate
+                .removePrefix("https://github.com/")
+                .removePrefix("http://github.com/")
+                .removeSuffix(".git")
+                .trim()
+
+            val colonParts = clean.split(":")
+            val repoPath = colonParts[0]
+            val subSkill = colonParts.getOrNull(1)?.removePrefix("skills/")?.trim()
+
+            val slashParts = repoPath.split("/")
+            if (slashParts.size != 2 || slashParts[0].isBlank() || slashParts[1].isBlank()) {
+                return null
+            }
+
+            return RemoteSkillSpec(
+                owner = slashParts[0],
+                repo = slashParts[1],
+                subSkill = subSkill?.ifBlank { null }
+            )
+        }
     }
 }

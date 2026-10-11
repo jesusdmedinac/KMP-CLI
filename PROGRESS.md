@@ -173,10 +173,10 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 - [x] Scenario: Validate skills manifest against agentskills.io schema
 
 ### Phase 2: Universal Remote Skills Hub (`docs/features/12_universal_remote_skills_hub.feature`)
-- [ ] Scenario: Install skill pack directly from GitHub repository
-- [ ] Scenario: Install scoped skill from remote repository
-- [ ] Scenario: Auto-detect target agent skills directory
-- [ ] Scenario: Update remote installed skills via kmp skills update
+- [x] Scenario: Install skill pack directly from GitHub repository
+- [x] Scenario: Install scoped skill from remote repository
+- [x] Scenario: Auto-detect target agent skills directory
+- [x] Scenario: Update remote installed skills via kmp skills update
 
 ### Phase 3: Progressive Router & Senior Staff Stance (`docs/features/13_progressive_router_and_senior_stance.feature`)
 - [ ] Scenario: Route incoming developer prompt through lightweight entry tree

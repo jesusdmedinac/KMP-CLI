@@ -104,4 +104,75 @@ class SkillsRepositoryTest {
         val result = repository.installSkill("imaginary-missing-skill")
         assertTrue(result is InstallResult.NotFound)
     }
+
+    @Test
+    fun `resolveTargetDirectory auto-detects claude or agents skills folder`() {
+        assertEquals(".agents/skills", repository.resolveTargetDirectory())
+
+        fakeEnv.addFile(".claude/skills")
+        assertEquals(".claude/skills", repository.resolveTargetDirectory())
+    }
+
+    @Test
+    fun `installRemoteSkill clones repository and installs all discovered skills`() {
+        val cloneDir = ".kmp-cache/remote/Kotlin-kotlin-agent-skills"
+        fakeEnv.whenCommand(
+            listOf("git", "clone", "--depth", "1", "https://github.com/Kotlin/kotlin-agent-skills.git", cloneDir),
+            com.jesusdmedinac.kmp.core.system.ProcessResult(0, "Cloned", "")
+        )
+        fakeEnv.writeFileText(
+            "$cloneDir/skills/kotlin-tooling-kotlin-toolchain/SKILL.md",
+            "---\nname: kotlin-tooling-kotlin-toolchain\ndescription: Toolchain\n---\n# Toolchain Content"
+        )
+
+        val result = repository.installRemoteSkill("Kotlin/kotlin-agent-skills")
+
+        assertTrue(result is RemoteInstallResult.Success)
+        assertEquals("Kotlin/kotlin-agent-skills", result.source)
+        assertEquals(listOf("kotlin-tooling-kotlin-toolchain"), result.installedSkills)
+        assertTrue(fakeEnv.fileExists(".agents/skills/kotlin-tooling-kotlin-toolchain/SKILL.md"))
+    }
+
+    @Test
+    fun `installRemoteSkill with scoped subskill installs only specified skill`() {
+        val cloneDir = ".kmp-cache/remote/Meet-Miyani-compose-skill"
+        fakeEnv.whenCommand(
+            listOf("git", "clone", "--depth", "1", "https://github.com/Meet-Miyani/compose-skill.git", cloneDir),
+            com.jesusdmedinac.kmp.core.system.ProcessResult(0, "Cloned", "")
+        )
+        fakeEnv.writeFileText(
+            "$cloneDir/skills/compose-architecture/SKILL.md",
+            "---\nname: compose-architecture\ndescription: Arch\n---\n# Arch Content"
+        )
+        fakeEnv.writeFileText(
+            "$cloneDir/skills/compose-ui/SKILL.md",
+            "---\nname: compose-ui\ndescription: UI\n---\n# UI Content"
+        )
+
+        val result = repository.installRemoteSkill("Meet-Miyani/compose-skill:compose-architecture")
+
+        assertTrue(result is RemoteInstallResult.Success)
+        assertEquals(listOf("compose-architecture"), result.installedSkills)
+        assertTrue(fakeEnv.fileExists(".agents/skills/compose-architecture/SKILL.md"))
+        kotlin.test.assertFalse(fakeEnv.fileExists(".agents/skills/compose-ui/SKILL.md"))
+    }
+
+    @Test
+    fun `updateRemoteSkills updates previously installed remote repositories`() {
+        val cloneDir = ".kmp-cache/remote/Kotlin-kotlin-agent-skills"
+        fakeEnv.whenCommand(
+            listOf("git", "clone", "--depth", "1", "https://github.com/Kotlin/kotlin-agent-skills.git", cloneDir),
+            com.jesusdmedinac.kmp.core.system.ProcessResult(0, "Cloned", "")
+        )
+        fakeEnv.writeFileText(
+            "$cloneDir/skills/kotlin-tooling-kotlin-toolchain/SKILL.md",
+            "---\nname: kotlin-tooling-kotlin-toolchain\ndescription: Toolchain\n---\n# Toolchain Content"
+        )
+
+        repository.installRemoteSkill("Kotlin/kotlin-agent-skills")
+
+        val updateResults = repository.updateRemoteSkills()
+        assertEquals(1, updateResults.size)
+        assertTrue(updateResults.first() is RemoteInstallResult.Success)
+    }
 }

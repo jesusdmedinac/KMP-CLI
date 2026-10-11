@@ -28,6 +28,7 @@ class SkillsCommand(
             SkillsFindCommand(repository, terminal),
             SkillsDescribeCommand(repository, terminal),
             SkillsAddCommand(repository, terminal),
+            SkillsUpdateCommand(repository, terminal),
         )
     }
 
@@ -160,7 +161,35 @@ class SkillsAddCommand(
         help = "Output installation result as JSON",
     ).flag(default = false)
 
+    private val json = Json { prettyPrint = true }
+
     override fun run() {
+        if (skillId.contains("/")) {
+            val remoteResult = repository.installRemoteSkill(
+                coordinate = skillId,
+                isGlobal = isGlobal,
+                force = force,
+            )
+
+            when (remoteResult) {
+                is com.jesusdmedinac.kmp.core.skill.RemoteInstallResult.Success -> {
+                    if (jsonOutput) {
+                        terminal.println(json.encodeToString(remoteResult))
+                        return
+                    }
+                    terminal.println(green("✓ Installed ${remoteResult.installedSkills.size} skills from '${remoteResult.source}' into ${remoteResult.targetDirectory}"))
+                    for (name in remoteResult.installedSkills) {
+                        terminal.println("  • $name")
+                    }
+                }
+                is com.jesusdmedinac.kmp.core.skill.RemoteInstallResult.Error -> {
+                    terminal.println(red("✗ Error installing remote skill from '${remoteResult.source}': ${remoteResult.message}"))
+                    throw ProgramResult(1)
+                }
+            }
+            return
+        }
+
         val result = repository.installSkill(
             skillId = skillId,
             isGlobal = isGlobal,
@@ -183,6 +212,39 @@ class SkillsAddCommand(
             is InstallResult.Error -> {
                 terminal.println(red("✗ Error installing skill: ${result.message}"))
                 throw ProgramResult(1)
+            }
+        }
+    }
+}
+
+class SkillsUpdateCommand(
+    private val repository: SkillsRepository = SkillsRepository(),
+    private val terminal: Terminal = Terminal(),
+) : CliktCommand(
+    name = "update",
+) {
+    val isGlobal by option(
+        "--global",
+        "-g",
+        help = "Update global skills (~/.kmp/skills/)",
+    ).flag(default = false)
+
+    override fun run() {
+        val results = repository.updateRemoteSkills(isGlobal = isGlobal)
+        if (results.isEmpty()) {
+            terminal.println(yellow("No remote skills registered for update."))
+            return
+        }
+
+        terminal.println(bold("Updating remote skills:\n"))
+        for (result in results) {
+            when (result) {
+                is com.jesusdmedinac.kmp.core.skill.RemoteInstallResult.Success -> {
+                    terminal.println(green("✓ Updated ${result.installedSkills.size} skills from '${result.source}'"))
+                }
+                is com.jesusdmedinac.kmp.core.skill.RemoteInstallResult.Error -> {
+                    terminal.println(red("✗ Failed to update '${result.source}': ${result.message}"))
+                }
             }
         }
     }
