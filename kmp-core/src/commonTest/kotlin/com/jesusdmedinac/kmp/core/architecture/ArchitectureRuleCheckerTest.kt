@@ -1,0 +1,151 @@
+package com.jesusdmedinac.kmp.core.architecture
+
+import com.jesusdmedinac.kmp.core.architecture.model.ViolationSeverity
+import com.jesusdmedinac.kmp.core.test.FakeSystemEnvironment
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+
+class ArchitectureRuleCheckerTest {
+    private val fakeEnv = FakeSystemEnvironment()
+    private val checker = ArchitectureRuleChecker(fakeEnv)
+
+    @Test
+    fun `detects direct data layer and DAO imports in Compose UI presentation components`() {
+        val uiCode = """
+            package com.example.feature.vehicle.presentation
+            
+            import androidx.compose.runtime.Composable
+            import com.example.feature.vehicle.data.VehicleDao
+            import com.example.feature.vehicle.data.VehicleRepositoryImpl
+            
+            @Composable
+            fun VehicleScreen() {
+                // UI Code
+            }
+        """.trimIndent()
+
+        val violations = checker.checkFile("src/commonMain/kotlin/presentation/VehicleScreen.kt", uiCode)
+
+        assertEquals(2, violations.size)
+        assertTrue(violations.all { it.ruleId == "ARCH001_UI_DATA_LEAK" })
+        assertTrue(violations.all { it.severity == ViolationSeverity.ERROR })
+        assertEquals(4, violations[0].lineNumber)
+        assertTrue(violations[0].message.contains("VehicleDao"))
+        assertTrue(violations[0].remediation.contains("Inject the domain interface"))
+        assertEquals(5, violations[1].lineNumber)
+        assertTrue(violations[1].message.contains("VehicleRepositoryImpl"))
+    }
+
+    @Test
+    fun `allows domain and use case imports in presentation components`() {
+        val uiCode = """
+            package com.example.feature.vehicle.presentation
+            
+            import androidx.compose.runtime.Composable
+            import com.example.feature.vehicle.domain.GetVehicleUseCase
+            
+            @Composable
+            fun VehicleScreen() {
+            }
+        """.trimIndent()
+
+        val violations = checker.checkFile("src/commonMain/kotlin/presentation/VehicleScreen.kt", uiCode)
+        assertTrue(violations.isEmpty())
+    }
+
+    @Test
+    fun `detects ViewModel exposing MutableStateFlow directly to public API`() {
+        val viewModelCode = """
+            package com.example.feature.vehicle.presentation
+            
+            import kotlinx.coroutines.flow.MutableStateFlow
+            
+            class VehicleViewModel {
+                val state = MutableStateFlow(VehicleState())
+                val anotherState: MutableStateFlow<String> = MutableStateFlow("")
+            }
+        """.trimIndent()
+
+        val violations = checker.checkFile("src/commonMain/kotlin/presentation/VehicleViewModel.kt", viewModelCode)
+
+        assertEquals(2, violations.size)
+        assertTrue(violations.all { it.ruleId == "ARCH002_MUTABLE_STATE_EXPOSURE" })
+        assertTrue(violations.all { it.severity == ViolationSeverity.ERROR })
+        assertEquals(6, violations[0].lineNumber)
+        assertEquals(7, violations[1].lineNumber)
+        assertTrue(violations[0].remediation.contains("asStateFlow()"))
+    }
+
+    @Test
+    fun `allows ViewModel with private MutableStateFlow and public StateFlow`() {
+        val viewModelCode = """
+            package com.example.feature.vehicle.presentation
+            
+            import kotlinx.coroutines.flow.MutableStateFlow
+            import kotlinx.coroutines.flow.StateFlow
+            import kotlinx.coroutines.flow.asStateFlow
+            
+            class VehicleViewModel {
+                private val _state = MutableStateFlow(VehicleState())
+                val state: StateFlow<VehicleState> = _state.asStateFlow()
+            }
+        """.trimIndent()
+
+        val violations = checker.checkFile("src/commonMain/kotlin/presentation/VehicleViewModel.kt", viewModelCode)
+        assertTrue(violations.isEmpty())
+    }
+
+    @Test
+    fun `audits module yaml dependencies against code imports`() {
+        val moduleYaml = """
+            product: app
+            dependencies:
+              - ${'$'}compose.foundation
+              - androidx.room:room-runtime:2.7.0
+              - com.unused.library:artifact:1.0.0
+        """.trimIndent()
+
+        val sourceFiles = mapOf(
+            "src/commonMain/kotlin/App.kt" to """
+                import androidx.room.RoomDatabase
+                import com.unregistered.external.Client
+            """.trimIndent()
+        )
+
+        val violations = checker.auditModuleYaml("module.yaml", moduleYaml, sourceFiles)
+
+        val unused = violations.filter { it.ruleId == "ARCH003_UNUSED_DEPENDENCY" }
+        assertEquals(1, unused.size)
+        assertTrue(unused.first().message.contains("com.unused.library:artifact:1.0.0"))
+        assertEquals(ViolationSeverity.WARNING, unused.first().severity)
+
+        val undeclared = violations.filter { it.ruleId == "ARCH003_UNDECLARED_DEPENDENCY" }
+        assertEquals(1, undeclared.size)
+        assertTrue(undeclared.first().message.contains("com.unregistered.external.Client"))
+        assertEquals(ViolationSeverity.ERROR, undeclared.first().severity)
+    }
+
+    @Test
+    fun `checkProject aggregates all files and checks pass when clean`() {
+        fakeEnv.writeFileText(
+            "src/commonMain/kotlin/presentation/VehicleViewModel.kt",
+            """
+                package com.example.presentation
+                import kotlinx.coroutines.flow.MutableStateFlow
+                import kotlinx.coroutines.flow.StateFlow
+                import kotlinx.coroutines.flow.asStateFlow
+                class VehicleViewModel {
+                    private val _state = MutableStateFlow("")
+                    val state: StateFlow<String> = _state.asStateFlow()
+                }
+            """.trimIndent()
+        )
+
+        val report = checker.checkProject("src")
+        assertTrue(report.passed)
+        assertTrue(report.violations.isEmpty())
+        assertTrue(report.scannedFilesCount >= 1)
+    }
+}

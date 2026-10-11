@@ -119,4 +119,58 @@ class AnalyzeCommandTest {
         assertEquals(1, exception.statusCode)
         assertTrue(recorder.output().contains("No version catalog found"))
     }
+
+    @Test
+    fun `analyze with rules flag detects discrepancies and exits with code 1`() {
+        val recorder = TerminalRecorder(width = 80)
+        val terminal = Terminal(terminalInterface = recorder)
+        fakeEnv.writeFileText(
+            "module.yaml",
+            """
+                product: app
+                dependencies:
+                  - com.unused.lib:artifact:1.0.0
+            """.trimIndent()
+        )
+        fakeEnv.writeFileText(
+            "src/App.kt",
+            """
+                import com.unregistered.external.Client
+            """.trimIndent()
+        )
+        val archChecker = com.jesusdmedinac.kmp.core.architecture.ArchitectureRuleChecker(fakeEnv)
+        val command = AnalyzeCommand(versionCatalogParser = parser, architectureChecker = archChecker, terminal = terminal)
+
+        val exception = assertFailsWith<ProgramResult> {
+            CommandLineParser.parseAndRun(command, listOf("--rules")) { it.run() }
+        }
+
+        assertEquals(1, exception.statusCode)
+        val output = recorder.output()
+        assertTrue(output.contains("ARCH003_UNUSED_DEPENDENCY"))
+        assertTrue(output.contains("ARCH003_UNDECLARED_DEPENDENCY"))
+    }
+
+    @Test
+    fun `analyze rules subcommand outputs json report`() {
+        val recorder = TerminalRecorder(width = 80)
+        val terminal = Terminal(terminalInterface = recorder)
+        fakeEnv.writeFileText(
+            "module.yaml",
+            """
+                product: app
+                dependencies:
+                  - com.unused.lib:artifact:1.0.0
+            """.trimIndent()
+        )
+        val archChecker = com.jesusdmedinac.kmp.core.architecture.ArchitectureRuleChecker(fakeEnv)
+        val command = AnalyzeCommand(versionCatalogParser = parser, architectureChecker = archChecker, terminal = terminal)
+
+        CommandLineParser.parseAndRun(command, listOf("rules", "--json")) { it.run() }
+
+        val output = recorder.output().trim()
+        val report = Json.decodeFromString<com.jesusdmedinac.kmp.core.architecture.model.ArchitectureReport>(output)
+        assertEquals(1, report.violations.size)
+        assertEquals("ARCH003_UNUSED_DEPENDENCY", report.violations.first().ruleId)
+    }
 }

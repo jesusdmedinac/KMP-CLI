@@ -164,6 +164,34 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 
 ---
 
+## Milestone: Agent Skills Ecosystem & Architectural Guard Engine (RFC-004)
+
+### Phase 1: AgentSkills Standardization & Room KMP (`docs/features/11_agentskills_standardization_and_room_kmp.feature`)
+- [x] Scenario: Align local skill names and tags with JetBrains agentskills.io standard
+- [x] Scenario: Curate official kotlin-data-room-kmp skill for SQLite multiplatform
+- [x] Scenario: Maintain backward compatibility with legacy skill IDs in catalog search
+- [x] Scenario: Validate skills manifest against agentskills.io schema
+
+### Phase 2: Universal Remote Skills Hub (`docs/features/12_universal_remote_skills_hub.feature`)
+- [x] Scenario: Install skill pack directly from GitHub repository
+- [x] Scenario: Install scoped skill from remote repository
+- [x] Scenario: Auto-detect target agent skills directory
+- [x] Scenario: Update remote installed skills via kmp skills update
+
+### Phase 3: Progressive Router & Senior Staff Stance (`docs/features/13_progressive_router_and_senior_stance.feature`)
+- [x] Scenario: Route incoming developer prompt through lightweight entry tree
+- [x] Scenario: Enforce Senior Staff validate-before-recall contract
+- [x] Scenario: Enforce plain engineering explanations without rule IDs or apologies
+- [x] Scenario: Guard against internal developer jargon in end-user facing UI
+
+### Phase 4: Architectural Guard Linting in CLI Doctor (`docs/features/14_architectural_guard_linting.feature`)
+- [x] Scenario: Detect direct data layer imports in Compose UI presentation components
+- [x] Scenario: Enforce MVI state flow contract on ViewModels exposing mutable state
+- [x] Scenario: Audit module.yaml dependencies against actual code imports
+- [x] Scenario: Run architectural lint via kmp doctor --architecture in CI pipelines
+
+---
+
 ## Phase 5: Ecosystem Expansions & IDE Tooling (Future Outcomes / Nice-to-Haves)
 - [ ] **[#18](https://github.com/jesusdmedinac/KMP-CLI/issues/18)** Native Gradle Plugin (`kmp-gradle-plugin`) for CI/CD Quality Gates (`kmpDoctor`, `kmpAnalyze`, `kmpSkillsVerify`)
 - [ ] **[#19](https://github.com/jesusdmedinac/KMP-CLI/issues/19)** IDE Plugin for IntelliJ IDEA, Android Studio & Fleet (Diagnostics toolwindow & in-IDE skills browser)

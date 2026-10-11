@@ -1,5 +1,5 @@
 ---
-name: kmp-sqldelight-database
+name: kotlin-data-sqldelight-database
 description: Multiplatform SQL persistence, reactive Flow queries, and target-specific driver setup using SQLDelight 2+.
 version: 1.0.0
 author: jesusdmedinac

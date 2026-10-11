@@ -1,5 +1,5 @@
 ---
-name: kmp-compose-adaptive
+name: kotlin-ui-compose-adaptive
 description: Responsive and adaptive UI patterns for Compose Multiplatform across Android, iOS, Desktop, and Web.
 version: 1.0.0
 author: jesusdmedinac
