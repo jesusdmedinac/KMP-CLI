@@ -167,10 +167,10 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 ## Milestone: Agent Skills Ecosystem & Architectural Guard Engine (RFC-004)
 
 ### Phase 1: AgentSkills Standardization & Room KMP (`docs/features/11_agentskills_standardization_and_room_kmp.feature`)
-- [ ] Scenario: Align local skill names and tags with JetBrains agentskills.io standard
-- [ ] Scenario: Curate official kotlin-data-room-kmp skill for SQLite multiplatform
-- [ ] Scenario: Maintain backward compatibility with legacy skill IDs in catalog search
-- [ ] Scenario: Validate skills manifest against agentskills.io schema
+- [x] Scenario: Align local skill names and tags with JetBrains agentskills.io standard
+- [x] Scenario: Curate official kotlin-data-room-kmp skill for SQLite multiplatform
+- [x] Scenario: Maintain backward compatibility with legacy skill IDs in catalog search
+- [x] Scenario: Validate skills manifest against agentskills.io schema
 
 ### Phase 2: Universal Remote Skills Hub (`docs/features/12_universal_remote_skills_hub.feature`)
 - [ ] Scenario: Install skill pack directly from GitHub repository

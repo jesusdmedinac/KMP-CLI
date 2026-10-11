@@ -42,14 +42,18 @@ class SkillsRepository(
         return getCatalog().skills.filter { skill ->
             skill.id.lowercase().contains(q) ||
                     skill.name.lowercase().contains(q) ||
+                    skill.aliases.any { it.lowercase().contains(q) } ||
                     skill.description.lowercase().contains(q) ||
                     skill.tags.any { it.lowercase().contains(q) } ||
-                    skill.targets.any { it.lowercase().contains(q) }
+                    skill.targets.any { it.lowercase().contains(q) } ||
+                    (skill.category?.lowercase()?.contains(q) == true)
         }
     }
 
     fun getSkill(id: String): SkillCatalogEntry? {
-        return getCatalog().skills.find { it.id.equals(id, ignoreCase = true) }
+        return getCatalog().skills.find {
+            it.id.equals(id, ignoreCase = true) || it.aliases.any { alias -> alias.equals(id, ignoreCase = true) }
+        }
     }
 
     fun loadSkillManifest(id: String): SkillManifest? {
@@ -102,17 +106,17 @@ class SkillsRepository(
         val exists = systemEnvironment.fileExists(targetFile)
 
         if (exists && !force) {
-            return InstallResult.AlreadyExists(skillId, targetFile)
+            return InstallResult.AlreadyExists(entry.id, targetFile)
         }
 
         val serialized = SkillParser.serialize(manifest)
         val written = systemEnvironment.writeFileText(targetFile, serialized)
         if (!written) {
-            return InstallResult.Error(skillId, "Failed to write skill file to $targetFile")
+            return InstallResult.Error(entry.id, "Failed to write skill file to $targetFile")
         }
 
         return InstallResult.Success(
-            skillId = skillId,
+            skillId = entry.id,
             installedPath = targetFile,
             isUpdate = exists,
         )

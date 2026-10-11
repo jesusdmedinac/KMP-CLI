@@ -1,5 +1,5 @@
 ---
-name: kmp-toolchain-migration
+name: kotlin-tooling-gradle-to-kotlin-toolchain
 description: Step-by-step procedural guide to migrate from legacy build.gradle.kts to declarative Kotlin Toolchain 0.12+ module.yaml.
 version: 1.0.0
 author: jesusdmedinac

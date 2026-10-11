@@ -1,13 +1,41 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-09-11T20:00:00Z",
+  "generatedAt": "2026-10-11T00:00:00Z",
   "skills": [
     {
-      "id": "kmp-compose-adaptive",
-      "name": "kmp-compose-adaptive",
+      "id": "kotlin-tooling-gradle-to-kotlin-toolchain",
+      "name": "kotlin-tooling-gradle-to-kotlin-toolchain",
+      "description": "Step-by-step procedural guide to migrate from legacy build.gradle.kts to declarative Kotlin Toolchain 0.12+ module.yaml.",
+      "version": "1.0.0",
+      "author": "jesusdmedinac",
+      "category": "tooling",
+      "aliases": [
+        "kmp-toolchain-migration"
+      ],
+      "tags": [
+        "toolchain",
+        "amper",
+        "gradle-migration",
+        "module-yaml"
+      ],
+      "targets": [
+        "android",
+        "ios",
+        "desktop",
+        "wasm"
+      ],
+      "path": "skills/kotlin-tooling-gradle-to-kotlin-toolchain/SKILL.md"
+    },
+    {
+      "id": "kotlin-ui-compose-adaptive",
+      "name": "kotlin-ui-compose-adaptive",
       "description": "Responsive and adaptive UI patterns for Compose Multiplatform across Android, iOS, Desktop, and Web.",
       "version": "1.0.0",
       "author": "jesusdmedinac",
+      "category": "ui",
+      "aliases": [
+        "kmp-compose-adaptive"
+      ],
       "tags": [
         "compose",
         "ui",
@@ -21,19 +49,24 @@
         "desktop",
         "wasm"
       ],
-      "path": "skills/kmp-compose-adaptive/SKILL.md"
+      "path": "skills/kotlin-ui-compose-adaptive/SKILL.md"
     },
     {
-      "id": "kmp-ktor-networking",
-      "name": "kmp-ktor-networking",
-      "description": "Multiplatform HTTP client architecture with Ktor, native engine selection, and JSON serialization.",
+      "id": "kotlin-ui-sdui-compose",
+      "name": "kotlin-ui-sdui-compose",
+      "description": "Server-Driven UI architecture with json-to-compose, remote document fetching, dual-tier caching, and Stale-While-Revalidate in Kotlin Multiplatform.",
       "version": "1.0.0",
       "author": "jesusdmedinac",
+      "category": "ui",
+      "aliases": [
+        "kmp-sdui-compose"
+      ],
       "tags": [
+        "sdui",
+        "compose",
+        "json-to-compose",
         "ktor",
-        "networking",
-        "http",
-        "serialization"
+        "dynamic-ui"
       ],
       "targets": [
         "android",
@@ -41,14 +74,43 @@
         "desktop",
         "wasm"
       ],
-      "path": "skills/kmp-ktor-networking/SKILL.md"
+      "path": "skills/kotlin-ui-sdui-compose/SKILL.md"
     },
     {
-      "id": "kmp-sqldelight-database",
-      "name": "kmp-sqldelight-database",
+      "id": "kotlin-data-room-kmp",
+      "name": "kotlin-data-room-kmp",
+      "description": "Multiplatform SQLite persistence with Room KMP (androidx.room 2.7.0+), Coroutines Flows, and schema migrations across Android and iOS.",
+      "version": "1.0.0",
+      "author": "jesusdmedinac",
+      "category": "data",
+      "aliases": [
+        "kmp-room-database"
+      ],
+      "tags": [
+        "room",
+        "database",
+        "sqlite",
+        "persistence",
+        "kmp"
+      ],
+      "targets": [
+        "android",
+        "ios",
+        "desktop",
+        "wasm"
+      ],
+      "path": "skills/kotlin-data-room-kmp/SKILL.md"
+    },
+    {
+      "id": "kotlin-data-sqldelight-database",
+      "name": "kotlin-data-sqldelight-database",
       "description": "Multiplatform SQL persistence, reactive Flow queries, and target-specific driver setup using SQLDelight 2+.",
       "version": "1.0.0",
       "author": "jesusdmedinac",
+      "category": "data",
+      "aliases": [
+        "kmp-sqldelight-database"
+      ],
       "tags": [
         "database",
         "sql",
@@ -62,19 +124,23 @@
         "desktop",
         "wasm"
       ],
-      "path": "skills/kmp-sqldelight-database/SKILL.md"
+      "path": "skills/kotlin-data-sqldelight-database/SKILL.md"
     },
     {
-      "id": "kmp-toolchain-migration",
-      "name": "kmp-toolchain-migration",
-      "description": "Step-by-step procedural guide to migrate from legacy build.gradle.kts to declarative Kotlin Toolchain 0.12+ module.yaml.",
+      "id": "kotlin-networking-ktor",
+      "name": "kotlin-networking-ktor",
+      "description": "Multiplatform HTTP client architecture with Ktor, native engine selection, and JSON serialization.",
       "version": "1.0.0",
       "author": "jesusdmedinac",
+      "category": "networking",
+      "aliases": [
+        "kmp-ktor-networking"
+      ],
       "tags": [
-        "toolchain",
-        "amper",
-        "gradle-migration",
-        "module-yaml"
+        "ktor",
+        "networking",
+        "http",
+        "serialization"
       ],
       "targets": [
         "android",
@@ -82,14 +148,18 @@
         "desktop",
         "wasm"
       ],
-      "path": "skills/kmp-toolchain-migration/SKILL.md"
+      "path": "skills/kotlin-networking-ktor/SKILL.md"
     },
     {
-      "id": "kmp-coroutines-concurrency",
-      "name": "kmp-coroutines-concurrency",
+      "id": "kotlin-concurrency-coroutines",
+      "name": "kotlin-concurrency-coroutines",
       "description": "Best practices for structured concurrency, background dispatchers, and StateFlow management across KMP targets.",
       "version": "1.0.0",
       "author": "jesusdmedinac",
+      "category": "concurrency",
+      "aliases": [
+        "kmp-coroutines-concurrency"
+      ],
       "tags": [
         "coroutines",
         "concurrency",
@@ -102,7 +172,7 @@
         "desktop",
         "wasm"
       ],
-      "path": "skills/kmp-coroutines-concurrency/SKILL.md"
+      "path": "skills/kotlin-concurrency-coroutines/SKILL.md"
     },
     {
       "id": "kmp-cli",
@@ -110,6 +180,10 @@
       "description": "Procedural guide for AI agents and human developers on using the KMP CLI for environment diagnostics, skills management, and project analysis.",
       "version": "1.0.0",
       "author": "jesusdmedinac",
+      "category": "tooling",
+      "aliases": [
+        "kotlin-tooling-kmp-cli"
+      ],
       "tags": [
         "cli",
         "tooling",

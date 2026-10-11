@@ -1,5 +1,5 @@
 ---
-name: kmp-coroutines-concurrency
+name: kotlin-concurrency-coroutines
 description: Best practices for structured concurrency, background dispatchers, and StateFlow management across KMP targets.
 version: 1.0.0
 author: jesusdmedinac

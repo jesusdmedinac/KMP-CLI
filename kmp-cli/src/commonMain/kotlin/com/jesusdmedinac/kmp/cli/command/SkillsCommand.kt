@@ -170,7 +170,8 @@ class SkillsAddCommand(
         when (result) {
             is InstallResult.Success -> {
                 val action = if (result.isUpdate) "Updated" else "Installed"
-                terminal.println(green("✓ $action skill '${result.skillId}' into ${result.installedPath}"))
+                val aliasNote = if (!skillId.equals(result.skillId, ignoreCase = true)) " (resolved from '$skillId')" else ""
+                terminal.println(green("✓ $action skill '${result.skillId}'$aliasNote into ${result.installedPath}"))
             }
             is InstallResult.AlreadyExists -> {
                 terminal.println(yellow("! Skill '${result.skillId}' is already installed at ${result.path}. Use --force to overwrite."))
@@ -188,11 +189,13 @@ class SkillsAddCommand(
 }
 
 private fun renderSkillSummary(skill: SkillCatalogEntry, terminal: Terminal) {
-    terminal.println("  ${bold(skill.name)} ${dim("(v${skill.version})")}")
+    val categoryBadge = skill.category?.let { yellow("[$it] ") } ?: ""
+    terminal.println("  $categoryBadge${bold(skill.name)} ${dim("(v${skill.version})")}")
     terminal.println("  ${skill.description}")
     val tags = if (skill.tags.isNotEmpty()) cyan("Tags: ") + skill.tags.joinToString(", ") else ""
     val targets = if (skill.targets.isNotEmpty()) magenta("Targets: ") + skill.targets.joinToString(", ") else ""
-    val meta = listOf(tags, targets).filter { it.isNotBlank() }.joinToString("  |  ")
+    val aliases = if (skill.aliases.isNotEmpty()) dim("Aliases: ") + skill.aliases.joinToString(", ") else ""
+    val meta = listOf(tags, targets, aliases).filter { it.isNotBlank() }.joinToString("  |  ")
     if (meta.isNotBlank()) {
         terminal.println("  $meta")
     }

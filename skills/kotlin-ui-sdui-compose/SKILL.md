@@ -1,5 +1,5 @@
 ---
-name: kmp-sdui-compose
+name: kotlin-ui-sdui-compose
 description: Server-Driven UI architecture with json-to-compose, remote document fetching, dual-tier caching, and Stale-While-Revalidate in Kotlin Multiplatform.
 version: 1.0.0
 author: jesusdmedinac
