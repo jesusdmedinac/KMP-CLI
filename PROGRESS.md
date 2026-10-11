@@ -185,10 +185,10 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 - [x] Scenario: Guard against internal developer jargon in end-user facing UI
 
 ### Phase 4: Architectural Guard Linting in CLI Doctor (`docs/features/14_architectural_guard_linting.feature`)
-- [ ] Scenario: Detect direct data layer imports in Compose UI presentation components
-- [ ] Scenario: Enforce MVI state flow contract on ViewModels exposing mutable state
-- [ ] Scenario: Audit module.yaml dependencies against actual code imports
-- [ ] Scenario: Run architectural lint via kmp doctor --architecture in CI pipelines
+- [x] Scenario: Detect direct data layer imports in Compose UI presentation components
+- [x] Scenario: Enforce MVI state flow contract on ViewModels exposing mutable state
+- [x] Scenario: Audit module.yaml dependencies against actual code imports
+- [x] Scenario: Run architectural lint via kmp doctor --architecture in CI pipelines
 
 ---
 
