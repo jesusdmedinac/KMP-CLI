@@ -179,10 +179,10 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 - [x] Scenario: Update remote installed skills via kmp skills update
 
 ### Phase 3: Progressive Router & Senior Staff Stance (`docs/features/13_progressive_router_and_senior_stance.feature`)
-- [ ] Scenario: Route incoming developer prompt through lightweight entry tree
-- [ ] Scenario: Enforce Senior Staff validate-before-recall contract
-- [ ] Scenario: Enforce plain engineering explanations without rule IDs or apologies
-- [ ] Scenario: Guard against internal developer jargon in end-user facing UI
+- [x] Scenario: Route incoming developer prompt through lightweight entry tree
+- [x] Scenario: Enforce Senior Staff validate-before-recall contract
+- [x] Scenario: Enforce plain engineering explanations without rule IDs or apologies
+- [x] Scenario: Guard against internal developer jargon in end-user facing UI
 
 ### Phase 4: Architectural Guard Linting in CLI Doctor (`docs/features/14_architectural_guard_linting.feature`)
 - [ ] Scenario: Detect direct data layer imports in Compose UI presentation components

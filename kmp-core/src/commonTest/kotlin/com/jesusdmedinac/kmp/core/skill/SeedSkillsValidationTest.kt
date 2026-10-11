@@ -13,6 +13,7 @@ class SeedSkillsValidationTest {
         assertTrue(catalog.skills.size >= 5)
 
         val expectedCanonicalIds = listOf(
+            "kotlin-kmp-router",
             "kotlin-tooling-gradle-to-kotlin-toolchain",
             "kotlin-ui-compose-adaptive",
             "kotlin-ui-sdui-compose",
@@ -34,6 +35,7 @@ class SeedSkillsValidationTest {
 
         // Verify backward compatibility aliases
         val expectedAliases = listOf(
+            "kmp-router",
             "kmp-compose-adaptive",
             "kmp-ktor-networking",
             "kmp-sqldelight-database",
@@ -44,6 +46,15 @@ class SeedSkillsValidationTest {
             val skill = catalog.skills.find { it.aliases.contains(legacyAlias) }
             assertTrue(skill != null, "Missing alias for legacy skill: $legacyAlias")
         }
+    }
+
+    @Test
+    fun `kotlin-kmp-router skill encapsulates progressive routing and senior staff directives`() {
+        val skill = DefaultSkillsCatalog.catalog.skills.find { it.id == "kotlin-kmp-router" }
+        assertTrue(skill != null)
+        assertEquals("core", skill.category)
+        assertTrue(skill.tags.contains("router"))
+        assertTrue(skill.aliases.contains("kmp-router"))
     }
 
     @Test

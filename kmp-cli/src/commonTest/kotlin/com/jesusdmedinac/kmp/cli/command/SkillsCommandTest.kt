@@ -73,6 +73,21 @@ class SkillsCommandTest {
     }
 
     @Test
+    fun `skills describe displays progressive router directives`() {
+        fakeEnv.writeFileText(
+            "skills/kotlin-kmp-router/SKILL.md",
+            "---\nname: kotlin-kmp-router\ndescription: Lightweight progressive routing tree\n---\n# Progressive Router\n\nValidate-Before-Recall"
+        )
+        val command = SkillsCommand(repository, terminal)
+        CommandLineParser.parseAndRun(command, listOf("describe", "kotlin-kmp-router")) { it.run() }
+
+        val output = recorder.output()
+        assertTrue(output.contains("kotlin-kmp-router"))
+        assertTrue(output.contains("Lightweight progressive routing tree"))
+        assertTrue(output.contains("Validate-Before-Recall"))
+    }
+
+    @Test
     fun `skills add installs skill into agents directory`() {
         val command = SkillsCommand(repository, terminal)
         CommandLineParser.parseAndRun(command, listOf("add", "kotlin-data-sqldelight-database")) { it.run() }

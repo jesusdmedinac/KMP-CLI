@@ -47,6 +47,18 @@ class SkillsRepositoryTest {
     }
 
     @Test
+    fun `getSkill resolves kotlin-kmp-router and legacy alias kmp-router`() {
+        val canonical = repository.getSkill("kotlin-kmp-router")
+        assertNotNull(canonical)
+        assertEquals("kotlin-kmp-router", canonical.id)
+        assertEquals("core", canonical.category)
+
+        val byAlias = repository.getSkill("kmp-router")
+        assertNotNull(byAlias)
+        assertEquals("kotlin-kmp-router", byAlias.id)
+    }
+
+    @Test
     fun `installSkill installs to local agents directory by default using canonical name`() {
         val result = repository.installSkill("kotlin-ui-compose-adaptive")
 

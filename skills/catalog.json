@@ -3,6 +3,31 @@
   "generatedAt": "2026-10-11T00:00:00Z",
   "skills": [
     {
+      "id": "kotlin-kmp-router",
+      "name": "kotlin-kmp-router",
+      "description": "Lightweight progressive routing tree and Senior Staff operating directives for Kotlin Multiplatform development.",
+      "version": "1.0.0",
+      "author": "jesusdmedinac",
+      "category": "core",
+      "aliases": [
+        "kmp-router"
+      ],
+      "tags": [
+        "router",
+        "entry",
+        "architecture",
+        "senior-stance",
+        "progressive-loading"
+      ],
+      "targets": [
+        "android",
+        "ios",
+        "desktop",
+        "wasm"
+      ],
+      "path": "skills/kotlin-kmp-router/SKILL.md"
+    },
+    {
       "id": "kotlin-tooling-gradle-to-kotlin-toolchain",
       "name": "kotlin-tooling-gradle-to-kotlin-toolchain",
       "description": "Step-by-step procedural guide to migrate from legacy build.gradle.kts to declarative Kotlin Toolchain 0.12+ module.yaml.",
