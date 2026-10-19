@@ -107,4 +107,60 @@ class DoctorCommandTest {
 
         assertEquals(1, exception.statusCode)
     }
+
+    @Test
+    fun `doctor with architecture flag flags violations and exits with code 1`() {
+        val recorder = TerminalRecorder(width = 80)
+        val terminal = Terminal(terminalInterface = recorder)
+        val fakeEnv = com.jesusdmedinac.kmp.core.test.FakeSystemEnvironment()
+        fakeEnv.writeFileText(
+            "src/presentation/VehicleScreen.kt",
+            """
+                package com.example.presentation
+                import com.example.data.VehicleDao
+            """.trimIndent()
+        )
+        val archChecker = com.jesusdmedinac.kmp.core.architecture.ArchitectureRuleChecker(fakeEnv)
+        val command = DoctorCommand(architectureChecker = archChecker, terminal = terminal)
+
+        val exception = assertFailsWith<ProgramResult> {
+            CommandLineParser.parseAndRun(command, listOf("--architecture")) { it.run() }
+        }
+
+        assertEquals(1, exception.statusCode)
+        val output = recorder.output()
+        assertTrue(output.contains("ARCH001_UI_DATA_LEAK"))
+        assertTrue(output.contains("VehicleDao"))
+        assertTrue(output.contains("Inject the domain interface"))
+    }
+
+    @Test
+    fun `doctor with architecture and json outputs parseable ArchitectureReport`() {
+        val recorder = TerminalRecorder(width = 80)
+        val terminal = Terminal(terminalInterface = recorder)
+        val fakeEnv = com.jesusdmedinac.kmp.core.test.FakeSystemEnvironment()
+        fakeEnv.writeFileText(
+            "src/presentation/VehicleViewModel.kt",
+            """
+                package com.example.presentation
+                import kotlinx.coroutines.flow.MutableStateFlow
+                class VehicleViewModel {
+                    val state = MutableStateFlow("")
+                }
+            """.trimIndent()
+        )
+        val archChecker = com.jesusdmedinac.kmp.core.architecture.ArchitectureRuleChecker(fakeEnv)
+        val command = DoctorCommand(architectureChecker = archChecker, terminal = terminal)
+
+        val exception = assertFailsWith<ProgramResult> {
+            CommandLineParser.parseAndRun(command, listOf("--architecture", "--json")) { it.run() }
+        }
+
+        assertEquals(1, exception.statusCode)
+        val output = recorder.output().trim()
+        val report = Json.decodeFromString<com.jesusdmedinac.kmp.core.architecture.model.ArchitectureReport>(output)
+        assertEquals(false, report.passed)
+        assertEquals(1, report.violations.size)
+        assertEquals("ARCH002_MUTABLE_STATE_EXPOSURE", report.violations.first().ruleId)
+    }
 }

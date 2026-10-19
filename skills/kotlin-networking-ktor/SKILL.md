@@ -1,5 +1,5 @@
 ---
-name: kmp-ktor-networking
+name: kotlin-networking-ktor
 description: Multiplatform HTTP client architecture with Ktor, native engine selection, and JSON serialization.
 version: 1.0.0
 author: jesusdmedinac

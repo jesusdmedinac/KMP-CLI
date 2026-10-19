@@ -11,6 +11,8 @@ data class SkillCatalogEntry(
     val author: String? = null,
     val tags: List<String> = emptyList(),
     val targets: List<String> = emptyList(),
+    val category: String? = null,
+    val aliases: List<String> = emptyList(),
     val path: String? = null,
     val url: String? = null,
 )

@@ -53,6 +53,9 @@ class FakeSystemEnvironment(
     val executableFiles = mutableSetOf<String>()
 
     override fun listFilesRecursively(dir: String): List<String> {
+        if (dir == "." || dir.isEmpty()) {
+            return files.toList()
+        }
         val prefix = if (dir.endsWith("/")) dir else "$dir/"
         return files
             .filter { it.startsWith(prefix) }

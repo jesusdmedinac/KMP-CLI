@@ -28,6 +28,7 @@ class SkillsCommand(
             SkillsFindCommand(repository, terminal),
             SkillsDescribeCommand(repository, terminal),
             SkillsAddCommand(repository, terminal),
+            SkillsUpdateCommand(repository, terminal),
         )
     }
 
@@ -160,7 +161,35 @@ class SkillsAddCommand(
         help = "Output installation result as JSON",
     ).flag(default = false)
 
+    private val json = Json { prettyPrint = true }
+
     override fun run() {
+        if (skillId.contains("/")) {
+            val remoteResult = repository.installRemoteSkill(
+                coordinate = skillId,
+                isGlobal = isGlobal,
+                force = force,
+            )
+
+            when (remoteResult) {
+                is com.jesusdmedinac.kmp.core.skill.RemoteInstallResult.Success -> {
+                    if (jsonOutput) {
+                        terminal.println(json.encodeToString(remoteResult))
+                        return
+                    }
+                    terminal.println(green("✓ Installed ${remoteResult.installedSkills.size} skills from '${remoteResult.source}' into ${remoteResult.targetDirectory}"))
+                    for (name in remoteResult.installedSkills) {
+                        terminal.println("  • $name")
+                    }
+                }
+                is com.jesusdmedinac.kmp.core.skill.RemoteInstallResult.Error -> {
+                    terminal.println(red("✗ Error installing remote skill from '${remoteResult.source}': ${remoteResult.message}"))
+                    throw ProgramResult(1)
+                }
+            }
+            return
+        }
+
         val result = repository.installSkill(
             skillId = skillId,
             isGlobal = isGlobal,
@@ -170,7 +199,8 @@ class SkillsAddCommand(
         when (result) {
             is InstallResult.Success -> {
                 val action = if (result.isUpdate) "Updated" else "Installed"
-                terminal.println(green("✓ $action skill '${result.skillId}' into ${result.installedPath}"))
+                val aliasNote = if (!skillId.equals(result.skillId, ignoreCase = true)) " (resolved from '$skillId')" else ""
+                terminal.println(green("✓ $action skill '${result.skillId}'$aliasNote into ${result.installedPath}"))
             }
             is InstallResult.AlreadyExists -> {
                 terminal.println(yellow("! Skill '${result.skillId}' is already installed at ${result.path}. Use --force to overwrite."))
@@ -187,12 +217,47 @@ class SkillsAddCommand(
     }
 }
 
+class SkillsUpdateCommand(
+    private val repository: SkillsRepository = SkillsRepository(),
+    private val terminal: Terminal = Terminal(),
+) : CliktCommand(
+    name = "update",
+) {
+    val isGlobal by option(
+        "--global",
+        "-g",
+        help = "Update global skills (~/.kmp/skills/)",
+    ).flag(default = false)
+
+    override fun run() {
+        val results = repository.updateRemoteSkills(isGlobal = isGlobal)
+        if (results.isEmpty()) {
+            terminal.println(yellow("No remote skills registered for update."))
+            return
+        }
+
+        terminal.println(bold("Updating remote skills:\n"))
+        for (result in results) {
+            when (result) {
+                is com.jesusdmedinac.kmp.core.skill.RemoteInstallResult.Success -> {
+                    terminal.println(green("✓ Updated ${result.installedSkills.size} skills from '${result.source}'"))
+                }
+                is com.jesusdmedinac.kmp.core.skill.RemoteInstallResult.Error -> {
+                    terminal.println(red("✗ Failed to update '${result.source}': ${result.message}"))
+                }
+            }
+        }
+    }
+}
+
 private fun renderSkillSummary(skill: SkillCatalogEntry, terminal: Terminal) {
-    terminal.println("  ${bold(skill.name)} ${dim("(v${skill.version})")}")
+    val categoryBadge = skill.category?.let { yellow("[$it] ") } ?: ""
+    terminal.println("  $categoryBadge${bold(skill.name)} ${dim("(v${skill.version})")}")
     terminal.println("  ${skill.description}")
     val tags = if (skill.tags.isNotEmpty()) cyan("Tags: ") + skill.tags.joinToString(", ") else ""
     val targets = if (skill.targets.isNotEmpty()) magenta("Targets: ") + skill.targets.joinToString(", ") else ""
-    val meta = listOf(tags, targets).filter { it.isNotBlank() }.joinToString("  |  ")
+    val aliases = if (skill.aliases.isNotEmpty()) dim("Aliases: ") + skill.aliases.joinToString(", ") else ""
+    val meta = listOf(tags, targets, aliases).filter { it.isNotBlank() }.joinToString("  |  ")
     if (meta.isNotBlank()) {
         terminal.println("  $meta")
     }
