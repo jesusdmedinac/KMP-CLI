@@ -128,6 +128,73 @@ class ArchitectureRuleCheckerTest {
     }
 
     @Test
+    fun `ignores commented out code and imports`() {
+        val uiCode = """
+            package com.example.feature.vehicle.presentation
+            
+            import androidx.compose.runtime.Composable
+            // import com.example.feature.vehicle.data.VehicleDao
+            /*
+             * import com.example.feature.vehicle.data.VehicleRepositoryImpl
+             */
+            
+            class VehicleViewModel {
+                // val state = MutableStateFlow("")
+                /* val state2 = MutableStateFlow("") */
+            }
+            
+            @Composable
+            fun VehicleScreen() {
+            }
+        """.trimIndent()
+
+        val violations = checker.checkFile("src/commonMain/kotlin/presentation/VehicleScreen.kt", uiCode)
+        assertTrue(violations.isEmpty())
+    }
+
+    @Test
+    fun `allows domain metadata packages containing data segment`() {
+        val uiCode = """
+            package com.example.feature.vehicle.presentation
+            
+            import androidx.compose.runtime.Composable
+            import com.example.feature.vehicle.domain.data.VehicleMetadata
+            
+            @Composable
+            fun VehicleScreen() {
+            }
+        """.trimIndent()
+
+        val violations = checker.checkFile("src/commonMain/kotlin/presentation/VehicleScreen.kt", uiCode)
+        assertTrue(violations.isEmpty())
+    }
+
+    @Test
+    fun `dynamically resolves internal project packages for non-author namespace`() {
+        val moduleYaml = """
+            product: app
+            dependencies:
+              - androidx.room:room-runtime:2.7.0
+        """.trimIndent()
+
+        val sourceFiles = mapOf(
+            "src/commonMain/kotlin/App.kt" to """
+                package com.enterprise.acme.feature.home
+                import com.enterprise.acme.core.network.ApiClient
+                import androidx.room.RoomDatabase
+            """.trimIndent(),
+            "src/commonMain/kotlin/ApiClient.kt" to """
+                package com.enterprise.acme.core.network
+                class ApiClient
+            """.trimIndent()
+        )
+
+        val violations = checker.auditModuleYaml("module.yaml", moduleYaml, sourceFiles)
+        val undeclared = violations.filter { it.ruleId == "ARCH003_UNDECLARED_DEPENDENCY" }
+        assertTrue(undeclared.isEmpty(), "Internal imports across enterprise namespaces must not be flagged as undeclared dependencies")
+    }
+
+    @Test
     fun `checkProject aggregates all files and checks pass when clean`() {
         fakeEnv.writeFileText(
             "src/commonMain/kotlin/presentation/VehicleViewModel.kt",

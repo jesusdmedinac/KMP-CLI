@@ -19,19 +19,49 @@ class ArchitectureRuleChecker(
                 content.contains("@Composable")
 
         val isViewModel = filePath.endsWith("ViewModel.kt") ||
-                content.contains("class ") && content.contains("ViewModel")
+                lines.any { line ->
+                    val t = line.trim()
+                    (t.startsWith("class ") || t.startsWith("abstract class ") || t.startsWith("open class ")) &&
+                            (t.contains("ViewModel") || t.contains(": ViewModel"))
+                }
 
+        var inTopLevelDeclaration = false
+        var inBlockComment = false
         for ((index, line) in lines.withIndex()) {
             val lineNumber = index + 1
             val trimmed = line.trim()
 
+            if (trimmed.startsWith("/*")) {
+                inBlockComment = !trimmed.contains("*/")
+                continue
+            }
+            if (inBlockComment) {
+                if (trimmed.contains("*/")) {
+                    inBlockComment = false
+                }
+                continue
+            }
+            if (trimmed.startsWith("//") || trimmed.startsWith("*")) {
+                continue
+            }
+
+            if (!inTopLevelDeclaration) {
+                if (trimmed.startsWith("class ") || trimmed.startsWith("interface ") ||
+                    trimmed.startsWith("fun ") || trimmed.startsWith("val ") ||
+                    trimmed.startsWith("var ") || trimmed.startsWith("object ") ||
+                    trimmed.startsWith("enum ") || trimmed.startsWith("sealed ") ||
+                    trimmed.startsWith("data class ") || trimmed.startsWith("abstract ")
+                ) {
+                    inTopLevelDeclaration = true
+                }
+            }
+
             // Rule ARCH-001: UI-to-Data leak
-            if (isPresentationLayer && trimmed.startsWith("import ")) {
+            if (isPresentationLayer && !inTopLevelDeclaration && trimmed.startsWith("import ")) {
                 val importPath = trimmed.removePrefix("import ").trim().removeSuffix(";")
-                val isDataLeak = importPath.contains(".data.") ||
-                        importPath.contains(".dao.") ||
-                        importPath.endsWith("Dao") ||
-                        importPath.endsWith("RepositoryImpl") ||
+                val segments = importPath.split(".")
+                val isDataPackage = segments.contains("data") && !segments.contains("domain")
+                val isDataLeak = (isDataPackage && (importPath.endsWith("Dao") || importPath.endsWith("RepositoryImpl") || segments.contains("dao") || segments.contains("database"))) ||
                         importPath.startsWith("androidx.room.") ||
                         importPath.startsWith("app.cash.sqldelight.")
 
@@ -51,9 +81,12 @@ class ArchitectureRuleChecker(
 
             // Rule ARCH-002: MutableStateFlow public exposure
             if (isViewModel && trimmed.contains("MutableStateFlow")) {
-                val hasValOrVar = trimmed.contains("val ") || trimmed.contains("var ")
-                val isPrivate = trimmed.startsWith("private ") || trimmed.contains(" private ")
-                if (hasValOrVar && !isPrivate) {
+                val isProperty = trimmed.startsWith("val ") || trimmed.startsWith("var ") ||
+                        trimmed.startsWith("public val ") || trimmed.startsWith("public var ") ||
+                        trimmed.startsWith("internal val ") || trimmed.startsWith("internal var ") ||
+                        trimmed.startsWith("override val ") || trimmed.startsWith("override var ")
+                val isPrivate = trimmed.startsWith("private ")
+                if (isProperty && !isPrivate) {
                     violations.add(
                         RuleViolation(
                             ruleId = "ARCH002_MUTABLE_STATE_EXPOSURE",
@@ -100,10 +133,37 @@ class ArchitectureRuleChecker(
 
         val allImports = mutableListOf<Pair<String, Pair<Int, String>>>()
         for ((filePath, content) in sourceFilesContent) {
-            content.lines().forEachIndexed { lineIdx, line ->
+            var inTopLevel = false
+            var inBlockComment = false
+            for ((lineIdx, line) in content.lines().withIndex()) {
                 val trimmed = line.trim()
-                if (trimmed.startsWith("import ")) {
+                if (trimmed.startsWith("/*")) {
+                    inBlockComment = !trimmed.contains("*/")
+                    continue
+                }
+                if (inBlockComment) {
+                    if (trimmed.contains("*/")) inBlockComment = false
+                    continue
+                }
+                if (trimmed.startsWith("//") || trimmed.startsWith("*")) continue
+
+                if (!inTopLevel) {
+                    if (trimmed.startsWith("class ") || trimmed.startsWith("interface ") ||
+                        trimmed.startsWith("fun ") || trimmed.startsWith("val ") ||
+                        trimmed.startsWith("var ") || trimmed.startsWith("object ") ||
+                        trimmed.startsWith("enum ") || trimmed.startsWith("sealed ") ||
+                        trimmed.startsWith("data class ") || trimmed.startsWith("abstract ")
+                    ) {
+                        inTopLevel = true
+                    }
+                }
+
+                if (!inTopLevel && trimmed.startsWith("import ")) {
                     val imp = trimmed.removePrefix("import ").trim().removeSuffix(";")
+                    // Skip invalid Kotlin imports (e.g. JS/TS template strings)
+                    if (imp.contains("{") || imp.contains("}") || imp.contains("from ") || imp.contains("'") || imp.contains("\"")) {
+                        continue
+                    }
                     allImports.add(Pair(filePath, Pair(lineIdx + 1, imp)))
                 }
             }
@@ -141,18 +201,37 @@ class ArchitectureRuleChecker(
             }
         }
 
+        val declaredPackages = sourceFilesContent.values.mapNotNull { content ->
+            content.lineSequence()
+                .map { it.trim() }
+                .firstOrNull { it.startsWith("package ") }
+                ?.removePrefix("package ")
+                ?.trim()
+                ?.removeSuffix(";")
+        }.filter { it.isNotBlank() }.toSet()
+
+        val rootPackagePrefix = findCommonPackagePrefix(declaredPackages)
+
         // Check for undeclared external library imports
         for ((filePath, importPair) in allImports) {
             val (lineNum, imp) = importPair
             if (imp.startsWith("kotlin.") ||
                 imp.startsWith("kotlinx.coroutines.") ||
                 imp.startsWith("kotlinx.serialization.") ||
+                imp.startsWith("kotlinx.cinterop.") ||
+                imp.startsWith("platform.") ||
                 imp.startsWith("androidx.compose.") ||
                 imp.startsWith("java.") ||
                 imp.startsWith("android.") ||
-                imp.startsWith("com.jesusdmedinac.") ||
                 imp.startsWith("org.jetbrains.compose.")
             ) {
+                continue
+            }
+
+            val isInternal = declaredPackages.any { pkg -> imp == pkg || imp.startsWith("$pkg.") } ||
+                    (rootPackagePrefix != null && (imp == rootPackagePrefix || imp.startsWith("$rootPackagePrefix.")))
+
+            if (isInternal) {
                 continue
             }
 
@@ -188,9 +267,28 @@ class ArchitectureRuleChecker(
 
         for (relPath in allFiles) {
             val fullPath = if (relPath.startsWith("/")) relPath else "$normalizedPrefix$relPath"
-            if (relPath.endsWith(".kt")) {
+            val isIgnored = relPath.startsWith("build/") || relPath.contains("/build/") ||
+                    relPath.startsWith(".gradle/") || relPath.contains("/.gradle/") ||
+                    relPath.startsWith(".git/") || relPath.contains("/.git/") ||
+                    relPath.startsWith(".idea/") || relPath.contains("/.idea/") ||
+                    relPath.startsWith("templates/") || relPath.contains("/templates/") ||
+                    relPath.startsWith("playground/") || relPath.contains("/playground/") ||
+                    relPath.startsWith("wizard/") || relPath.contains("/wizard/") ||
+                    relPath.startsWith("jetbrains/") || relPath.contains("/jetbrains/") ||
+                    relPath.startsWith(".kmp-cache/") || relPath.contains("/.kmp-cache/")
+
+            if (isIgnored) continue
+
+            val isTestFile = relPath.contains("/test/") ||
+                    relPath.contains("/commonTest/") ||
+                    relPath.contains("/jvmTest/") ||
+                    relPath.contains("/macosArm64Test/") ||
+                    relPath.contains("/linuxX64Test/") ||
+                    relPath.endsWith("Test.kt")
+
+            if (relPath.endsWith(".kt") && !isTestFile) {
                 systemEnvironment.readFileText(fullPath)?.let { ktFiles[fullPath] = it }
-            } else if (relPath.endsWith("module.yaml") || fullPath.endsWith("module.yaml")) {
+            } else if (relPath == "module.yaml" || relPath == "app/module.yaml" || fullPath == "${normalizedPrefix}module.yaml") {
                 moduleYamlPath = fullPath
                 moduleYamlContent = systemEnvironment.readFileText(fullPath)
             }
@@ -221,5 +319,21 @@ class ArchitectureRuleChecker(
             violations = violations,
             scannedFilesCount = ktFiles.size + (if (moduleYamlPath != null) 1 else 0),
         )
+    }
+
+    private fun findCommonPackagePrefix(packages: Set<String>): String? {
+        if (packages.isEmpty()) return null
+        val splitPackages = packages.map { it.split(".") }
+        val minLength = splitPackages.minOf { it.size }
+        val common = mutableListOf<String>()
+        for (i in 0 until minLength) {
+            val segment = splitPackages.first()[i]
+            if (splitPackages.all { it[i] == segment }) {
+                common.add(segment)
+            } else {
+                break
+            }
+        }
+        return if (common.isNotEmpty()) common.joinToString(".") else null
     }
 }
