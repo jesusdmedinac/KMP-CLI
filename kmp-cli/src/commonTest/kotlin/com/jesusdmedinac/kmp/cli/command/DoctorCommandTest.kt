@@ -163,4 +163,44 @@ class DoctorCommandTest {
         assertEquals(1, report.violations.size)
         assertEquals("ARCH002_MUTABLE_STATE_EXPOSURE", report.violations.first().ruleId)
     }
+
+    @Test
+    fun `doctor with architecture guides developer when living foundation runners are missing`() {
+        val recorder = TerminalRecorder(width = 80)
+        val terminal = Terminal(terminalInterface = recorder)
+        val fakeEnv = com.jesusdmedinac.kmp.core.test.FakeSystemEnvironment()
+        fakeEnv.writeFileText(
+            "settings.gradle.kts",
+            """
+            rootProject.name = "MyAwesomeApp"
+            include(":composeApp")
+            """.trimIndent()
+        )
+        fakeEnv.writeFileText(
+            "build.gradle.kts",
+            """
+            plugins {
+                id("org.jetbrains.compose")
+            }
+            kotlin {
+                androidTarget()
+                jvm("desktop")
+            }
+            """.trimIndent()
+        )
+        fakeEnv.writeFileText(
+            "composeApp/src/androidMain/kotlin/MainActivity.kt",
+            "class MainActivity : ComponentActivity()"
+        )
+
+        val archChecker = com.jesusdmedinac.kmp.core.architecture.ArchitectureRuleChecker(fakeEnv)
+        val command = DoctorCommand(architectureChecker = archChecker, terminal = terminal)
+
+        CommandLineParser.parseAndRun(command, listOf("--architecture")) { it.run() }
+
+        val output = recorder.output()
+        assertTrue(output.contains("ARCH004_MISSING_PLATFORM_RUNNER"))
+        assertTrue(output.contains("Stage 1: Living Foundation"))
+        assertTrue(output.contains("fun main() = application"))
+    }
 }
