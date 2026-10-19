@@ -194,7 +194,7 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 - [x] Scenario: Describe active platform runners in project inspection
 - [x] Scenario: Guide developer to establish living foundation when runners are missing
 - [x] Scenario: Scaffold projects with complete platform runners per target
-- [ ] Scenario: Query klibs.io for verified library compatibility in Stage 3
+- [x] Scenario: Query klibs.io for verified library compatibility in Stage 3
 
 ---
 

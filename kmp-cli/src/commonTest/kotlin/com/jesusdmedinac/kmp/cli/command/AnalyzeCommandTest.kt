@@ -173,4 +173,84 @@ class AnalyzeCommandTest {
         assertEquals(1, report.violations.size)
         assertEquals("ARCH003_UNUSED_DEPENDENCY", report.violations.first().ruleId)
     }
+
+    @Test
+    fun `analyze libraries with json outputs verified library recommendations with project targets and flags pre-stable status`() {
+        val recorder = TerminalRecorder(width = 80)
+        val terminal = Terminal(terminalInterface = recorder)
+        fakeEnv.writeFileText(
+            "settings.gradle.kts",
+            """
+            rootProject.name = "MyAwesomeApp"
+            """.trimIndent()
+        )
+        fakeEnv.writeFileText(
+            "build.gradle.kts",
+            """
+            kotlin {
+                androidTarget()
+                jvm("desktop")
+                wasmJs()
+            }
+            """.trimIndent()
+        )
+
+        val projectParser = com.jesusdmedinac.kmp.core.project.parser.UnifiedProjectParser(fakeEnv)
+        val command = AnalyzeCommand(
+            versionCatalogParser = parser,
+            projectParser = projectParser,
+            terminal = terminal,
+        )
+
+        CommandLineParser.parseAndRun(command, listOf("libraries", "room", "--json")) { it.run() }
+
+        val output = recorder.output().trim()
+        val result = Json.decodeFromString<com.jesusdmedinac.kmp.core.klibs.model.LibraryRecommendationResult>(output)
+
+        assertEquals("room", result.query)
+        assertTrue(result.projectTargets.contains("android"))
+        assertTrue(result.projectTargets.contains("wasmJs"))
+        assertEquals(1, result.libraries.size)
+
+        val room = result.libraries.first()
+        assertEquals("androidx.room:room-runtime", room.coordinate)
+        assertEquals("Pre-stable", room.status)
+        assertEquals(false, room.compatibleWithProject)
+        assertEquals(listOf("wasmJs"), room.missingTargets)
+    }
+
+    @Test
+    fun `analyze libraries human output renders compatibility status for project targets`() {
+        val recorder = TerminalRecorder(width = 80)
+        val terminal = Terminal(terminalInterface = recorder)
+        fakeEnv.writeFileText(
+            "settings.gradle.kts",
+            """
+            rootProject.name = "KtorApp"
+            """.trimIndent()
+        )
+        fakeEnv.writeFileText(
+            "build.gradle.kts",
+            """
+            kotlin {
+                androidTarget()
+                jvm("desktop")
+            }
+            """.trimIndent()
+        )
+
+        val projectParser = com.jesusdmedinac.kmp.core.project.parser.UnifiedProjectParser(fakeEnv)
+        val command = AnalyzeCommand(
+            versionCatalogParser = parser,
+            projectParser = projectParser,
+            terminal = terminal,
+        )
+
+        CommandLineParser.parseAndRun(command, listOf("libraries", "ktor")) { it.run() }
+
+        val output = recorder.output()
+        assertTrue(output.contains("klibs.io"))
+        assertTrue(output.contains("io.ktor:ktor-client-core"))
+        assertTrue(output.contains("All project targets supported"))
+    }
 }
