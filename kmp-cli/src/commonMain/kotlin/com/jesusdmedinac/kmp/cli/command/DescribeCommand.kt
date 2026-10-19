@@ -7,6 +7,8 @@ import com.github.ajalt.clikt.parameters.arguments.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.mordant.rendering.TextColors.cyan
+import com.github.ajalt.mordant.rendering.TextColors.green
+import com.github.ajalt.mordant.rendering.TextColors.yellow
 import com.github.ajalt.mordant.rendering.TextStyles.bold
 import com.github.ajalt.mordant.rendering.TextStyles.dim
 import com.github.ajalt.mordant.terminal.Terminal
@@ -78,6 +80,20 @@ class DescribeCommand(
             for (module in descriptor.modules) {
                 val targetsStr = if (module.targets.isNotEmpty()) " [${module.targets.joinToString(", ")}]" else ""
                 terminal.println("  • ${bold(module.name)} (${module.path})${dim(targetsStr)}")
+            }
+        }
+
+        if (descriptor.platformRunners.isNotEmpty()) {
+            terminal.println(bold("\nPlatform Runners (${descriptor.platformRunners.size}):"))
+            for (runner in descriptor.platformRunners) {
+                if (runner.present) {
+                    val entryInfo = runner.entryPoint?.let { " $it" } ?: ""
+                    val typeInfo = runner.runnerType?.let { " ($it)" } ?: ""
+                    terminal.println("  • ${bold(runner.target)}: ${green("✓")}$entryInfo${dim(typeInfo)}")
+                } else {
+                    val typeInfo = runner.runnerType?.let { " ($it)" } ?: ""
+                    terminal.println("  • ${bold(runner.target)}: ${yellow("✗ Missing platform runner entry point")}${dim(typeInfo)}")
+                }
             }
         }
     }
