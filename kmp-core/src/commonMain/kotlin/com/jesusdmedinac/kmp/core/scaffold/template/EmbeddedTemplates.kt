@@ -285,6 +285,58 @@ object EmbeddedTemplates {
                     }
                 }
             }
+        """.trimIndent(),
+        "composeApp/src/androidMain/kotlin/{{PACKAGE_PATH}}/MainActivity.kt" to """
+            package {{PACKAGE_NAME}}
+
+            import android.os.Bundle
+            import androidx.activity.ComponentActivity
+            import androidx.activity.compose.setContent
+
+            class MainActivity : ComponentActivity() {
+                override fun onCreate(savedInstanceState: Bundle?) {
+                    super.onCreate(savedInstanceState)
+                    setContent {
+                        App()
+                    }
+                }
+            }
+        """.trimIndent(),
+        "composeApp/src/iosMain/kotlin/{{PACKAGE_PATH}}/MainViewController.kt" to """
+            package {{PACKAGE_NAME}}
+
+            import androidx.compose.ui.window.ComposeUIViewController
+
+            fun MainViewController() = ComposeUIViewController { App() }
+        """.trimIndent(),
+        "composeApp/src/desktopMain/kotlin/{{PACKAGE_PATH}}/main.kt" to """
+            package {{PACKAGE_NAME}}
+
+            import androidx.compose.ui.window.Window
+            import androidx.compose.ui.window.application
+
+            fun main() = application {
+                Window(
+                    onCloseRequest = ::exitApplication,
+                    title = "{{PROJECT_NAME}}",
+                ) {
+                    App()
+                }
+            }
+        """.trimIndent(),
+        "composeApp/src/wasmJsMain/kotlin/{{PACKAGE_PATH}}/main.kt" to """
+            package {{PACKAGE_NAME}}
+
+            import androidx.compose.ui.ExperimentalComposeUiApi
+            import androidx.compose.ui.window.ComposeViewport
+            import kotlinx.browser.document
+
+            @OptIn(ExperimentalComposeUiApi::class)
+            fun main() {
+                ComposeViewport(document.body!!) {
+                    App()
+                }
+            }
         """.trimIndent()
     )
 

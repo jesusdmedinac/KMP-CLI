@@ -193,7 +193,7 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 ### Phase 5: KMP Development Direction & Platform Runners ([#44](https://github.com/jesusdmedinac/KMP-CLI/issues/44) - `docs/features/15_kmp_development_direction_and_platform_runners.feature`)
 - [x] Scenario: Describe active platform runners in project inspection
 - [x] Scenario: Guide developer to establish living foundation when runners are missing
-- [ ] Scenario: Scaffold projects with complete platform runners per target
+- [x] Scenario: Scaffold projects with complete platform runners per target
 - [ ] Scenario: Query klibs.io for verified library compatibility in Stage 3
 
 ---

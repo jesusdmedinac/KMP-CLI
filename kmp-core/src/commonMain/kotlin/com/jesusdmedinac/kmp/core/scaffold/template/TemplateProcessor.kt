@@ -14,18 +14,18 @@ object TemplateProcessor {
         val normalized = activeTargets.map { it.lowercase().trim() }.toSet()
 
         val hasDesktop = normalized.contains("desktop") || normalized.contains("jvm")
-        val hasWeb = normalized.contains("web") || normalized.contains("wasm") || normalized.contains("js")
+        val hasWeb = normalized.contains("web") || normalized.contains("wasm") || normalized.contains("wasmjs") || normalized.contains("js")
         val hasServer = normalized.contains("server")
         val hasIos = normalized.any { it.startsWith("ios") }
         val hasAndroid = normalized.contains("android")
 
         // Desktop module
-        if (!hasDesktop && (path.startsWith("desktopApp/") || path.startsWith("app/desktopApp/") || path == ".run/desktopApp.run.xml")) {
+        if (!hasDesktop && (path.startsWith("desktopApp/") || path.startsWith("app/desktopApp/") || path == ".run/desktopApp.run.xml" || path.contains("src/desktopMain/") || path.contains("src/jvmMain/"))) {
             return false
         }
 
         // Web module
-        if (!hasWeb && (path.startsWith("webApp/") || path.startsWith("app/webApp/") || path.startsWith("kotlin-js-store/") || path == "package.json" || path == ".run/webApp.run.xml" || path.contains("src/jsMain/"))) {
+        if (!hasWeb && (path.startsWith("webApp/") || path.startsWith("app/webApp/") || path.startsWith("kotlin-js-store/") || path == "package.json" || path == ".run/webApp.run.xml" || path == ".run/wasmJs.run.xml" || path.contains("src/jsMain/") || path.contains("src/wasmJsMain/"))) {
             return false
         }
 

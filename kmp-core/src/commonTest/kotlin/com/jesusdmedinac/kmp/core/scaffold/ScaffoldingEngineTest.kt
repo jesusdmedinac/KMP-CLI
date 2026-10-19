@@ -274,4 +274,49 @@ class ScaffoldingEngineTest {
         assertEquals("SUCCESS", result.status)
         assertEquals("toolchain-native-ui", result.template)
     }
+
+    @Test
+    fun `scaffold with specific targets generates runners exclusively for selected targets enforcing zero bloat`() {
+        val options = ScaffoldingOptions(
+            name = "ZeroBloatRunnersApp",
+            packageName = "com.example.zerobloat",
+            template = ProjectTemplate.COMPOSE_MULTIPLATFORM,
+            targets = listOf("android", "desktop"),
+        )
+
+        val result = engine.scaffold(options)
+        assertEquals("SUCCESS", result.status)
+
+        // Selected targets runners present
+        val androidRunner = fakeEnv.readFileText("ZeroBloatRunnersApp/composeApp/src/androidMain/kotlin/com/example/zerobloat/MainActivity.kt")
+        assertNotNull(androidRunner)
+        assertTrue(androidRunner.contains("class MainActivity : ComponentActivity()"))
+
+        val desktopRunner = fakeEnv.readFileText("ZeroBloatRunnersApp/composeApp/src/desktopMain/kotlin/com/example/zerobloat/main.kt")
+        assertNotNull(desktopRunner)
+        assertTrue(desktopRunner.contains("fun main() = application"))
+
+        // Excluded targets runners absent (Zero-Bloat)
+        assertFalse(fakeEnv.fileExists("ZeroBloatRunnersApp/composeApp/src/iosMain/kotlin/com/example/zerobloat/MainViewController.kt"))
+        assertFalse(fakeEnv.fileExists("ZeroBloatRunnersApp/composeApp/src/wasmJsMain/kotlin/com/example/zerobloat/main.kt"))
+        assertFalse(fakeEnv.fileExists("ZeroBloatRunnersApp/.run/wasmJs.run.xml"))
+    }
+
+    @Test
+    fun `scaffold with all targets generates complete runnable entry points for all platforms`() {
+        val options = ScaffoldingOptions(
+            name = "FullRunnersApp",
+            packageName = "com.example.full",
+            template = ProjectTemplate.COMPOSE_MULTIPLATFORM,
+            targets = listOf("android", "ios", "desktop", "wasm"),
+        )
+
+        val result = engine.scaffold(options)
+        assertEquals("SUCCESS", result.status)
+
+        assertTrue(fakeEnv.fileExists("FullRunnersApp/composeApp/src/androidMain/kotlin/com/example/full/MainActivity.kt"))
+        assertTrue(fakeEnv.fileExists("FullRunnersApp/composeApp/src/iosMain/kotlin/com/example/full/MainViewController.kt"))
+        assertTrue(fakeEnv.fileExists("FullRunnersApp/composeApp/src/desktopMain/kotlin/com/example/full/main.kt"))
+        assertTrue(fakeEnv.fileExists("FullRunnersApp/composeApp/src/wasmJsMain/kotlin/com/example/full/main.kt"))
+    }
 }
