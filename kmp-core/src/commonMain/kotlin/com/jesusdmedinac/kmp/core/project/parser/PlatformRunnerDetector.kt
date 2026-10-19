@@ -220,11 +220,9 @@ class PlatformRunnerDetector(
                 path.startsWith(".gradle/") || path.contains("/.gradle/") ||
                 path.startsWith(".git/") || path.contains("/.git/") ||
                 path.startsWith(".idea/") || path.contains("/.idea/") ||
-                path.startsWith("templates/") || path.contains("/templates/") ||
-                path.startsWith("playground/") || path.contains("/playground/") ||
-                path.startsWith("wizard/") || path.contains("/wizard/") ||
-                path.startsWith("jetbrains/") || path.contains("/jetbrains/") ||
                 path.startsWith(".kmp-cache/") || path.contains("/.kmp-cache/") ||
+                path.startsWith("templates/") || path.startsWith("playground/") ||
+                path.startsWith("wizard/") || path.startsWith("jetbrains/") ||
                 path.contains("/test/") || path.contains("/commonTest/") ||
                 path.contains("/jvmTest/") || path.contains("/androidTest/") ||
                 path.endsWith("Test.kt")

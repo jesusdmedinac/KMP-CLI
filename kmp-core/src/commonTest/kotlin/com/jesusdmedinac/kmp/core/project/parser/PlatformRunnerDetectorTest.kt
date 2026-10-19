@@ -129,4 +129,21 @@ class PlatformRunnerDetectorTest {
         assertNotNull(android)
         assertFalse(android.present)
     }
+
+    @Test
+    fun `detects runner even when package name contains jetbrains or playground`() {
+        fakeEnv.writeFileText(
+            "androidApp/src/main/kotlin/com/jetbrains/kmpapp/MainActivity.kt",
+            """
+            package com.jetbrains.kmpapp
+            class MainActivity : ComponentActivity()
+            """.trimIndent()
+        )
+
+        val runners = detector.detect(".", listOf("android"))
+        val android = runners.find { it.target == "android" }
+        assertNotNull(android)
+        assertTrue(android.present)
+        assertEquals("androidApp/src/main/kotlin/com/jetbrains/kmpapp/MainActivity.kt", android.entryPoint)
+    }
 }
