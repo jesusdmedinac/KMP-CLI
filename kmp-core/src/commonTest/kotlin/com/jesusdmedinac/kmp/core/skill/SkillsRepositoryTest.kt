@@ -187,4 +187,28 @@ class SkillsRepositoryTest {
         assertEquals(1, updateResults.size)
         assertTrue(updateResults.first() is RemoteInstallResult.Success)
     }
+
+    @Test
+    fun `updateRemoteSkills invokes git pull when cache already exists`() {
+        val cloneDir = ".kmp-cache/remote/Kotlin-kotlin-agent-skills"
+        fakeEnv.whenCommand(
+            listOf("git", "clone", "--depth", "1", "https://github.com/Kotlin/kotlin-agent-skills.git", cloneDir),
+            com.jesusdmedinac.kmp.core.system.ProcessResult(0, "Cloned", "")
+        )
+        fakeEnv.whenCommand(
+            listOf("git", "-C", cloneDir, "pull"),
+            com.jesusdmedinac.kmp.core.system.ProcessResult(0, "Already up to date.", "")
+        )
+        fakeEnv.writeFileText(
+            "$cloneDir/skills/kotlin-tooling-kotlin-toolchain/SKILL.md",
+            "---\nname: kotlin-tooling-kotlin-toolchain\ndescription: Toolchain\n---\n# Toolchain Content"
+        )
+
+        repository.installRemoteSkill("Kotlin/kotlin-agent-skills")
+        val updateResults = repository.updateRemoteSkills()
+
+        assertEquals(1, updateResults.size)
+        assertTrue(updateResults.first() is RemoteInstallResult.Success)
+        assertTrue(fakeEnv.executedCommands.any { it == listOf("git", "-C", cloneDir, "pull") })
+    }
 }

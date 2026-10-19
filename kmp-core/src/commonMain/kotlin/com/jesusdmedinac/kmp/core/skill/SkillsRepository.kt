@@ -135,6 +135,7 @@ class SkillsRepository(
         targetDirectory: String? = null,
         isGlobal: Boolean = false,
         force: Boolean = false,
+        isUpdate: Boolean = false,
     ): RemoteInstallResult {
         val spec = RemoteSkillSpec.parse(coordinate)
             ?: return RemoteInstallResult.Error(coordinate, "Invalid repository coordinate: '$coordinate'")
@@ -142,8 +143,28 @@ class SkillsRepository(
         val baseTargetDir = resolveTargetDirectory(targetDirectory, isGlobal)
         val cloneTempDir = ".kmp-cache/remote/${spec.owner}-${spec.repo}"
 
-        val cloneCmd = listOf("git", "clone", "--depth", "1", "https://github.com/${spec.owner}/${spec.repo}.git", cloneTempDir)
-        val cloneResult = systemEnvironment.execute(cloneCmd)
+        val hasExistingCache = isUpdate || systemEnvironment.fileExists("$cloneTempDir/.git")
+
+        val cloneResult = if (hasExistingCache) {
+            val pullCmd = listOf("git", "-C", cloneTempDir, "pull")
+            val pullRes = systemEnvironment.execute(pullCmd)
+            if (pullRes.exitCode == 0) {
+                pullRes
+            } else {
+                val cloneCmd = listOf("git", "clone", "--depth", "1", "https://github.com/${spec.owner}/${spec.repo}.git", cloneTempDir)
+                val cloneRes = systemEnvironment.execute(cloneCmd)
+                if (cloneRes.exitCode != 0) {
+                    systemEnvironment.execute(listOf("rm", "-rf", cloneTempDir))
+                    systemEnvironment.execute(cloneCmd)
+                } else {
+                    cloneRes
+                }
+            }
+        } else {
+            val cloneCmd = listOf("git", "clone", "--depth", "1", "https://github.com/${spec.owner}/${spec.repo}.git", cloneTempDir)
+            systemEnvironment.execute(cloneCmd)
+        }
+
         if (cloneResult.exitCode != 0 && !systemEnvironment.fileExists("$cloneTempDir/SKILL.md") && !systemEnvironment.fileExists("$cloneTempDir/skills")) {
             val errorMsg = cloneResult.stderr.ifBlank { cloneResult.stdout }.ifBlank { "git clone exited with code ${cloneResult.exitCode}" }
             return RemoteInstallResult.Error(coordinate, errorMsg)
@@ -229,7 +250,13 @@ class SkillsRepository(
         }
 
         return sources.map { coord ->
-            installRemoteSkill(coord, targetDirectory = baseTargetDir, isGlobal = isGlobal, force = true)
+            installRemoteSkill(
+                coordinate = coord,
+                targetDirectory = baseTargetDir,
+                isGlobal = isGlobal,
+                force = true,
+                isUpdate = true,
+            )
         }
     }
 }
