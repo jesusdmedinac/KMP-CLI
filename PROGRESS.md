@@ -190,9 +190,15 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 - [x] Scenario: Audit module.yaml dependencies against actual code imports
 - [x] Scenario: Run architectural lint via kmp doctor --architecture in CI pipelines
 
+### Phase 5: KMP Development Direction & Platform Runners ([#44](https://github.com/jesusdmedinac/KMP-CLI/issues/44) - `docs/features/15_kmp_development_direction_and_platform_runners.feature`)
+- [ ] Scenario: Describe active platform runners in project inspection
+- [ ] Scenario: Guide developer to establish living foundation when runners are missing
+- [ ] Scenario: Scaffold projects with complete platform runners per target
+- [ ] Scenario: Query klibs.io for verified library compatibility in Stage 3
+
 ---
 
-## Phase 5: Ecosystem Expansions & IDE Tooling (Future Outcomes / Nice-to-Haves)
+## Phase 6: Ecosystem Expansions & IDE Tooling (Future Outcomes / Nice-to-Haves)
 - [ ] **[#18](https://github.com/jesusdmedinac/KMP-CLI/issues/18)** Native Gradle Plugin (`kmp-gradle-plugin`) for CI/CD Quality Gates (`kmpDoctor`, `kmpAnalyze`, `kmpSkillsVerify`)
 - [ ] **[#19](https://github.com/jesusdmedinac/KMP-CLI/issues/19)** IDE Plugin for IntelliJ IDEA, Android Studio & Fleet (Diagnostics toolwindow & in-IDE skills browser)
 - [ ] **[#20](https://github.com/jesusdmedinac/KMP-CLI/issues/20)** Web Skills Hub Portal (`skills.kmp-cli.org`) & Community Registry Pipeline
