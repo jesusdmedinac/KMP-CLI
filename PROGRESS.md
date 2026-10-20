@@ -158,6 +158,16 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
   - [x] Scenario: Scaffold Shared KMP Core bridge template
   - [x] Scenario: Output migration audit in dual formats for humans and AI agents
 
+### Feature: Cross-Platform Migration Execution (`docs/features/18_cross_platform_migration_execution.feature`)
+- [ ] **[#50](https://github.com/jesusdmedinac/KMP-CLI/issues/50)** Cross-Platform Migration Execution Engine (`kmp migrate execute`)
+  - [ ] Scenario: Scaffold destination KMP project and synthesize dependency catalog from legacy audit
+  - [ ] Scenario: Migrate and normalize visual assets into Compose Multiplatform resources
+  - [ ] Scenario: Generate layered migration manifest and progress tracking for AI agents
+  - [ ] Scenario: Execute autonomous translation of Domain Models and Data Layer
+  - [ ] Scenario: Execute autonomous translation of UI Screens to Compose Multiplatform
+  - [ ] Scenario: Support guided migration strategy with interactive review checkpoints
+  - [ ] Scenario: Expose migration execution tools via MCP for AI agent co-pilots
+
 ---
 
 ## Visual Branding & Multiplatform Asset Ecosystem
