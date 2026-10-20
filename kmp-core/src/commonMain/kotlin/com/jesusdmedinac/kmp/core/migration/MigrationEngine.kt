@@ -104,11 +104,12 @@ class MigrationEngine(
         val rnVersion = allDeps["react-native"]?.jsonPrimitive?.content ?: "unknown"
 
         val gradleProps = systemEnvironment.readFileText("${root}android/gradle.properties") ?: ""
+        val appJsonContent = systemEnvironment.readFileText("${root}app.json") ?: ""
         val isNewArch = gradleProps.contains("newArchEnabled=true") ||
                 packageJsonContent.contains("\"newArchEnabled\": true") ||
-                rnVersion.contains("0.76") || rnVersion.contains("0.77") ||
-                rnVersion.contains("0.78") || rnVersion.contains("0.79") ||
-                rnVersion.startsWith("1.")
+                appJsonContent.contains("\"newArchEnabled\": true") ||
+                packageJsonContent.contains("expo-router") ||
+                isModernReactNativeVersion(rnVersion)
 
         val architecture = if (isNewArch) {
             ArchitectureType.NEW_ARCHITECTURE_TURBOMODULES
@@ -243,8 +244,56 @@ class MigrationEngine(
         )
     }
 
+    private fun isModernReactNativeVersion(version: String): Boolean {
+        val cleanVersion = version.trimStart('^', '~', 'v')
+        val parts = cleanVersion.split(".")
+        val major = parts.getOrNull(0)?.toIntOrNull() ?: 0
+        val minor = parts.getOrNull(1)?.toIntOrNull() ?: 0
+        return major >= 1 || (major == 0 && minor >= 76)
+    }
+
     private fun mapReactNativeDependency(name: String, version: String?): DependencyMapping? {
         return when {
+            name == "expo-router" -> DependencyMapping(
+                legacyName = name,
+                legacyVersion = version,
+                category = "Navigation",
+                kmpEquivalent = "kotlin-ui-compose-adaptive",
+                recommendationReason = "Replace file-based Expo Router with Compose Multiplatform navigation and adaptive layouts.",
+                migrationEffort = "MEDIUM",
+            )
+            name == "expo-image" -> DependencyMapping(
+                legacyName = name,
+                legacyVersion = version,
+                category = "Media",
+                kmpEquivalent = "kotlin-media-coil",
+                recommendationReason = "Replace expo-image with Coil 3 AsyncImage for unified multiplatform image loading and caching.",
+                migrationEffort = "LOW",
+            )
+            name == "expo-sqlite" -> DependencyMapping(
+                legacyName = name,
+                legacyVersion = version,
+                category = "Database",
+                kmpEquivalent = "kotlin-data-sqldelight-database",
+                recommendationReason = "Replace expo-sqlite with SQLDelight 2.x or Room KMP for reactive multiplatform SQLite persistence.",
+                migrationEffort = "MEDIUM",
+            )
+            name == "expo-secure-store" -> DependencyMapping(
+                legacyName = name,
+                legacyVersion = version,
+                category = "Storage",
+                kmpEquivalent = "kotlin-data-multiplatform-settings",
+                recommendationReason = "Replace expo-secure-store with Multiplatform-Settings keychain/keystore binding.",
+                migrationEffort = "LOW",
+            )
+            name == "react-native-screens" || name == "react-native-safe-area-context" -> DependencyMapping(
+                legacyName = name,
+                legacyVersion = version,
+                category = "UI / Insets",
+                kmpEquivalent = "kotlin-ui-compose-adaptive",
+                recommendationReason = "Compose Multiplatform handles native window insets, IME, and screens natively without bridge libraries.",
+                migrationEffort = "LOW",
+            )
             name == "@react-native-async-storage/async-storage" || name == "react-native-async-storage" -> DependencyMapping(
                 legacyName = name,
                 legacyVersion = version,

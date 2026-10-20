@@ -121,6 +121,46 @@ class MigrationEngineTest {
     }
 
     @Test
+    fun `audit on Expo React Native detects New Architecture and maps Expo modules`() {
+        fakeEnv.writeFileText(
+            "package.json",
+            """
+            {
+              "name": "ReactNativeExpoApp",
+              "dependencies": {
+                "react-native": "0.88.0",
+                "expo-router": "~58.0.24",
+                "expo-image": "~58.0.16",
+                "expo-sqlite": "~58.0.0",
+                "react-native-reanimated": "4.7.1"
+              }
+            }
+            """.trimIndent(),
+        )
+        fakeEnv.writeFileText(
+            "app.json",
+            """
+            {
+              "expo": {
+                "name": "ReactNativeExpoApp"
+              }
+            }
+            """.trimIndent(),
+        )
+
+        val report = migrationEngine.audit(".")
+        assertEquals(LegacyFramework.REACT_NATIVE, report.framework)
+        assertEquals("0.88.0", report.frameworkVersion)
+        assertEquals(ArchitectureType.NEW_ARCHITECTURE_TURBOMODULES, report.architecture)
+
+        val mappedEquivalents = report.dependencies.map { it.kmpEquivalent }
+        assertTrue(mappedEquivalents.contains("kotlin-ui-compose-adaptive"))
+        assertTrue(mappedEquivalents.contains("kotlin-media-coil"))
+        assertTrue(mappedEquivalents.contains("kotlin-data-sqldelight-database"))
+        assertTrue(mappedEquivalents.contains("androidx.compose.animation"))
+    }
+
+    @Test
     fun `audit on Flutter maps pub dependencies and channels`() {
         fakeEnv.writeFileText(
             "pubspec.yaml",
