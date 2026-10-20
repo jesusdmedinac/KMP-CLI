@@ -121,7 +121,13 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 ---
 
 ## Phase 4: MCP Server, Plugin Engine & Distribution
-- [ ] **[#14](https://github.com/jesusdmedinac/KMP-CLI/issues/14)** Stdio Model Context Protocol (MCP) Server in `kmp-cli` (`kmp mcp`)
+### Feature: Stdio Model Context Protocol (MCP) Server ([#14](https://github.com/jesusdmedinac/KMP-CLI/issues/14) - `docs/features/17_stdio_mcp_server.feature`)
+- [x] Scenario: Initialize MCP session and negotiate protocol capabilities
+- [x] Scenario: List available KMP tools with input schemas
+- [x] Scenario: Execute environment diagnostic tool calling (kmp_doctor and kmp_doctor_architecture)
+- [x] Scenario: Execute project inspection and library analysis tools (kmp_describe and kmp_analyze_libraries)
+- [x] Scenario: Execute skills management tools (kmp_list_skills and kmp_add_skill)
+- [x] Scenario: Gracefully handle unknown methods, invalid parameters, and ping requests
 - [ ] **[#15](https://github.com/jesusdmedinac/KMP-CLI/issues/15)** Dynamic Subcommand Plugin Discovery Architecture (`kmp-*`)
 - [ ] **[#16](https://github.com/jesusdmedinac/KMP-CLI/issues/16)** Self-Update Mechanism (`kmp update`) & GitHub Release Downloads
 - [ ] **[#17](https://github.com/jesusdmedinac/KMP-CLI/issues/17)** Distribution Packaging (Homebrew Tap Formula & Maven Central Publishing)
@@ -196,9 +202,24 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 - [x] Scenario: Scaffold projects with complete platform runners per target
 - [x] Scenario: Query klibs.io for verified library compatibility in Stage 3
 
+### Phase 6: Kotlin Foundation Grant Winners Skills Catalog ([Strategic Plan](docs/plans/kotlin_foundation_grant_winners_skills_plan.md) - `docs/features/16_kotlin_foundation_grant_winners_skills.feature`)
+- [ ] Scenario: Catalog registration and discoverability of Grant Winner skills
+- [ ] Scenario: Describe Persistence and Media Grant Winner skills (Phase 1)
+- [ ] Scenario: Describe Architecture and Rich UI Grant Winner skills (Phase 2)
+- [ ] Scenario: Describe Platforms, Interop, and Cloud Grant Winner skills (Phase 3)
+- [ ] Scenario: Validate Grant Winner skills manifest and catalog integrity
+
+### Phase 7: Stdio Model Context Protocol (MCP) Server ([#14](https://github.com/jesusdmedinac/KMP-CLI/issues/14) - `docs/features/17_stdio_mcp_server.feature`)
+- [x] Scenario: Initialize MCP session and negotiate protocol capabilities
+- [x] Scenario: List available KMP tools with input schemas
+- [x] Scenario: Execute environment diagnostic tool calling (kmp_doctor and kmp_doctor_architecture)
+- [x] Scenario: Execute project inspection and library analysis tools (kmp_describe and kmp_analyze_libraries)
+- [x] Scenario: Execute skills management tools (kmp_list_skills and kmp_add_skill)
+- [x] Scenario: Gracefully handle unknown methods, invalid parameters, and ping requests
+
 ---
 
-## Phase 6: Ecosystem Expansions & IDE Tooling (Future Outcomes / Nice-to-Haves)
+## Phase 8: Ecosystem Expansions & IDE Tooling (Future Outcomes / Nice-to-Haves)
 - [ ] **[#18](https://github.com/jesusdmedinac/KMP-CLI/issues/18)** Native Gradle Plugin (`kmp-gradle-plugin`) for CI/CD Quality Gates (`kmpDoctor`, `kmpAnalyze`, `kmpSkillsVerify`)
 - [ ] **[#19](https://github.com/jesusdmedinac/KMP-CLI/issues/19)** IDE Plugin for IntelliJ IDEA, Android Studio & Fleet (Diagnostics toolwindow & in-IDE skills browser)
 - [ ] **[#20](https://github.com/jesusdmedinac/KMP-CLI/issues/20)** Web Skills Hub Portal (`skills.kmp-cli.org`) & Community Registry Pipeline
