@@ -1,7 +1,7 @@
 ---
 name: kmp-cli
 description: Procedural guide for AI agents and human developers on using the KMP CLI for environment diagnostics, project scaffolding, architecture inspection, dependency analysis, and skills management.
-version: 1.1.0
+version: 1.2.0
 author: jesusdmedinac
 tags:
   - cli
@@ -13,6 +13,11 @@ tags:
   - analyze
   - create
   - scaffolding
+  - mcp
+  - model-context-protocol
+  - libraries
+  - klibs
+  - architecture-lint
 targets:
   - android
   - ios
@@ -22,14 +27,23 @@ triggers:
   - kmp cli
   - kmp doctor
   - diagnose environment
+  - kmp doctor --architecture
+  - architecture doctor
+  - living foundation check
   - kmp describe
   - inspect kmp project
   - kmp analyze
   - kmp analyze dependencies
   - analyze dependencies
+  - kmp analyze libraries
+  - search kmp libraries
+  - klibs
   - kmp create
   - scaffold kmp project
   - kmp skills
+  - kmp mcp
+  - mcp server
+  - model context protocol
 compatibility:
   kotlin: ">=2.0.0"
 ---
@@ -59,6 +73,22 @@ Emits a structured JSON report adhering to `DiagnosticReport`:
 - `isHealthy`: Boolean (`false` if any critical failure exists).
 - `checks`: Array of check items (`kdoctor`, `jdk`, `kotlinToolchain`), each containing `id`, `title`, `status`, `message`, `details`, and `remediation`.
 - If `remediation` is present, execute `remediation.command` to automatically resolve the environment issue.
+
+### 1.1 Architecture & Stage 1 Living Foundation Check (`--architecture`):
+```bash
+# Run architecture boundary and entry-point audit
+kmp doctor --architecture
+
+# Machine-readable architecture audit for CI or AI agents
+kmp doctor --architecture --json
+```
+Verifies two core health dimensions without building the full project:
+1. **Living Foundation Entry Points**:
+   - Ensures each declared target platform has a valid entry point (`MainActivity.kt` for Android, `MainViewController.kt` for iOS, `jvmMain/main.kt` for Desktop, `wasmJsMain/main.kt` for Web).
+2. **Clean Architecture Boundary Hygiene**:
+   - Inspects `:core:domain` or `commonMain` source files.
+   - Flags forbidden platform/UI imports (e.g., `android.*`, `platform.UIKit.*`, `androidx.compose.*`) inside pure domain layers.
+   - Provides concrete remediation commands if boundaries are violated.
 
 ---
 
@@ -100,7 +130,11 @@ Emits a structured JSON payload adhering to `ProjectDescriptor`:
 
 ---
 
-## 3. Dependency Catalog Analysis (`kmp analyze dependencies`)
+## 3. Dependency & Ecosystem Analysis (`kmp analyze`)
+
+Audit declared version catalogs or discover multiplatform-compatible libraries from the official ecosystem.
+
+### 3.1 Version Catalog Analysis (`kmp analyze dependencies`)
 
 Analyze declared libraries, plugins, and version catalogs (`libs.versions.toml`) to audit dependency hygiene or inspect project capabilities.
 
@@ -142,6 +176,43 @@ Emits a structured JSON payload adhering to `ProjectDependencies`:
       "version": "2.2.0"
     }
   }
+}
+```
+
+### 3.2 Multiplatform Library Ecosystem Analysis (`kmp analyze libraries`)
+
+Search and verify Kotlin Multiplatform libraries against the official `klibs.io` catalog to confirm platform compatibility, coordinates, and licensing before adding them to projects.
+
+#### Interactive Mode:
+```bash
+# Search for libraries matching a query
+kmp analyze libraries ktor
+
+# Filter search by target platforms
+kmp analyze libraries "sql" --targets android,ios
+```
+Displays an ANSI table with library coordinates, latest release, target platform support badges (`Android`, `iOS`, `Desktop`, `Wasm`), and licenses.
+
+#### Agent / Machine Mode (`--json`):
+```bash
+kmp analyze libraries ktor --json
+kmp analyze libraries "sql" --targets android,ios --json
+```
+Emits a structured JSON payload adhering to `LibrarySearchResult`:
+```json
+{
+  "query": "ktor",
+  "totalResults": 1,
+  "libraries": [
+    {
+      "group": "io.ktor",
+      "name": "ktor-client-core",
+      "version": "3.1.1",
+      "description": "Ktor Multiplatform HTTP client",
+      "targets": ["android", "iosArm64", "iosX64", "jvm", "wasmJs"],
+      "license": "Apache-2.0"
+    }
+  ]
 }
 ```
 
@@ -294,7 +365,53 @@ kmp skills add kmp-compose-adaptive --global
 
 ---
 
-## 6. Core Collaboration Principles: Respect the Developer's Architecture
+## 6. Native Model Context Protocol (MCP) Server (`kmp mcp`)
+
+The `kmp` CLI provides a native, standalone Stdio Model Context Protocol (MCP) server (JSON-RPC 2.0) conforming to protocol version `2024-11-05`. This allows LLMs, IDE agents (Claude Desktop, Cursor, Google Antigravity, Windsurf), and autonomous coding pipelines to call `kmp` capabilities as native tools with structured JSON parameters.
+
+### 6.1 Starting the MCP Server
+```bash
+# Launch stdio MCP server directly
+kmp mcp
+```
+
+### 6.2 Host Client Configurations
+
+#### Claude Desktop (`claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "kmp-cli": {
+      "command": "kmp",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+#### Antigravity / Agent Runtimes:
+```json
+{
+  "command": "/path/to/kmp",
+  "args": ["mcp"]
+}
+```
+
+### 6.3 Exposed MCP Tools (7)
+
+| Tool Name | Purpose | Parameters | Returns |
+| :--- | :--- | :--- | :--- |
+| `kmp_doctor` | Environment diagnostics (JDK, Xcode via `kdoctor`, Toolchain 0.12) | `includeKdoctor` (boolean), `projectPath` (string) | `DiagnosticReport` JSON |
+| `kmp_doctor_architecture` | Clean Architecture guard and Stage 1 Living Foundation checks | `projectPath` (string) | Architecture audit `DiagnosticReport` JSON |
+| `kmp_describe` | Inspects project architecture, targets, build system, and modules | `projectPath` (string) | `ProjectDescriptor` JSON |
+| `kmp_analyze_dependencies` | Audits version catalog (`libs.versions.toml`) dependencies and plugins | `catalogPath` (string), `projectPath` (string) | `ProjectDependencies` JSON |
+| `kmp_analyze_libraries` | Queries klibs.io for target compatibility, coordinates, and license | `query` (string, required), `targets` (array) | `LibrarySearchResult` JSON |
+| `kmp_list_skills` | Discovers available procedural skills in the KMP Skills Hub | None | Skills catalog list JSON |
+| `kmp_add_skill` | Installs an agent skill locally into `.agents/skills/` or globally | `skillId` (string, required), `global` (boolean) | Installation result JSON |
+
+---
+
+## 7. Core Collaboration Principles: Respect the Developer's Architecture
 
 When an AI coding agent collaborates with a human developer on a Kotlin Multiplatform codebase, it must act as a contextually aware pair programmer rather than an opinionated dictator:
 
@@ -312,7 +429,7 @@ When an AI coding agent collaborates with a human developer on a Kotlin Multipla
 
 ---
 
-## 7. Hierarchy of Canonical Truth
+## 8. Hierarchy of Canonical Truth
 
 To avoid hallucinations, outdated conventions, and fragile code, AI agents must adhere to the following **Three-Tier Hierarchy of Truth**:
 
@@ -345,6 +462,6 @@ The [Kotlin Foundation](https://kotlinfoundation.org/) coordinates the evolution
 
 ---
 
-## 8. Exit Codes
+## 9. Exit Codes
 - `0`: Success (clean execution).
 - `1`: Failure detected (critical tool failure, missing arguments, or invalid configuration).

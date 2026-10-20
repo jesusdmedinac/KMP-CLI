@@ -111,25 +111,30 @@ Kotlin Multiplatform is maturing rapidly with Compose Multiplatform, Ktor, and t
 
 | Command | Status | Description | Human Output | AI Output (`--json`) |
 | :--- | :---: | :--- | :---: | :---: |
-| `kmp doctor` | ✅ Available | Diagnoses host environment (JDK, Android SDK, Xcode via `kdoctor`, Toolchain 0.12, Wasm) | Checkmarks, warnings, remediation | Typed diagnostic report + commands |
+| `kmp doctor` | ✅ Available | Diagnoses host environment (JDK, Android SDK, Xcode via `kdoctor`, Toolchain 0.12, Wasm) & architecture (`--architecture`) | Checkmarks, warnings, remediation | Typed diagnostic report + commands |
 | `kmp describe` | ✅ Available | Inspects project architecture, targets, and modules from Gradle or `module.yaml` | Hierarchy tree & summary | `ProjectDescriptor` JSON schema |
 | `kmp analyze dependencies` | ✅ Available | Analyzes version catalog (`libs.versions.toml`) dependencies, plugins, and versions | Formatted dependency table | `ProjectDependencies` JSON schema |
+| `kmp analyze libraries` | ✅ Available | Queries klibs.io catalog for target compatibility, coordinates, and licenses | Formatted compatibility table | `LibrarySearchResult` JSON schema |
 | `kmp create` | ✅ Available | Scaffolds new projects using customizable, immutable architectural templates | Success card & next steps | `ScaffoldingResult` JSON schema |
 | `kmp skills` | ✅ Available | Package manager for agent skills (`list`, `find`, `describe`, `add`) | Formatted skills table | Machine-readable catalog & paths |
-| `kmp mcp` | 📅 Phase 4 | Model Context Protocol stdio server for native AI pair integration | N/A | MCP JSON-RPC protocol |
+| `kmp mcp` | ✅ Available | Model Context Protocol stdio server exposing 7 native tools for AI agents | N/A | MCP JSON-RPC protocol |
 | `kmp update` | 📅 Phase 4 | In-place self-updater for the CLI binary | Progress animation | Status payload |
 
 ---
 
 ### Command Highlights & Usage
 
-#### 1. Environment Diagnostics (`kmp doctor`)
+#### 1. Environment & Architecture Diagnostics (`kmp doctor`)
 ```bash
 # Human-readable checkmarks and remediations
 kmp doctor
 
 # Machine-readable report for CI/CD or AI agents
 kmp doctor --json
+
+# Architecture & Stage 1 Living Foundation check (Clean Architecture + Entry points)
+kmp doctor --architecture
+kmp doctor --architecture --json
 ```
 
 #### 2. Project Architecture Inspection (`kmp describe`)
@@ -144,7 +149,7 @@ kmp describe path/to/project
 kmp describe --json
 ```
 
-#### 3. Dependency Catalog Analysis (`kmp analyze dependencies`)
+#### 3. Dependency & Ecosystem Analysis (`kmp analyze`)
 ```bash
 # Analyze default gradle/libs.versions.toml
 kmp analyze dependencies
@@ -152,6 +157,10 @@ kmp analyze dependencies
 # Analyze a direct .toml file
 kmp analyze dependencies custom.toml
 kmp analyze dependencies gradle/libs.versions.toml --json
+
+# Query klibs.io for target-compatible libraries and coordinates
+kmp analyze libraries ktor
+kmp analyze libraries "sql" --targets android,ios --json
 ```
 
 #### 4. Project Scaffolding & JetBrains Wizard (`kmp create`)
@@ -222,6 +231,38 @@ kmp skills add kmp-compose-adaptive
 kmp skills add kmp-compose-adaptive --global
 ```
 
+#### 6. Native Model Context Protocol Server (`kmp mcp`)
+Run the CLI as an official Stdio Model Context Protocol (MCP) server for native pairing with AI agents (Claude Desktop, Cursor, Google Antigravity, etc.):
+
+```bash
+# Launch native stdio MCP server
+kmp mcp
+```
+
+##### Client Configuration Example:
+Add `kmp` to your `claude_desktop_config.json` or Antigravity MCP settings:
+```json
+{
+  "mcpServers": {
+    "kmp-cli": {
+      "command": "kmp",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+##### Available MCP Tools (7):
+| MCP Tool | Description | Key Parameters |
+| :--- | :--- | :--- |
+| `kmp_doctor` | Host environment check (JDK, Android SDK, Xcode via `kdoctor`, Toolchain 0.12) | `includeKdoctor`, `projectPath` |
+| `kmp_doctor_architecture` | Clean Architecture boundary & Stage 1 Living Foundation audit | `projectPath` |
+| `kmp_describe` | Project targets, modules, and build system inspection | `projectPath` |
+| `kmp_analyze_dependencies` | Dependency version catalog (`libs.versions.toml`) parsing and audit | `catalogPath`, `projectPath` |
+| `kmp_analyze_libraries` | klibs.io library search and multiplatform target compatibility | `query`, `targets` |
+| `kmp_list_skills` | List certified procedural skills in the KMP Skills Hub | None |
+| `kmp_add_skill` | Install an agent skill locally or globally | `skillId`, `global` |
+
 ---
 
 ## 📊 Live Project Roadmap & Progress
@@ -275,8 +316,10 @@ For the full living progress tracker, see **[PROGRESS.md](PROGRESS.md)**.
 - [ ] In-terminal concierge acquisition screen
 - [ ] `kmp kit customize` & `kmp copilot` for licensed developers
 
-### Phase 4: MCP Server, Plugins & Distribution 📅 (Planned)
-- [ ] Model Context Protocol (`kmp mcp`) stdio server
+### Phase 4: MCP Server, Plugins & Distribution 📅 (In Progress)
+- [x] Model Context Protocol (`kmp mcp`) stdio server with 7 exposed native tools
+- [x] Architecture Lint & Stage 1 Living Foundation Doctor (`kmp doctor --architecture`)
+- [x] klibs.io Multiplatform Library Analyzer (`kmp analyze libraries`)
 - [ ] Decoupled dynamic subcommand discovery (`kmp-*` in `PATH`)
 - [ ] In-place self-updater (`kmp update`)
 - [ ] Homebrew Tap formula and Maven Central publishing
