@@ -418,6 +418,10 @@ kmp mcp
 
 The `migrate` command family audits legacy mobile applications (React Native, Flutter) and generates incremental Strangler Fig migration pathways to Kotlin Multiplatform.
 
+> **Canonical Upstream Baselines:**  
+> - React Native (Expo Framework): [https://reactnative.dev/docs/environment-setup](https://reactnative.dev/docs/environment-setup) (`npx create-expo-app@latest`)  
+> - Flutter (Application Template): [https://docs.flutter.dev/install/quick](https://docs.flutter.dev/install/quick) (`flutter create` / VS Code `Flutter: New Project`)  
+
 ### 7.1 Modernization Audit (`kmp migrate audit`)
 ```bash
 # Human readable TUI with replacement matrix and risk indicators

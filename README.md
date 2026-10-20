@@ -266,7 +266,10 @@ Add `kmp` to your `claude_desktop_config.json` or Antigravity MCP settings:
 | `kmp_migrate_plan` | Generate phased Strangler Fig migration roadmap to KMP | `path`, `pathway` |
 
 #### 7. Cross-Platform Modernization & Migration Engine (`kmp migrate`)
-Audit legacy cross-platform codebases (React Native, Flutter) and generate incremental Strangler Fig modernization pathways:
+Audit legacy cross-platform codebases (React Native, Flutter) and generate incremental Strangler Fig modernization pathways (see [RFC-005](docs/RFC-005-cross-platform-modernization-and-migration.md)):
+
+- **Canonical React Native Upstream Baseline:** [React Native Environment Setup & Expo Framework](https://reactnative.dev/docs/environment-setup) (`npx create-expo-app@latest`)
+- **Canonical Flutter Upstream Baseline:** [Flutter Set up & Test Drive](https://docs.flutter.dev/install/quick) (`flutter create` / VS Code `Flutter: New Project`)
 
 ```bash
 # Audit React Native or Flutter codebase and generate dependency replacement matrix

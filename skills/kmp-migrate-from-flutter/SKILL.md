@@ -30,6 +30,9 @@ compatibility:
 
 This operational runbook guides engineering teams and AI agents through migrating Flutter codebases to Kotlin Multiplatform and Compose Multiplatform.
 
+> **Canonical Upstream Baseline:** [Flutter Set up and Test Drive Guide](https://docs.flutter.dev/install/quick)  
+> Covers standard Flutter Application templates (`flutter create`, VS Code `Flutter: New Project`, `pubspec.yaml`, `lib/main.dart`) targeting Android, iOS, Web, and Desktop.
+
 ---
 
 ## 1. Conceptual Mapping: Flutter vs Compose Multiplatform

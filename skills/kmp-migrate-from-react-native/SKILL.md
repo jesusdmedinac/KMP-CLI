@@ -30,6 +30,9 @@ compatibility:
 
 This operational runbook guides engineering teams and AI agents through migrating legacy React Native applications to Kotlin Multiplatform using the incremental **Strangler Fig pattern**.
 
+> **Canonical Upstream Baseline:** [React Native Environment Setup](https://reactnative.dev/docs/environment-setup)  
+> Covers modern **Expo Framework** codebases (`npx create-expo-app@latest`, `app.json`, `expo-*` SDK modules) as well as legacy bare React Native CLI applications.
+
 ---
 
 ## 1. Migration Strategy: The Strangler Fig Pattern
