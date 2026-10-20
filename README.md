@@ -309,6 +309,18 @@ For the full living progress tracker, see **[PROGRESS.md](PROGRESS.md)**.
   - `sdui-starter` (Server-Driven UI app)
 - [x] Immutable Physical Templates Engine (`templates/` + `TemplateProcessor` + `TemplateSource`)
 
+### Kotlin Foundation Grant Winners Skills Catalog ✅ (Completed)
+- [x] **[RFC-004 / Strategic Plan: Grant Winners Skills Integration](docs/plans/kotlin_foundation_grant_winners_skills_plan.md)**
+- [x] Curate & register 8 official Grant Winner skills:
+  - `kotlin-media-coil` (Coil 3 image loading & caching)
+  - `kotlin-data-multiplatform-settings` (Reactive key-value persistence)
+  - `kotlin-data-store5` (Offline-first repository & caching)
+  - `kotlin-architecture-orbit-mvi` (Unidirectional Data Flow & ContainerHost)
+  - `kotlin-ui-compose-rich-editor` (WYSIWYG Compose Rich Text Editor)
+  - `kotlin-interop-swift-coroutines` (SKIE & Swift modern concurrency)
+  - `kotlin-web-kobweb` (Fullstack web & Compose HTML)
+  - `kotlin-cloud-firebase` (GitLive Firebase Multiplatform SDK)
+
 ### Commercial Ecosystem: Zora KMP Kits Hub, Licensing & Copilot 📅 (Next)
 - [ ] **[RFC-003: Zora KMP Kits Hub, Licensing Engine, and Copilot Integration](docs/RFC-003-zora-kits-licensing-and-copilot.md)**
 - [ ] `kmp kit list` (Catalog discovery for Community, Basic, and Premium tiers)
