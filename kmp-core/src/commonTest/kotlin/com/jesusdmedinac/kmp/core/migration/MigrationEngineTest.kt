@@ -5,6 +5,7 @@ import com.jesusdmedinac.kmp.core.migration.model.LegacyFramework
 import com.jesusdmedinac.kmp.core.migration.model.MigrationExecuteOptions
 import com.jesusdmedinac.kmp.core.migration.model.MigrationStrategy
 import com.jesusdmedinac.kmp.core.migration.model.ModernizationPathway
+import com.jesusdmedinac.kmp.core.project.parser.VersionCatalogParser
 import com.jesusdmedinac.kmp.core.test.FakeSystemEnvironment
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -264,7 +265,20 @@ class MigrationEngineTest {
 
         // Verify synthesized dependencies in libs.versions.toml
         val tomlContent = fakeEnv.readFileText("migrated-kmp/gradle/libs.versions.toml") ?: ""
-        assertTrue(tomlContent.contains("coil") || tomlContent.contains("ktor"))
+        assertTrue(tomlContent.endsWith("\n"), "libs.versions.toml must end with a newline")
+        for (line in tomlContent.lines().filter { it.isNotBlank() }) {
+            assertFalse(line.contains("}coil-compose"), "Line must not concatenate library without newline: $line")
+        }
+
+        val catalog = VersionCatalogParser(fakeEnv).parse("migrated-kmp/gradle/libs.versions.toml")
+        assertNotNull(catalog, "Catalog should be parsable")
+        assertTrue(catalog.libraries.any { it.alias == "coil-compose" }, "coil-compose should be in libraries")
+        assertTrue(catalog.libraries.any { it.alias == "ktor-client-core" }, "ktor-client-core should be in libraries")
+
+        // Verify injection into composeApp/build.gradle.kts
+        val composeAppBuildGradle = fakeEnv.readFileText("migrated-kmp/composeApp/build.gradle.kts") ?: ""
+        assertTrue(composeAppBuildGradle.contains("implementation(libs.coil.compose)"))
+        assertTrue(composeAppBuildGradle.contains("implementation(libs.ktor.client.core)"))
     }
 
     @Test
@@ -294,6 +308,17 @@ class MigrationEngineTest {
         assertTrue(result.synthesizedDependencies.contains("kotlin-networking-ktor"))
         assertTrue(result.synthesizedDependencies.contains("kotlin-data-multiplatform-settings"))
         assertTrue(fakeEnv.fileExists("migrated-flutter-kmp/build.gradle.kts"))
+
+        val tomlContent = fakeEnv.readFileText("migrated-flutter-kmp/gradle/libs.versions.toml") ?: ""
+        assertTrue(tomlContent.endsWith("\n"))
+        val catalog = VersionCatalogParser(fakeEnv).parse("migrated-flutter-kmp/gradle/libs.versions.toml")
+        assertNotNull(catalog)
+        assertTrue(catalog.libraries.any { it.alias == "ktor-client-core" })
+        assertTrue(catalog.libraries.any { it.alias == "multiplatform-settings" })
+
+        val composeAppBuildGradle = fakeEnv.readFileText("migrated-flutter-kmp/composeApp/build.gradle.kts") ?: ""
+        assertTrue(composeAppBuildGradle.contains("implementation(libs.ktor.client.core)"))
+        assertTrue(composeAppBuildGradle.contains("implementation(libs.multiplatform.settings)"))
     }
 
     @Test

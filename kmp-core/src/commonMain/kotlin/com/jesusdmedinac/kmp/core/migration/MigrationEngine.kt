@@ -599,7 +599,9 @@ class MigrationEngine(
                     "kotlin-media-coil" -> {
                         if (!existingToml.contains("coil-compose")) {
                             librariesToAdd.append("coil-compose = { module = \"io.coil-kt.coil3:coil-compose\", version = \"3.0.4\" }\n")
-                            librariesToAdd.append("coil-network-ktor3 = { module = \"io.coil-kt.coil3:coil-network-ktor3\", version = \"3.0.4\" }\n")
+                        }
+                        if (!existingToml.contains("coil-network-ktor")) {
+                            librariesToAdd.append("coil-network-ktor = { module = \"io.coil-kt.coil3:coil-network-ktor3\", version = \"3.0.4\" }\n")
                         }
                     }
                     "kotlin-data-multiplatform-settings" -> {
@@ -633,35 +635,73 @@ class MigrationEngine(
         }
 
         val updatedToml = if (librariesToAdd.isNotEmpty()) {
-            if (existingToml.contains("[libraries]")) {
-                existingToml.replace("[libraries]", "[libraries]\n$librariesToAdd")
+            val librariesRegex = Regex("""^\[libraries]\s*$""", RegexOption.MULTILINE)
+            if (librariesRegex.containsMatchIn(existingToml)) {
+                existingToml.replace(librariesRegex, "[libraries]\n$librariesToAdd".trimEnd())
+            } else if (existingToml.contains("[libraries]")) {
+                existingToml.replace("[libraries]", "[libraries]\n$librariesToAdd".trimEnd())
             } else {
-                "$existingToml\n[libraries]\n$librariesToAdd"
+                val prefix = if (existingToml.endsWith("\n") || existingToml.isEmpty()) existingToml else "$existingToml\n"
+                "${prefix}[libraries]\n$librariesToAdd".trimEnd()
             }
         } else {
             existingToml
         }
-        systemEnvironment.writeFileText(tomlPath, updatedToml)
+        val finalToml = if (updatedToml.endsWith("\n")) updatedToml else "$updatedToml\n"
+        systemEnvironment.writeFileText(tomlPath, finalToml)
 
-        // Inject synthesized dependencies into build.gradle.kts
-        val buildGradlePath = "${options.outputDir}/build.gradle.kts"
-        val existingBuildGradle = systemEnvironment.readFileText(buildGradlePath) ?: ""
+        // Inject synthesized dependencies into build.gradle.kts (check module build script first)
+        val buildGradleCandidates = listOf(
+            "${options.outputDir}/composeApp/build.gradle.kts",
+            "${options.outputDir}/app/build.gradle.kts",
+            "${options.outputDir}/shared/build.gradle.kts",
+            "${options.outputDir}/build.gradle.kts",
+        )
+        val targetBuildGradle = buildGradleCandidates.firstOrNull { candidate ->
+            systemEnvironment.fileExists(candidate) &&
+                (systemEnvironment.readFileText(candidate)?.contains("commonMain.dependencies {") == true)
+        } ?: "${options.outputDir}/build.gradle.kts"
+
+        val existingBuildGradle = systemEnvironment.readFileText(targetBuildGradle) ?: ""
         if (existingBuildGradle.contains("commonMain.dependencies {")) {
             val depInjections = StringBuilder()
             if (synthesizedDeps.contains("kotlin-networking-ktor")) {
                 depInjections.append("            implementation(libs.ktor.client.core)\n")
+                depInjections.append("            implementation(libs.ktor.client.content.negotiation)\n")
+                depInjections.append("            implementation(libs.ktor.serialization.kotlinx.json)\n")
             }
             if (synthesizedDeps.contains("kotlin-media-coil")) {
-                depInjections.append("            implementation(libs.coil.compose)\n")
+                if (!existingBuildGradle.contains("libs.coil.compose")) {
+                    depInjections.append("            implementation(libs.coil.compose)\n")
+                }
+                if (!existingBuildGradle.contains("libs.coil.network.ktor")) {
+                    depInjections.append("            implementation(libs.coil.network.ktor)\n")
+                }
             }
             if (synthesizedDeps.contains("kotlin-data-multiplatform-settings")) {
                 depInjections.append("            implementation(libs.multiplatform.settings)\n")
             }
-            val updatedBuildGradle = existingBuildGradle.replace(
-                "commonMain.dependencies {",
-                "commonMain.dependencies {\n$depInjections",
-            )
-            systemEnvironment.writeFileText(buildGradlePath, updatedBuildGradle)
+            if (synthesizedDeps.contains("kotlin-data-room-kmp")) {
+                depInjections.append("            implementation(libs.androidx.room.runtime)\n")
+            }
+            if (synthesizedDeps.contains("kotlin-data-sqldelight-database")) {
+                depInjections.append("            implementation(libs.sqldelight.runtime)\n")
+            }
+            if (synthesizedDeps.contains("kotlin-architecture-orbit-mvi")) {
+                depInjections.append("            implementation(libs.orbit.core)\n")
+                depInjections.append("            implementation(libs.orbit.compose)\n")
+            }
+            if (synthesizedDeps.contains("kotlin-data-store5")) {
+                depInjections.append("            implementation(libs.store5)\n")
+            }
+
+            if (depInjections.isNotEmpty()) {
+                val updatedBuildGradle = existingBuildGradle.replace(
+                    "commonMain.dependencies {",
+                    "commonMain.dependencies {\n$depInjections",
+                )
+                systemEnvironment.writeFileText(targetBuildGradle, updatedBuildGradle)
+            }
         }
 
         // Migrate Assets
