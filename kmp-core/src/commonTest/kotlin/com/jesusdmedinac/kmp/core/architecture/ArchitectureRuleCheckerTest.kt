@@ -215,4 +215,51 @@ class ArchitectureRuleCheckerTest {
         assertTrue(report.violations.isEmpty())
         assertTrue(report.scannedFilesCount >= 1)
     }
+
+    @Test
+    fun `checkProject detects declared targets missing platform runners and emits ARCH004 with boilerplate remediation`() {
+        fakeEnv.writeFileText(
+            "settings.gradle.kts",
+            """
+            rootProject.name = "MyAwesomeApp"
+            include(":composeApp")
+            """.trimIndent()
+        )
+        fakeEnv.writeFileText(
+            "build.gradle.kts",
+            """
+            plugins {
+                id("org.jetbrains.compose")
+            }
+            kotlin {
+                androidTarget()
+                jvm("desktop")
+                wasmJs()
+            }
+            """.trimIndent()
+        )
+        fakeEnv.writeFileText(
+            "composeApp/src/androidMain/kotlin/MainActivity.kt",
+            """
+            package com.example
+            class MainActivity : ComponentActivity()
+            """.trimIndent()
+        )
+
+        val report = checker.checkProject(".")
+        assertTrue(report.passed, "Warning violations should not fail the overall check")
+
+        val runnerViolations = report.violations.filter { it.ruleId == "ARCH004_MISSING_PLATFORM_RUNNER" }
+        assertEquals(2, runnerViolations.size, "Should flag missing desktop and wasmJs runners")
+
+        val desktopViolation = runnerViolations.find { it.message.contains("jvm") || it.message.contains("desktop") }
+        kotlin.test.assertNotNull(desktopViolation)
+        assertEquals(ViolationSeverity.WARNING, desktopViolation.severity)
+        assertTrue(desktopViolation.remediation.contains("fun main() = application"))
+
+        val wasmViolation = runnerViolations.find { it.message.contains("wasmJs") }
+        kotlin.test.assertNotNull(wasmViolation)
+        assertEquals(ViolationSeverity.WARNING, wasmViolation.severity)
+        assertTrue(wasmViolation.remediation.contains("ComposeViewport"))
+    }
 }

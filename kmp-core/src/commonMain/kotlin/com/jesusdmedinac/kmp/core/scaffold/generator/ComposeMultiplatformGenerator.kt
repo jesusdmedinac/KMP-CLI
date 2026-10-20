@@ -18,7 +18,7 @@ class ComposeMultiplatformGenerator(
         if (targets.contains("android")) normalizedTargets.add("android")
         if (targets.any { it.startsWith("ios") }) normalizedTargets.add("ios")
         if (targets.any { it == "desktop" || it == "jvm" }) normalizedTargets.add("desktop")
-        if (targets.any { it.startsWith("wasm") }) normalizedTargets.add("wasm")
+        if (targets.any { it.startsWith("wasm") || it == "web" || it == "js" }) normalizedTargets.add("wasm")
 
         val context = TemplateContext(
             variables = mapOf(

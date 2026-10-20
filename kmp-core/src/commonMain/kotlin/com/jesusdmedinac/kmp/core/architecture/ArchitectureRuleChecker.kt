@@ -3,6 +3,8 @@ package com.jesusdmedinac.kmp.core.architecture
 import com.jesusdmedinac.kmp.core.architecture.model.ArchitectureReport
 import com.jesusdmedinac.kmp.core.architecture.model.RuleViolation
 import com.jesusdmedinac.kmp.core.architecture.model.ViolationSeverity
+import com.jesusdmedinac.kmp.core.project.model.ProjectDescriptor
+import com.jesusdmedinac.kmp.core.project.parser.UnifiedProjectParser
 import com.jesusdmedinac.kmp.core.system.SystemEnvironment
 import com.jesusdmedinac.kmp.core.system.createDefaultSystemEnvironment
 
@@ -313,12 +315,120 @@ class ArchitectureRuleChecker(
             violations.addAll(auditModuleYaml(moduleYamlPath, moduleYamlContent, ktFiles))
         }
 
+        val projectDescriptor = UnifiedProjectParser(systemEnvironment).parse(projectPath)
+        if (projectDescriptor != null && isApplicationProject(projectDescriptor, projectPath, ktFiles)) {
+            for (runner in projectDescriptor.platformRunners) {
+                if (!runner.present) {
+                    val suggestedPath = getSuggestedFilePathForTarget(runner.target, projectDescriptor, normalizedPrefix)
+                    violations.add(
+                        RuleViolation(
+                            ruleId = "ARCH004_MISSING_PLATFORM_RUNNER",
+                            severity = ViolationSeverity.WARNING,
+                            filePath = suggestedPath,
+                            lineNumber = 1,
+                            message = "Target '${runner.target}' is declared in project configuration but lacks an executable platform runner entry point (Stage 1: Living Foundation).",
+                            remediation = getBoilerplateRemediation(runner.target),
+                        )
+                    )
+                }
+            }
+        }
+
         val passed = violations.none { it.severity == ViolationSeverity.ERROR }
         return ArchitectureReport(
             passed = passed,
             violations = violations,
             scannedFilesCount = ktFiles.size + (if (moduleYamlPath != null) 1 else 0),
         )
+    }
+
+    private fun isApplicationProject(
+        descriptor: ProjectDescriptor,
+        projectPath: String,
+        ktFiles: Map<String, String>,
+    ): Boolean {
+        if (descriptor.platformRunners.any { it.present }) return true
+        if (descriptor.modules.any { it.name.contains("app", ignoreCase = true) }) return true
+
+        val root = if (projectPath == "." || projectPath.isEmpty()) "" else projectPath.trimEnd('/') + "/"
+        val buildFiles = listOf(
+            "${root}build.gradle.kts",
+            "${root}build.gradle",
+            "${root}app/build.gradle.kts",
+            "${root}composeApp/build.gradle.kts",
+            "${root}module.yaml",
+            "${root}app/module.yaml",
+        )
+        for (path in buildFiles) {
+            val content = systemEnvironment.readFileText(path) ?: continue
+            if (content.contains("application") ||
+                content.contains("com.android.application") ||
+                content.contains("type: app") ||
+                content.contains("product:\n  type: app") ||
+                content.contains("org.jetbrains.compose")
+            ) {
+                return true
+            }
+        }
+
+        if (ktFiles.values.any { it.contains("fun App(") || it.contains("fun main(") }) {
+            return true
+        }
+
+        return false
+    }
+
+    private fun getSuggestedFilePathForTarget(target: String, descriptor: ProjectDescriptor, prefix: String): String {
+        val normalized = target.lowercase()
+        val hasComposeApp = descriptor.modules.any { it.name == "composeApp" }
+        val moduleDir = if (hasComposeApp) "composeApp/" else ""
+        return when {
+            normalized.contains("android") -> "${prefix}${moduleDir}src/androidMain/kotlin/MainActivity.kt"
+            normalized.startsWith("ios") || normalized.contains("apple") -> "${prefix}${moduleDir}src/iosMain/kotlin/MainViewController.kt"
+            normalized == "desktop" || normalized == "jvm" -> "${prefix}${moduleDir}src/desktopMain/kotlin/main.kt"
+            normalized.startsWith("wasm") || normalized == "js" || normalized.contains("web") -> "${prefix}${moduleDir}src/wasmJsMain/kotlin/main.kt"
+            else -> "${prefix}src/${target}Main/kotlin/main.kt"
+        }
+    }
+
+    private fun getBoilerplateRemediation(target: String): String {
+        val normalized = target.lowercase()
+        return when {
+            normalized.contains("android") -> {
+                "Establish Stage 1 Living Foundation: create Android entry point inheriting from ComponentActivity:\n" +
+                "class MainActivity : ComponentActivity() {\n" +
+                "    override fun onCreate(savedInstanceState: Bundle?) {\n" +
+                "        super.onCreate(savedInstanceState)\n" +
+                "        setContent { App() }\n" +
+                "    }\n" +
+                "}"
+            }
+            normalized.startsWith("ios") || normalized.contains("apple") -> {
+                "Establish Stage 1 Living Foundation: create iOS Compose UI entry point in MainViewController.kt:\n" +
+                "fun MainViewController() = ComposeUIViewController { App() }"
+            }
+            normalized == "desktop" || normalized == "jvm" -> {
+                "Establish Stage 1 Living Foundation: create Desktop runner entry point with application window in main.kt:\n" +
+                "fun main() = application {\n" +
+                "    Window(onCloseRequest = ::exitApplication, title = \"App\") {\n" +
+                "        App()\n" +
+                "    }\n" +
+                "}"
+            }
+            normalized.startsWith("wasm") || normalized == "js" || normalized.contains("web") -> {
+                "Establish Stage 1 Living Foundation: create Wasm ComposeViewport entry point in main.kt:\n" +
+                "@OptIn(ExperimentalComposeUiApi::class)\n" +
+                "fun main() {\n" +
+                "    ComposeViewport(document.body!!) { App() }\n" +
+                "}"
+            }
+            else -> {
+                "Establish Stage 1 Living Foundation: create an executable runner entry point for $target:\n" +
+                "fun main() {\n" +
+                "    println(\"Running $target\")\n" +
+                "}"
+            }
+        }
     }
 
     private fun findCommonPackagePrefix(packages: Set<String>): String? {

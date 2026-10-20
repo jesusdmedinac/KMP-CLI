@@ -27,6 +27,8 @@ import kotlinx.serialization.json.Json
 class AnalyzeCommand(
     versionCatalogParser: VersionCatalogParser = VersionCatalogParser(),
     private val architectureChecker: ArchitectureRuleChecker = ArchitectureRuleChecker(),
+    klibsCatalog: com.jesusdmedinac.kmp.core.klibs.KlibsCatalog = com.jesusdmedinac.kmp.core.klibs.KlibsCatalog(),
+    projectParser: com.jesusdmedinac.kmp.core.project.parser.UnifiedProjectParser = com.jesusdmedinac.kmp.core.project.parser.UnifiedProjectParser(),
     private val terminal: Terminal = Terminal(),
 ) : CliktCommand(
     name = "analyze",
@@ -50,6 +52,7 @@ class AnalyzeCommand(
         subcommands(
             AnalyzeDependenciesCommand(versionCatalogParser, terminal),
             AnalyzeRulesCommand(architectureChecker, terminal),
+            AnalyzeLibrariesCommand(klibsCatalog, projectParser, terminal),
         )
     }
 

@@ -137,6 +137,89 @@ class DescribeCommandTest {
     }
 
     @Test
+    fun `describe with json reports platform runner status for each declared target`() {
+        fakeEnv.writeFileText(
+            "settings.gradle.kts",
+            """
+            rootProject.name = "RunnerApp"
+            include(":composeApp")
+            """.trimIndent()
+        )
+        fakeEnv.writeFileText(
+            "build.gradle.kts",
+            """
+            kotlin {
+                androidTarget()
+                jvm("desktop")
+                wasmJs()
+            }
+            """.trimIndent()
+        )
+        fakeEnv.writeFileText(
+            "composeApp/src/androidMain/kotlin/MainActivity.kt",
+            "class MainActivity : ComponentActivity()"
+        )
+        fakeEnv.writeFileText(
+            "composeApp/src/desktopMain/kotlin/main.kt",
+            "fun main() = application {}"
+        )
+
+        val command = DescribeCommand(parser = parser, terminal = terminal)
+        CommandLineParser.parseAndRun(command, listOf("--json")) { it.run() }
+
+        val output = recorder.output().trim()
+        val descriptor = Json.decodeFromString<ProjectDescriptor>(output)
+
+        assertNotNull(descriptor)
+        assertEquals(3, descriptor.platformRunners.size)
+
+        val androidRunner = descriptor.platformRunners.find { it.target == "android" }
+        assertNotNull(androidRunner)
+        assertTrue(androidRunner.present)
+        assertEquals("composeApp/src/androidMain/kotlin/MainActivity.kt", androidRunner.entryPoint)
+
+        val desktopRunner = descriptor.platformRunners.find { it.target == "jvm" }
+        assertNotNull(desktopRunner)
+        assertTrue(desktopRunner.present)
+
+        val wasmRunner = descriptor.platformRunners.find { it.target == "wasmJs" }
+        assertNotNull(wasmRunner)
+        assertEquals(false, wasmRunner.present)
+    }
+
+    @Test
+    fun `describe human output displays platform runner presence and types`() {
+        fakeEnv.writeFileText(
+            "settings.gradle.kts",
+            """
+            rootProject.name = "RunnerApp"
+            """.trimIndent()
+        )
+        fakeEnv.writeFileText(
+            "build.gradle.kts",
+            """
+            kotlin {
+                androidTarget()
+                jvm()
+            }
+            """.trimIndent()
+        )
+        fakeEnv.writeFileText(
+            "src/androidMain/kotlin/MainActivity.kt",
+            "class MainActivity : ComponentActivity()"
+        )
+
+        val command = DescribeCommand(parser = parser, terminal = terminal)
+        CommandLineParser.parseAndRun(command, emptyList()) { it.run() }
+
+        val output = recorder.output()
+        assertTrue(output.contains("Platform Runners (2):") || output.contains("Platform Runners (2)"))
+        assertTrue(output.contains("android"))
+        assertTrue(output.contains("jvm"))
+        assertTrue(output.contains("Missing platform runner entry point"))
+    }
+
+    @Test
     fun `describe fails with exit code 1 when no project found`() {
         val command = DescribeCommand(parser = parser, terminal = terminal)
         val exception = assertFailsWith<ProgramResult> {

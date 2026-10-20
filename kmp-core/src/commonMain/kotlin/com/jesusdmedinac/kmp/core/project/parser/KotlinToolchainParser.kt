@@ -76,12 +76,16 @@ class KotlinToolchainParser(
             "kotlin-toolchain-project"
         }
 
+        val runnerDetector = PlatformRunnerDetector(systemEnvironment)
+        val platformRunners = runnerDetector.detect(projectRoot, allTargets.toList().sorted())
+
         return ProjectDescriptor(
             name = projectName,
             buildSystem = BuildSystem.KOTLIN_TOOLCHAIN,
             kotlinVersion = detectedKotlinVersion,
             targets = allTargets.toList().sorted(),
             modules = modules,
+            platformRunners = platformRunners,
         )
     }
 

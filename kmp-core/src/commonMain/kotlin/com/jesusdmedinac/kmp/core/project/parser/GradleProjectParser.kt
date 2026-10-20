@@ -85,6 +85,9 @@ class GradleProjectParser(
             detectedKotlinVersion = versionCatalog?.versions?.get("kotlin")
         }
 
+        val runnerDetector = PlatformRunnerDetector(systemEnvironment)
+        val platformRunners = runnerDetector.detect(projectRoot, allTargets.toList().sorted())
+
         return ProjectDescriptor(
             name = rootName,
             buildSystem = BuildSystem.GRADLE,
@@ -92,7 +95,9 @@ class GradleProjectParser(
             targets = allTargets.toList().sorted(),
             modules = modules,
             dependencies = versionCatalog,
+            platformRunners = platformRunners,
         )
+
     }
 
     private fun parseRootProjectName(content: String): String? {
