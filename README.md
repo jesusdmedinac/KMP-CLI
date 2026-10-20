@@ -264,6 +264,7 @@ Add `kmp` to your `claude_desktop_config.json` or Antigravity MCP settings:
 | `kmp_add_skill` | Install an agent skill locally or globally | `skillId`, `global` |
 | `kmp_migrate_audit` | Audit React Native or Flutter codebases for native bridge migration | `path` |
 | `kmp_migrate_plan` | Generate phased Strangler Fig migration roadmap to KMP | `path`, `pathway` |
+| `kmp_migrate_execute` | Execute cross-platform modernization into KMP (scaffold, synthesize, migrate assets, emit manifest) | `sourcePath`, `outputDir`, `package`, `pathway`, `strategy` |
 
 #### 7. Cross-Platform Modernization & Migration Engine (`kmp migrate`)
 Audit legacy cross-platform codebases (React Native, Flutter) and generate incremental Strangler Fig modernization pathways (see [RFC-005](docs/RFC-005-cross-platform-modernization-and-migration.md)):
@@ -283,6 +284,9 @@ kmp migrate plan
 
 # Override pathway recommendation (dual-native, native-ui-shared-core, compose-multiplatform)
 kmp migrate plan --pathway native-ui-shared-core
+
+# Execute end-to-end migration: scaffold KMP app, synthesize dependencies, migrate assets, and emit manifest
+kmp migrate execute ./legacy-app --output ./migrated-kmp --package com.example.migrated --strategy autonomous
 
 # Scaffold shared KMP core bridge library for existing hybrid shells
 kmp create MyBridge --template kmp-shared-core-bridge

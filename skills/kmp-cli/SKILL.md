@@ -452,7 +452,24 @@ Produces a structured 4-phase progression:
 3. **Phase 3: UI & Screen Incremental**: Replace high-friction screens with Compose Multiplatform or native UI.
 4. **Phase 4: Legacy Shell Deletion**: Remove JS/Dart runtime engines, delete bridge pods, finalize standalone multiplatform binaries.
 
-### 7.3 Shared Core Bridge Scaffolding
+### 7.3 End-to-End Migration Execution (`kmp migrate execute`)
+```bash
+# Execute autonomous migration: scaffold destination KMP app, synthesize dependencies, migrate assets, and emit manifest
+kmp migrate execute <sourcePath> --output <targetPath> --package com.example.migrated --strategy autonomous
+
+# Guided migration with developer checkpoints
+kmp migrate execute <sourcePath> --output <targetPath> --strategy guided
+
+# Machine-readable JSON output for AI agent orchestration
+kmp migrate execute <sourcePath> --output <targetPath> --json
+```
+Automates the 4-phase modernization pipeline:
+1. Scaffolds clean Compose Multiplatform destination project.
+2. Synthesizes `libs.versions.toml` with certified KMP equivalents discovered during audit.
+3. Migrates and normalizes images, icons, and fonts into `commonMain/composeResources/`.
+4. Emits `migration-manifest.json` and `MIGRATION_PROGRESS.md` with layered translation tasks (Domain $\rightarrow$ Data $\rightarrow$ State $\rightarrow$ UI).
+
+### 7.4 Shared Core Bridge Scaffolding
 ```bash
 kmp create MyBridge --template kmp-shared-core-bridge
 ```
