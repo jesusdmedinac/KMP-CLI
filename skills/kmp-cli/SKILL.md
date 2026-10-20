@@ -254,6 +254,7 @@ kmp create [project-name] [flags]
   - `toolchain-native-ui`: Official JetBrains Kotlin Toolchain declarative app with SwiftUI.
   - `sdui-starter`: Dynamic Server-Driven UI starter powered by `json-to-compose`.
   - `fullstack`: Specialized Ktor backend server + Compose client sharing models in `:shared`.
+  - `kmp-shared-core-bridge`: Lightweight KMP library configured for ingestion by existing native/hybrid shells (SPM/CocoaPods & Maven/AAR).
 - `--name <name>`: Project name (or specify as positional argument).
 - `--package <package>`: Application package name (default: `com.example.<sanitizedName>`).
 - `--build-system <gradle|toolchain>`: Build system alias.
@@ -397,7 +398,7 @@ kmp mcp
 }
 ```
 
-### 6.3 Exposed MCP Tools (7)
+### 6.3 Exposed MCP Tools (9)
 
 | Tool Name | Purpose | Parameters | Returns |
 | :--- | :--- | :--- | :--- |
@@ -408,10 +409,54 @@ kmp mcp
 | `kmp_analyze_libraries` | Queries klibs.io for target compatibility, coordinates, and license | `query` (string, required), `targets` (array) | `LibrarySearchResult` JSON |
 | `kmp_list_skills` | Discovers available procedural skills in the KMP Skills Hub | None | Skills catalog list JSON |
 | `kmp_add_skill` | Installs an agent skill locally into `.agents/skills/` or globally | `skillId` (string, required), `global` (boolean) | Installation result JSON |
+| `kmp_migrate_audit` | Audit React Native or Flutter codebases for native bridge migration | `path` (string) | `MigrationAuditReport` JSON |
+| `kmp_migrate_plan` | Generate phased Strangler Fig migration roadmap to KMP | `path` (string), `pathway` (string) | `MigrationPlan` JSON |
 
 ---
 
-## 7. Core Collaboration Principles: Respect the Developer's Architecture
+## 7. Cross-Platform Modernization & Migration (`kmp migrate`)
+
+The `migrate` command family audits legacy mobile applications (React Native, Flutter) and generates incremental Strangler Fig migration pathways to Kotlin Multiplatform.
+
+### 7.1 Modernization Audit (`kmp migrate audit`)
+```bash
+# Human readable TUI with replacement matrix and risk indicators
+kmp migrate audit
+
+# Machine-readable JSON output for AI agent orchestration
+kmp migrate audit --json
+```
+
+Analyzes:
+- Framework versions and architectures (Old Bridge vs TurboModules, Flutter Platform Channels).
+- Third-party packages requiring native bridges (AsyncStorage, Axios, Redux, React Navigation, SQLite, Firebase, etc.).
+- Replacement matrix mapping each legacy dependency to its certified KMP equivalent and skill.
+- Architectural pathway recommendation: `DUAL_NATIVE`, `NATIVE_UI_SHARED_CORE`, or `COMPOSE_MULTIPLATFORM`.
+
+### 7.2 Phased Strangler Fig Migration Roadmap (`kmp migrate plan`)
+```bash
+# Generate 4-phase Strangler Fig roadmap
+kmp migrate plan
+
+# Override pathway recommendation
+kmp migrate plan --pathway native-ui-shared-core --json
+```
+
+Produces a structured 4-phase progression:
+1. **Phase 1: Foundation & Core Bridge**: Shared KMP module skeleton, CocoaPods/SPM & Gradle AAR export, unified network/auth.
+2. **Phase 2: Domain & Data Strangler**: Offline persistence (Room KMP / SQLDelight), Store5 caching, state flow observation.
+3. **Phase 3: UI & Screen Incremental**: Replace high-friction screens with Compose Multiplatform or native UI.
+4. **Phase 4: Legacy Shell Deletion**: Remove JS/Dart runtime engines, delete bridge pods, finalize standalone multiplatform binaries.
+
+### 7.3 Shared Core Bridge Scaffolding
+```bash
+kmp create MyBridge --template kmp-shared-core-bridge
+```
+Scaffolds a lightweight KMP library configured for immediate consumption by existing native/hybrid shells (SPM/CocoaPods export, Android AAR publishing, SKIE coroutine bridge, and coroutine dispatchers).
+
+---
+
+## 8. Core Collaboration Principles: Respect the Developer's Architecture
 
 When an AI coding agent collaborates with a human developer on a Kotlin Multiplatform codebase, it must act as a contextually aware pair programmer rather than an opinionated dictator:
 
@@ -429,7 +474,7 @@ When an AI coding agent collaborates with a human developer on a Kotlin Multipla
 
 ---
 
-## 8. Hierarchy of Canonical Truth
+## 9. Hierarchy of Canonical Truth
 
 To avoid hallucinations, outdated conventions, and fragile code, AI agents must adhere to the following **Three-Tier Hierarchy of Truth**:
 
@@ -462,6 +507,6 @@ The [Kotlin Foundation](https://kotlinfoundation.org/) coordinates the evolution
 
 ---
 
-## 9. Exit Codes
+## 10. Exit Codes
 - `0`: Success (clean execution).
 - `1`: Failure detected (critical tool failure, missing arguments, or invalid configuration).

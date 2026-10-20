@@ -148,15 +148,15 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 
 ## Cross-Platform Modernization: React Native & Flutter Migration Engine
 ### Feature: Cross-Platform Modernization & Migration Analysis (`docs/features/07_cross_platform_modernization_and_migration.feature`)
-- [ ] **[#40](https://github.com/jesusdmedinac/KMP-CLI/issues/40)** Cross-Platform Modernization & Audit Engine
-  - [ ] Scenario: Audit React Native codebase and generate dependency replacement matrix
-  - [ ] Scenario: Audit Flutter codebase and generate dependency replacement matrix
-  - [ ] Scenario: Smart redirect from kmp analyze when detecting legacy cross-platform codebases
-  - [ ] Scenario: Recommend architectural modernization pathway
-  - [ ] Scenario: Generate phased Strangler Fig migration roadmap
-  - [ ] Scenario: Provide canonical migration skills in KMP Skills Hub
-  - [ ] Scenario: Scaffold Shared KMP Core bridge template
-  - [ ] Scenario: Output migration audit in dual formats for humans and AI agents
+- [x] **[#40](https://github.com/jesusdmedinac/KMP-CLI/issues/40)** Cross-Platform Modernization & Audit Engine
+  - [x] Scenario: Audit React Native codebase and generate dependency replacement matrix
+  - [x] Scenario: Audit Flutter codebase and generate dependency replacement matrix
+  - [x] Scenario: Smart redirect from kmp analyze when detecting legacy cross-platform codebases
+  - [x] Scenario: Recommend architectural modernization pathway
+  - [x] Scenario: Generate phased Strangler Fig migration roadmap
+  - [x] Scenario: Provide canonical migration skills in KMP Skills Hub
+  - [x] Scenario: Scaffold Shared KMP Core bridge template
+  - [x] Scenario: Output migration audit in dual formats for humans and AI agents
 
 ---
 

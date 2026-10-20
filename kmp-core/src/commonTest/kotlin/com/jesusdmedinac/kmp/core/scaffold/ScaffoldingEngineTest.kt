@@ -319,4 +319,37 @@ class ScaffoldingEngineTest {
         assertTrue(fakeEnv.fileExists("FullRunnersApp/composeApp/src/desktopMain/kotlin/com/example/full/main.kt"))
         assertTrue(fakeEnv.fileExists("FullRunnersApp/composeApp/src/wasmJsMain/kotlin/com/example/full/main.kt"))
     }
+
+    @Test
+    fun `scaffold kmp-shared-core-bridge generates lightweight bridge library with dispatchers and core bridge`() {
+        val options = ScaffoldingOptions(
+            name = "MyCoreBridge",
+            packageName = "com.example.bridge",
+            template = ProjectTemplate.SHARED_CORE_BRIDGE,
+            targets = listOf("android", "ios"),
+        )
+
+        val result = engine.scaffold(options)
+        assertEquals("SUCCESS", result.status)
+        assertEquals("kmp-shared-core-bridge", result.template)
+
+        val buildGradle = fakeEnv.readFileText("MyCoreBridge/build.gradle.kts")
+        assertNotNull(buildGradle)
+        assertTrue(buildGradle.contains("publishLibraryVariants(\"release\", \"debug\")"))
+        assertTrue(buildGradle.contains("baseName = \"MyCoreBridge\""))
+        assertTrue(buildGradle.contains("export(libs.kotlinx.coroutines.core)"))
+
+        val catalog = fakeEnv.readFileText("MyCoreBridge/gradle/libs.versions.toml")
+        assertNotNull(catalog)
+        assertTrue(catalog.contains("skie"))
+
+        val coreBridgeSource = fakeEnv.readFileText("MyCoreBridge/src/commonMain/kotlin/com/example/bridge/bridge/CoreBridge.kt")
+        assertNotNull(coreBridgeSource)
+        assertTrue(coreBridgeSource.contains("interface CoreBridge"))
+        assertTrue(coreBridgeSource.contains("val isReady: StateFlow<Boolean>"))
+
+        val dispatchersSource = fakeEnv.readFileText("MyCoreBridge/src/commonMain/kotlin/com/example/bridge/dispatcher/CoroutineDispatchers.kt")
+        assertNotNull(dispatchersSource)
+        assertTrue(dispatchersSource.contains("interface AppDispatchers"))
+    }
 }
