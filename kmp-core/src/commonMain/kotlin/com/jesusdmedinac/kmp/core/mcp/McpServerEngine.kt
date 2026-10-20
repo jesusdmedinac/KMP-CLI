@@ -8,7 +8,10 @@ import com.jesusdmedinac.kmp.core.klibs.model.LibraryRecommendationResult
 import com.jesusdmedinac.kmp.core.mcp.model.*
 import com.jesusdmedinac.kmp.core.migration.MigrationEngine
 import com.jesusdmedinac.kmp.core.migration.model.MigrationAuditReport
+import com.jesusdmedinac.kmp.core.migration.model.MigrationExecuteOptions
+import com.jesusdmedinac.kmp.core.migration.model.MigrationExecuteResult
 import com.jesusdmedinac.kmp.core.migration.model.MigrationPlan
+import com.jesusdmedinac.kmp.core.migration.model.MigrationStrategy
 import com.jesusdmedinac.kmp.core.migration.model.ModernizationPathway
 import com.jesusdmedinac.kmp.core.model.DiagnosticReport
 import com.jesusdmedinac.kmp.core.project.model.ProjectDependencies
@@ -216,6 +219,36 @@ class McpServerEngine(
                     })
                 },
             ),
+            McpTool(
+                name = "kmp_migrate_execute",
+                description = "Execute cross-platform modernization: scaffold KMP app, synthesize libs.versions.toml, migrate assets, and emit migration manifest.",
+                inputSchema = buildJsonObject {
+                    put("type", "object")
+                    put("properties", buildJsonObject {
+                        put("sourcePath", buildJsonObject {
+                            put("type", "string")
+                            put("description", "Path to legacy project root (defaults to current directory)")
+                        })
+                        put("outputDir", buildJsonObject {
+                            put("type", "string")
+                            put("description", "Destination directory for the migrated KMP project")
+                        })
+                        put("package", buildJsonObject {
+                            put("type", "string")
+                            put("description", "Package ID / namespace for the new project")
+                        })
+                        put("pathway", buildJsonObject {
+                            put("type", "string")
+                            put("description", "Modernization pathway: 'compose-multiplatform', 'native-ui-shared-core', or 'dual-native'")
+                        })
+                        put("strategy", buildJsonObject {
+                            put("type", "string")
+                            put("description", "Migration strategy: 'autonomous' or 'guided'")
+                        })
+                    })
+                    put("required", buildJsonArray { add("outputDir") })
+                },
+            ),
         )
 
         val result = McpToolsListResult(tools = tools)
@@ -244,6 +277,7 @@ class McpServerEngine(
             "kmp_add_skill" -> executeAddSkill(arguments)
             "kmp_migrate_audit" -> executeMigrateAudit(arguments)
             "kmp_migrate_plan" -> executeMigratePlan(arguments)
+            "kmp_migrate_execute" -> executeMigrateExecute(arguments)
             else -> McpToolResult(
                 content = listOf(McpToolContent(text = "Error: Unknown tool '$toolName'")),
                 isError = true,
@@ -376,6 +410,42 @@ class McpServerEngine(
         val plan = migrationEngine.plan(path, override)
         return McpToolResult(
             content = listOf(McpToolContent(text = prettyJson.encodeToString<MigrationPlan>(plan))),
+        )
+    }
+
+    private fun executeMigrateExecute(args: JsonObject): McpToolResult {
+        val sourcePath = args["sourcePath"]?.jsonPrimitive?.contentOrNull ?: "."
+        val outputDir = args["outputDir"]?.jsonPrimitive?.contentOrNull ?: "${sourcePath.trimEnd('/', '\\').substringAfterLast('/')}Kmp"
+        val packageName = args["package"]?.jsonPrimitive?.contentOrNull
+        val pathwayStr = args["pathway"]?.jsonPrimitive?.contentOrNull
+        val strategyStr = args["strategy"]?.jsonPrimitive?.contentOrNull ?: "autonomous"
+
+        val strategy = when (strategyStr.lowercase()) {
+            "guided" -> MigrationStrategy.GUIDED
+            else -> MigrationStrategy.AUTONOMOUS
+        }
+
+        val pathway = pathwayStr?.let {
+            when (it.lowercase().replace('_', '-')) {
+                "dual-native" -> ModernizationPathway.DUAL_NATIVE
+                "native-ui-shared-core" -> ModernizationPathway.NATIVE_UI_SHARED_CORE
+                "compose-multiplatform" -> ModernizationPathway.COMPOSE_MULTIPLATFORM
+                else -> null
+            }
+        }
+
+        val options = MigrationExecuteOptions(
+            sourcePath = sourcePath,
+            outputDir = outputDir,
+            packageName = packageName,
+            pathway = pathway,
+            strategy = strategy,
+        )
+
+        val result = migrationEngine.execute(options)
+        return McpToolResult(
+            content = listOf(McpToolContent(text = prettyJson.encodeToString<MigrationExecuteResult>(result))),
+            isError = result.status != "SUCCESS",
         )
     }
 

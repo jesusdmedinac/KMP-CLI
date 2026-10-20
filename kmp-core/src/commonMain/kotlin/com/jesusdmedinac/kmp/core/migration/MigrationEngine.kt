@@ -5,11 +5,21 @@ import com.jesusdmedinac.kmp.core.migration.model.DependencyMapping
 import com.jesusdmedinac.kmp.core.migration.model.LegacyDetectionResult
 import com.jesusdmedinac.kmp.core.migration.model.LegacyFramework
 import com.jesusdmedinac.kmp.core.migration.model.MigrationAuditReport
+import com.jesusdmedinac.kmp.core.migration.model.MigrationExecuteOptions
+import com.jesusdmedinac.kmp.core.migration.model.MigrationExecuteResult
+import com.jesusdmedinac.kmp.core.migration.model.MigrationLayer
+import com.jesusdmedinac.kmp.core.migration.model.MigrationLayerFile
+import com.jesusdmedinac.kmp.core.migration.model.MigrationManifest
 import com.jesusdmedinac.kmp.core.migration.model.MigrationPhase
 import com.jesusdmedinac.kmp.core.migration.model.MigrationPlan
+import com.jesusdmedinac.kmp.core.migration.model.MigrationStrategy
 import com.jesusdmedinac.kmp.core.migration.model.ModernizationPathway
+import com.jesusdmedinac.kmp.core.scaffold.ScaffoldingEngine
+import com.jesusdmedinac.kmp.core.scaffold.model.ProjectTemplate
+import com.jesusdmedinac.kmp.core.scaffold.model.ScaffoldingOptions
 import com.jesusdmedinac.kmp.core.system.SystemEnvironment
 import com.jesusdmedinac.kmp.core.system.createDefaultSystemEnvironment
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -516,6 +526,293 @@ class MigrationEngine(
             pathway = selectedPathway,
             projectPath = auditReport.projectPath,
             phases = phases,
+        )
+    }
+
+    fun execute(options: MigrationExecuteOptions): MigrationExecuteResult {
+        val root = normalizePath(options.sourcePath)
+        val detection = detectLegacyFramework(root)
+        if (!detection.detected) {
+            return MigrationExecuteResult(
+                status = "FAILED",
+                sourcePath = options.sourcePath,
+                outputPath = options.outputDir,
+                framework = LegacyFramework.UNKNOWN,
+                strategy = options.strategy,
+                pathway = options.pathway ?: ModernizationPathway.COMPOSE_MULTIPLATFORM,
+                errorMessage = "No legacy React Native or Flutter codebase detected at '${options.sourcePath}'.",
+            )
+        }
+
+        val auditReport = audit(root)
+        val chosenPathway = options.pathway ?: auditReport.recommendedPathway
+        val targets = if (auditReport.platformTargets.isNotEmpty()) {
+            auditReport.platformTargets
+        } else {
+            listOf("android", "ios", "desktop", "wasm")
+        }
+
+        val cleanProjectName = options.outputDir.trimEnd('/', '\\').substringAfterLast('/').substringAfterLast('\\')
+        val pkg = options.packageName ?: "com.example.${cleanProjectName.lowercase().replace("-", "").replace("_", "")}"
+
+        val scaffoldingEngine = ScaffoldingEngine(systemEnvironment)
+        val scaffoldOptions = ScaffoldingOptions(
+            name = cleanProjectName,
+            packageName = pkg,
+            template = ProjectTemplate.SHARED_UI,
+            targets = targets,
+            outputDir = options.outputDir,
+        )
+
+        val scaffoldResult = scaffoldingEngine.scaffold(scaffoldOptions)
+        if (scaffoldResult.status == "FAILED") {
+            return MigrationExecuteResult(
+                status = "FAILED",
+                sourcePath = options.sourcePath,
+                outputPath = options.outputDir,
+                framework = detection.framework,
+                strategy = options.strategy,
+                pathway = chosenPathway,
+                errorMessage = "Scaffolding failed: ${scaffoldResult.errorMessage}",
+            )
+        }
+
+        // Synthesize libs.versions.toml with KMP equivalents from audit
+        val synthesizedDeps = mutableListOf<String>()
+        val tomlPath = "${options.outputDir}/gradle/libs.versions.toml"
+        val existingToml = systemEnvironment.readFileText(tomlPath) ?: ""
+
+        val librariesToAdd = StringBuilder()
+
+        for (dep in auditReport.dependencies) {
+            val kmpEq = dep.kmpEquivalent
+            if (!synthesizedDeps.contains(kmpEq)) {
+                synthesizedDeps.add(kmpEq)
+                when (kmpEq) {
+                    "kotlin-networking-ktor" -> {
+                        if (!existingToml.contains("ktor-client-core")) {
+                            librariesToAdd.append("ktor-client-core = { module = \"io.ktor:ktor-client-core\", version = \"3.0.3\" }\n")
+                            librariesToAdd.append("ktor-client-content-negotiation = { module = \"io.ktor:ktor-client-content-negotiation\", version = \"3.0.3\" }\n")
+                            librariesToAdd.append("ktor-serialization-kotlinx-json = { module = \"io.ktor:ktor-serialization-kotlinx-json\", version = \"3.0.3\" }\n")
+                        }
+                    }
+                    "kotlin-media-coil" -> {
+                        if (!existingToml.contains("coil-compose")) {
+                            librariesToAdd.append("coil-compose = { module = \"io.coil-kt.coil3:coil-compose\", version = \"3.0.4\" }\n")
+                            librariesToAdd.append("coil-network-ktor3 = { module = \"io.coil-kt.coil3:coil-network-ktor3\", version = \"3.0.4\" }\n")
+                        }
+                    }
+                    "kotlin-data-multiplatform-settings" -> {
+                        if (!existingToml.contains("multiplatform-settings")) {
+                            librariesToAdd.append("multiplatform-settings = { module = \"com.russhwolf:multiplatform-settings\", version = \"1.3.0\" }\n")
+                        }
+                    }
+                    "kotlin-data-room-kmp" -> {
+                        if (!existingToml.contains("androidx-room-runtime")) {
+                            librariesToAdd.append("androidx-room-runtime = { module = \"androidx.room:room-runtime\", version = \"2.7.0-alpha13\" }\n")
+                        }
+                    }
+                    "kotlin-data-sqldelight-database" -> {
+                        if (!existingToml.contains("sqldelight-runtime")) {
+                            librariesToAdd.append("sqldelight-runtime = { module = \"app.cash.sqldelight:runtime\", version = \"2.0.2\" }\n")
+                        }
+                    }
+                    "kotlin-architecture-orbit-mvi" -> {
+                        if (!existingToml.contains("orbit-core")) {
+                            librariesToAdd.append("orbit-core = { module = \"org.orbit-mvi:orbit-core\", version = \"9.0.0\" }\n")
+                            librariesToAdd.append("orbit-compose = { module = \"org.orbit-mvi:orbit-compose\", version = \"9.0.0\" }\n")
+                        }
+                    }
+                    "kotlin-data-store5" -> {
+                        if (!existingToml.contains("store5")) {
+                            librariesToAdd.append("store5 = { module = \"org.mobilenativefoundation.store:store5\", version = \"5.1.0\" }\n")
+                        }
+                    }
+                }
+            }
+        }
+
+        val updatedToml = if (librariesToAdd.isNotEmpty()) {
+            if (existingToml.contains("[libraries]")) {
+                existingToml.replace("[libraries]", "[libraries]\n$librariesToAdd")
+            } else {
+                "$existingToml\n[libraries]\n$librariesToAdd"
+            }
+        } else {
+            existingToml
+        }
+        systemEnvironment.writeFileText(tomlPath, updatedToml)
+
+        // Inject synthesized dependencies into build.gradle.kts
+        val buildGradlePath = "${options.outputDir}/build.gradle.kts"
+        val existingBuildGradle = systemEnvironment.readFileText(buildGradlePath) ?: ""
+        if (existingBuildGradle.contains("commonMain.dependencies {")) {
+            val depInjections = StringBuilder()
+            if (synthesizedDeps.contains("kotlin-networking-ktor")) {
+                depInjections.append("            implementation(libs.ktor.client.core)\n")
+            }
+            if (synthesizedDeps.contains("kotlin-media-coil")) {
+                depInjections.append("            implementation(libs.coil.compose)\n")
+            }
+            if (synthesizedDeps.contains("kotlin-data-multiplatform-settings")) {
+                depInjections.append("            implementation(libs.multiplatform.settings)\n")
+            }
+            val updatedBuildGradle = existingBuildGradle.replace(
+                "commonMain.dependencies {",
+                "commonMain.dependencies {\n$depInjections",
+            )
+            systemEnvironment.writeFileText(buildGradlePath, updatedBuildGradle)
+        }
+
+        // Migrate Assets
+        var assetCount = 0
+        val drawableDest = "${options.outputDir}/src/commonMain/composeResources/drawable"
+        val fontDest = "${options.outputDir}/src/commonMain/composeResources/font"
+
+        val assetSearchDirs = listOf(
+            "${root}assets/images",
+            "${root}assets/icons",
+            "${root}assets/fonts",
+            "${root}assets",
+            "${root}images",
+        )
+
+        val processedAssetNames = mutableSetOf<String>()
+        for (dir in assetSearchDirs) {
+            val relativeFiles = systemEnvironment.listFilesRecursively(dir)
+            val cleanDir = if (dir.endsWith("/")) dir.dropLast(1) else dir
+            for (relFile in relativeFiles) {
+                val fullPath = "$cleanDir/$relFile"
+                val fileName = relFile.substringAfterLast('/').substringAfterLast('\\')
+                if (!processedAssetNames.contains(fileName)) {
+                    val ext = fileName.substringAfterLast('.', "").lowercase()
+                    if (ext in listOf("png", "jpg", "jpeg", "webp", "svg")) {
+                        val destPath = "$drawableDest/$fileName"
+                        systemEnvironment.copyFile(fullPath, destPath)
+                        processedAssetNames.add(fileName)
+                        assetCount++
+                    } else if (ext in listOf("ttf", "otf")) {
+                        val destPath = "$fontDest/$fileName"
+                        systemEnvironment.copyFile(fullPath, destPath)
+                        processedAssetNames.add(fileName)
+                        assetCount++
+                    }
+                }
+            }
+        }
+
+        // Build Migration Manifest & Layers
+        val layer1Models = mutableListOf<MigrationLayerFile>()
+        val layer2Data = mutableListOf<MigrationLayerFile>()
+        val layer3State = mutableListOf<MigrationLayerFile>()
+        val layer4Ui = mutableListOf<MigrationLayerFile>()
+
+        fun categorizeAndAdd(fullPath: String, relPath: String) {
+            val lower = relPath.lowercase()
+            val fileName = relPath.substringAfterLast('/').substringAfterLast('\\')
+            val baseName = fileName.substringBeforeLast('.')
+
+            when {
+                lower.contains("models/") || lower.contains("types/") || lower.contains("entities/") -> {
+                    layer1Models.add(
+                        MigrationLayerFile(
+                            source = relPath,
+                            target = "src/commonMain/kotlin/${pkg.replace('.', '/')}/model/$baseName.kt",
+                            category = "MODEL",
+                        )
+                    )
+                }
+                lower.contains("services/") || lower.contains("api/") || lower.contains("repositories/") || lower.contains("network/") -> {
+                    layer2Data.add(
+                        MigrationLayerFile(
+                            source = relPath,
+                            target = "src/commonMain/kotlin/${pkg.replace('.', '/')}/data/$baseName.kt",
+                            category = "DATA",
+                        )
+                    )
+                }
+                lower.contains("hooks/") || lower.contains("store/") || lower.contains("bloc/") || lower.contains("redux/") || lower.contains("cubit/") -> {
+                    layer3State.add(
+                        MigrationLayerFile(
+                            source = relPath,
+                            target = "src/commonMain/kotlin/${pkg.replace('.', '/')}/state/${baseName}ViewModel.kt",
+                            category = "STATE",
+                        )
+                    )
+                }
+                lower.contains("screens/") || lower.contains("components/") || lower.contains("widgets/") || lower.contains("views/") ||
+                lower.startsWith("app/") || lower.endsWith("main.dart") || lower.endsWith("index.tsx") || lower.endsWith("app.tsx") -> {
+                    layer4Ui.add(
+                        MigrationLayerFile(
+                            source = relPath,
+                            target = "src/commonMain/kotlin/${pkg.replace('.', '/')}/ui/${baseName}Screen.kt",
+                            category = "UI",
+                        )
+                    )
+                }
+            }
+        }
+
+        val srcDirsToScan = listOf(
+            "${root}src",
+            "${root}app",
+            "${root}lib",
+        )
+        for (scanDir in srcDirsToScan) {
+            val relativeFiles = systemEnvironment.listFilesRecursively(scanDir)
+            val cleanDir = if (scanDir.endsWith("/")) scanDir.dropLast(1) else scanDir
+            for (relFile in relativeFiles) {
+                val fullPath = "$cleanDir/$relFile"
+                val sourceRelPath = if (fullPath.startsWith(root)) fullPath.removePrefix(root) else fullPath
+                categorizeAndAdd(fullPath, sourceRelPath)
+            }
+        }
+
+        val manifest = MigrationManifest(
+            sourceFramework = detection.framework,
+            sourcePath = options.sourcePath,
+            outputPath = options.outputDir,
+            pathway = chosenPathway,
+            strategy = options.strategy,
+            layers = listOf(
+                MigrationLayer(1, "Domain Models", layer1Models),
+                MigrationLayer(2, "Data Sources & Networking", layer2Data),
+                MigrationLayer(3, "State Management & ViewModels", layer3State),
+                MigrationLayer(4, "UI Screens & Components", layer4Ui),
+            ),
+        )
+
+        val manifestPath = "${options.outputDir}/migration-manifest.json"
+        systemEnvironment.writeFileText(manifestPath, json.encodeToString(manifest))
+
+        val progressMd = StringBuilder()
+        progressMd.append("# Migration Progress Roadmap: ${options.outputDir}\n\n")
+        progressMd.append("Migrating from **${detection.framework}** (`${options.sourcePath}`) to **Compose Multiplatform**\n\n")
+        progressMd.append("Strategy: `${options.strategy.name.lowercase()}` | Pathway: `${chosenPathway.name}`\n\n")
+
+        for (layer in manifest.layers) {
+            progressMd.append("## Layer ${layer.layerNumber}: ${layer.name}\n")
+            if (layer.files.isEmpty()) {
+                progressMd.append("- _No files detected in this layer._\n\n")
+            } else {
+                for (f in layer.files) {
+                    progressMd.append("- [ ] `${f.source}` -> `${f.target}`\n")
+                }
+                progressMd.append("\n")
+            }
+        }
+        systemEnvironment.writeFileText("${options.outputDir}/MIGRATION_PROGRESS.md", progressMd.toString())
+
+        return MigrationExecuteResult(
+            status = "SUCCESS",
+            sourcePath = options.sourcePath,
+            outputPath = options.outputDir,
+            framework = detection.framework,
+            strategy = options.strategy,
+            pathway = chosenPathway,
+            synthesizedDependencies = synthesizedDeps,
+            migratedAssetsCount = assetCount,
+            manifestPath = manifestPath,
         )
     }
 

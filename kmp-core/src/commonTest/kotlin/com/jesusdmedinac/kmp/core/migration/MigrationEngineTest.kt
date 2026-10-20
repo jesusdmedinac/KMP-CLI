@@ -2,11 +2,14 @@ package com.jesusdmedinac.kmp.core.migration
 
 import com.jesusdmedinac.kmp.core.migration.model.ArchitectureType
 import com.jesusdmedinac.kmp.core.migration.model.LegacyFramework
+import com.jesusdmedinac.kmp.core.migration.model.MigrationExecuteOptions
+import com.jesusdmedinac.kmp.core.migration.model.MigrationStrategy
 import com.jesusdmedinac.kmp.core.migration.model.ModernizationPathway
 import com.jesusdmedinac.kmp.core.test.FakeSystemEnvironment
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class MigrationEngineTest {
@@ -223,5 +226,112 @@ class MigrationEngineTest {
 
         assertEquals("Legacy Shell Deletion", plan.phases[3].name)
         assertTrue(plan.phases[3].recommendedSkills.contains("kotlin-tooling-gradle-to-kotlin-toolchain"))
+    }
+
+    @Test
+    fun `execute scaffolds destination KMP project and synthesizes dependencies from audit`() {
+        fakeEnv.writeFileText(
+            "legacy-rn/package.json",
+            """
+            {
+              "name": "LegacyRN",
+              "dependencies": {
+                "react-native": "0.88.0",
+                "expo-image": "~58.0.16",
+                "axios": "^1.6.0"
+              }
+            }
+            """.trimIndent(),
+        )
+
+        val options = MigrationExecuteOptions(
+            sourcePath = "legacy-rn",
+            outputDir = "migrated-kmp",
+            packageName = "com.example.migrated",
+            strategy = MigrationStrategy.AUTONOMOUS,
+        )
+
+        val result = migrationEngine.execute(options)
+        assertEquals("SUCCESS", result.status)
+        assertEquals(LegacyFramework.REACT_NATIVE, result.framework)
+        assertEquals("migrated-kmp", result.outputPath)
+        assertTrue(result.synthesizedDependencies.contains("kotlin-media-coil"))
+        assertTrue(result.synthesizedDependencies.contains("kotlin-networking-ktor"))
+
+        // Check that destination files exist
+        assertTrue(fakeEnv.fileExists("migrated-kmp/gradle/libs.versions.toml"))
+        assertTrue(fakeEnv.fileExists("migrated-kmp/build.gradle.kts"))
+
+        // Verify synthesized dependencies in libs.versions.toml
+        val tomlContent = fakeEnv.readFileText("migrated-kmp/gradle/libs.versions.toml") ?: ""
+        assertTrue(tomlContent.contains("coil") || tomlContent.contains("ktor"))
+    }
+
+    @Test
+    fun `execute on Flutter scaffolds KMP project and synthesizes Ktor and Settings`() {
+        fakeEnv.writeFileText(
+            "legacy-flutter/pubspec.yaml",
+            """
+            name: flutter_app
+            dependencies:
+              flutter:
+                sdk: flutter
+              http: ^1.2.0
+              shared_preferences: ^2.2.0
+            """.trimIndent(),
+        )
+
+        val options = MigrationExecuteOptions(
+            sourcePath = "legacy-flutter",
+            outputDir = "migrated-flutter-kmp",
+            packageName = "com.example.flutterkmp",
+            strategy = MigrationStrategy.AUTONOMOUS,
+        )
+
+        val result = migrationEngine.execute(options)
+        assertEquals("SUCCESS", result.status)
+        assertEquals(LegacyFramework.FLUTTER, result.framework)
+        assertTrue(result.synthesizedDependencies.contains("kotlin-networking-ktor"))
+        assertTrue(result.synthesizedDependencies.contains("kotlin-data-multiplatform-settings"))
+        assertTrue(fakeEnv.fileExists("migrated-flutter-kmp/build.gradle.kts"))
+    }
+
+    @Test
+    fun `execute migrates assets and generates migration-manifest and MIGRATION_PROGRESS`() {
+        fakeEnv.writeFileText(
+            "legacy-app/package.json",
+            """
+            {
+              "name": "LegacyApp",
+              "dependencies": {
+                "react-native": "0.88.0"
+              }
+            }
+            """.trimIndent(),
+        )
+        fakeEnv.writeFileText("legacy-app/assets/images/logo.png", "dummy-image-bytes")
+        fakeEnv.writeFileText("legacy-app/src/models/User.ts", "export interface User { id: string; }")
+        fakeEnv.writeFileText("legacy-app/src/services/api.ts", "export const fetchUser = () => {};")
+        fakeEnv.writeFileText("legacy-app/app/index.tsx", "export default function HomeScreen() {}")
+
+        val options = MigrationExecuteOptions(
+            sourcePath = "legacy-app",
+            outputDir = "migrated-app",
+            packageName = "com.example.migrated",
+            strategy = MigrationStrategy.AUTONOMOUS,
+        )
+
+        val result = migrationEngine.execute(options)
+        assertEquals("SUCCESS", result.status)
+        assertTrue(result.migratedAssetsCount >= 1)
+        assertNotNull(result.manifestPath)
+
+        assertTrue(fakeEnv.fileExists("migrated-app/src/commonMain/composeResources/drawable/logo.png"))
+        assertTrue(fakeEnv.fileExists("migrated-app/migration-manifest.json"))
+        assertTrue(fakeEnv.fileExists("migrated-app/MIGRATION_PROGRESS.md"))
+
+        val progressContent = fakeEnv.readFileText("migrated-app/MIGRATION_PROGRESS.md") ?: ""
+        assertTrue(progressContent.contains("Layer 1: Domain Models"))
+        assertTrue(progressContent.contains("Layer 4: UI Screens & Components"))
     }
 }

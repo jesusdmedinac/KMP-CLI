@@ -1,9 +1,11 @@
 package com.jesusdmedinac.kmp.cli.command
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.default
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.mordant.rendering.TextColors.cyan
@@ -19,7 +21,10 @@ import com.jesusdmedinac.kmp.core.migration.MigrationEngine
 import com.jesusdmedinac.kmp.core.migration.model.ArchitectureType
 import com.jesusdmedinac.kmp.core.migration.model.LegacyFramework
 import com.jesusdmedinac.kmp.core.migration.model.MigrationAuditReport
+import com.jesusdmedinac.kmp.core.migration.model.MigrationExecuteOptions
+import com.jesusdmedinac.kmp.core.migration.model.MigrationExecuteResult
 import com.jesusdmedinac.kmp.core.migration.model.MigrationPlan
+import com.jesusdmedinac.kmp.core.migration.model.MigrationStrategy
 import com.jesusdmedinac.kmp.core.migration.model.ModernizationPathway
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -39,6 +44,7 @@ class MigrateCommand(
         subcommands(
             MigrateAuditCommand(migrationEngine, terminal),
             MigratePlanCommand(migrationEngine, terminal),
+            MigrateExecuteCommand(migrationEngine, terminal),
         )
     }
 
@@ -213,6 +219,116 @@ class MigratePlanCommand(
                 terminal.println("  ${bold("Recommended KMP Skills:")} ${phase.recommendedSkills.joinToString(", ") { cyan(it) }}")
             }
             terminal.println()
+        }
+    }
+}
+
+class MigrateExecuteCommand(
+    private val migrationEngine: MigrationEngine = MigrationEngine(),
+    private val terminal: Terminal = Terminal(),
+) : CliktCommand(
+    name = "execute",
+) {
+    val sourcePath by argument(
+        "source",
+        help = "Path to the legacy project root. Defaults to current directory.",
+    ).default(".")
+
+    val outputOption by option(
+        "--output",
+        "-o",
+        help = "Output directory for the migrated Kotlin Multiplatform project.",
+    )
+
+    val packageOption by option(
+        "--package",
+        "-p",
+        help = "Package ID / namespace for the new project (e.g. com.example.migrated).",
+    )
+
+    val strategyOption by option(
+        "--strategy",
+        help = "Migration strategy: 'autonomous' or 'guided'. Defaults to 'autonomous'.",
+    ).default("autonomous")
+
+    val pathwayOption by option(
+        "--pathway",
+        help = "Override modernization pathway: 'compose-multiplatform', 'native-ui-shared-core', or 'dual-native'.",
+    )
+
+    val jsonOutput by option(
+        "--json",
+        help = "Output execution result as structured JSON.",
+    ).flag(default = false)
+
+    private val json = Json {
+        prettyPrint = true
+        encodeDefaults = true
+    }
+
+    override fun run() {
+        val destDir = outputOption ?: run {
+            val base = sourcePath.trimEnd('/', '\\').substringAfterLast('/').substringAfterLast('\\')
+            "${base}Kmp"
+        }
+
+        val strategy = when (strategyOption.lowercase()) {
+            "guided" -> MigrationStrategy.GUIDED
+            else -> MigrationStrategy.AUTONOMOUS
+        }
+
+        val pathway = pathwayOption?.let {
+            val normalized = it.lowercase().replace('_', '-')
+            when (normalized) {
+                "dual-native" -> ModernizationPathway.DUAL_NATIVE
+                "native-ui-shared-core" -> ModernizationPathway.NATIVE_UI_SHARED_CORE
+                "compose-multiplatform" -> ModernizationPathway.COMPOSE_MULTIPLATFORM
+                else -> null
+            }
+        }
+
+        val options = MigrationExecuteOptions(
+            sourcePath = sourcePath,
+            outputDir = destDir,
+            packageName = packageOption,
+            pathway = pathway,
+            strategy = strategy,
+        )
+
+        val result = migrationEngine.execute(options)
+
+        if (jsonOutput) {
+            terminal.println(json.encodeToString(result))
+        } else {
+            renderExecuteTui(result)
+        }
+
+        if (result.status != "SUCCESS") {
+            throw ProgramResult(1)
+        }
+    }
+
+    private fun renderExecuteTui(result: MigrationExecuteResult) {
+        if (result.status == "SUCCESS") {
+            terminal.println(bold(green("\n🚀 KMP Modernization Execution Succeeded!")))
+            terminal.println("  • ${bold("Source Path:")}   ${result.sourcePath} (${result.framework})")
+            terminal.println("  • ${bold("Target Path:")}   ${cyan(result.outputPath)}")
+            terminal.println("  • ${bold("Pathway:")}       ${magenta(result.pathway.name)}")
+            terminal.println("  • ${bold("Strategy:")}      ${result.strategy.name.lowercase()}")
+
+            if (result.synthesizedDependencies.isNotEmpty()) {
+                terminal.println(bold("\nSynthesized KMP Dependencies (${result.synthesizedDependencies.size}):"))
+                for (dep in result.synthesizedDependencies) {
+                    terminal.println("  ✓ ${cyan(dep)}")
+                }
+            }
+
+            terminal.println(dim("\nNext steps to verify the migrated application:"))
+            terminal.println("  1. cd ${result.outputPath}")
+            terminal.println("  2. kmp describe")
+            terminal.println("  3. ./gradlew check")
+        } else {
+            terminal.println(bold(red("\n❌ Modernization Execution Failed: ${result.errorMessage}")))
         }
     }
 }

@@ -73,3 +73,57 @@ data class LegacyDetectionResult(
     val suggestedCommand: String = "kmp migrate audit",
     val message: String,
 )
+
+@Serializable
+enum class MigrationStrategy {
+    AUTONOMOUS,
+    GUIDED,
+}
+
+@Serializable
+data class MigrationLayerFile(
+    val source: String,
+    val target: String,
+    val category: String,
+    val status: String = "PENDING",
+)
+
+@Serializable
+data class MigrationLayer(
+    val layerNumber: Int,
+    val name: String,
+    val files: List<MigrationLayerFile> = emptyList(),
+)
+
+@Serializable
+data class MigrationManifest(
+    val sourceFramework: LegacyFramework,
+    val sourcePath: String,
+    val outputPath: String,
+    val pathway: ModernizationPathway,
+    val strategy: MigrationStrategy,
+    val layers: List<MigrationLayer> = emptyList(),
+)
+
+@Serializable
+data class MigrationExecuteOptions(
+    val sourcePath: String,
+    val outputDir: String,
+    val packageName: String? = null,
+    val pathway: ModernizationPathway? = null,
+    val strategy: MigrationStrategy = MigrationStrategy.AUTONOMOUS,
+)
+
+@Serializable
+data class MigrationExecuteResult(
+    val status: String,
+    val sourcePath: String,
+    val outputPath: String,
+    val framework: LegacyFramework,
+    val strategy: MigrationStrategy,
+    val pathway: ModernizationPathway,
+    val synthesizedDependencies: List<String> = emptyList(),
+    val migratedAssetsCount: Int = 0,
+    val manifestPath: String? = null,
+    val errorMessage: String? = null,
+)

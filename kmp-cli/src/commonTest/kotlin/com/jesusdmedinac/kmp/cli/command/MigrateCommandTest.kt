@@ -6,6 +6,7 @@ import com.github.ajalt.mordant.terminal.TerminalRecorder
 import com.jesusdmedinac.kmp.core.migration.MigrationEngine
 import com.jesusdmedinac.kmp.core.migration.model.LegacyFramework
 import com.jesusdmedinac.kmp.core.migration.model.MigrationAuditReport
+import com.jesusdmedinac.kmp.core.migration.model.MigrationExecuteResult
 import com.jesusdmedinac.kmp.core.migration.model.MigrationPlan
 import com.jesusdmedinac.kmp.core.migration.model.ModernizationPathway
 import com.jesusdmedinac.kmp.core.test.FakeSystemEnvironment
@@ -190,5 +191,59 @@ class MigrateCommandTest {
         assertTrue(output.contains("Phase 4:"))
         assertTrue(output.contains("Legacy Shell Deletion"))
         assertTrue(output.contains("kmp-shared-core-bridge"))
+    }
+
+    @Test
+    fun `migrate execute creates KMP project with human output`() {
+        val fixture = createFixture()
+        val packageJson = """
+            {
+              "name": "LegacyRNApp",
+              "dependencies": {
+                "react-native": "0.72.0",
+                "axios": "^1.6.0"
+              }
+            }
+        """.trimIndent()
+        fixture.fakeEnv.writeFileText("package.json", packageJson)
+
+        CommandLineParser.parseAndRun(
+            fixture.command,
+            listOf("execute", ".", "--output", "MigratedApp", "--package", "com.example.testmigrated"),
+        ) { it.run() }
+
+        val output = fixture.recorder.output()
+        assertTrue(output.contains("KMP Modernization Execution Succeeded!"))
+        assertTrue(output.contains("MigratedApp"))
+        assertTrue(output.contains("kotlin-networking-ktor"))
+        assertTrue(fixture.fakeEnv.fileExists("MigratedApp/gradle/libs.versions.toml"))
+    }
+
+    @Test
+    fun `migrate execute with json returns structured MigrationExecuteResult`() {
+        val fixture = createFixture()
+        val packageJson = """
+            {
+              "name": "LegacyRNApp",
+              "dependencies": {
+                "react-native": "0.72.0",
+                "axios": "^1.6.0"
+              }
+            }
+        """.trimIndent()
+        fixture.fakeEnv.writeFileText("package.json", packageJson)
+
+        CommandLineParser.parseAndRun(
+            fixture.command,
+            listOf("execute", ".", "--output", "MigratedAppJson", "--json"),
+        ) { it.run() }
+
+        val output = fixture.recorder.output().trim()
+        val result = json.decodeFromString<MigrationExecuteResult>(output)
+
+        assertEquals("SUCCESS", result.status)
+        assertEquals("MigratedAppJson", result.outputPath)
+        assertEquals(LegacyFramework.REACT_NATIVE, result.framework)
+        assertTrue(result.synthesizedDependencies.contains("kotlin-networking-ktor"))
     }
 }
