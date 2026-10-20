@@ -170,7 +170,8 @@ class MigratePlanCommand(
 
     override fun run() {
         val override = pathwayOption?.let {
-            when (it.lowercase()) {
+            val normalized = it.lowercase().replace('_', '-')
+            when (normalized) {
                 "dual-native" -> ModernizationPathway.DUAL_NATIVE
                 "native-ui-shared-core" -> ModernizationPathway.NATIVE_UI_SHARED_CORE
                 "compose-multiplatform" -> ModernizationPathway.COMPOSE_MULTIPLATFORM
