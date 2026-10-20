@@ -223,6 +223,224 @@
         "wasm"
       ],
       "path": "skills/kmp-cli/SKILL.md"
+    },
+    {
+      "id": "kotlin-media-coil",
+      "name": "kotlin-media-coil",
+      "description": "Multiplatform async image loading, memory and disk caching, and Ktor 3 network fetching with Coil 3 for Compose Multiplatform.",
+      "version": "1.0.0",
+      "author": "jesusdmedinac",
+      "category": "media",
+      "aliases": [
+        "kmp-coil",
+        "coil3"
+      ],
+      "tags": [
+        "coil",
+        "images",
+        "media",
+        "cache",
+        "async-image",
+        "ktor",
+        "grant-winner"
+      ],
+      "targets": [
+        "android",
+        "ios",
+        "desktop",
+        "wasm"
+      ],
+      "path": "skills/kotlin-media-coil/SKILL.md"
+    },
+    {
+      "id": "kotlin-data-multiplatform-settings",
+      "name": "kotlin-data-multiplatform-settings",
+      "description": "Reactive key-value persistence across Android, iOS, Desktop, and Web using Multiplatform-Settings and Coroutines Flow.",
+      "version": "1.0.0",
+      "author": "jesusdmedinac",
+      "category": "persistence",
+      "aliases": [
+        "kmp-settings",
+        "multiplatform-settings"
+      ],
+      "tags": [
+        "settings",
+        "preferences",
+        "persistence",
+        "key-value",
+        "flow",
+        "grant-winner"
+      ],
+      "targets": [
+        "android",
+        "ios",
+        "desktop",
+        "wasm"
+      ],
+      "path": "skills/kotlin-data-multiplatform-settings/SKILL.md"
+    },
+    {
+      "id": "kotlin-data-store5",
+      "name": "kotlin-data-store5",
+      "description": "Offline-first single-source-of-truth data caching and synchronization with Store5, Ktor, and local persistence.",
+      "version": "1.0.0",
+      "author": "jesusdmedinac",
+      "category": "persistence",
+      "aliases": [
+        "kmp-store5",
+        "store5"
+      ],
+      "tags": [
+        "store",
+        "store5",
+        "cache",
+        "offline-first",
+        "repository",
+        "flow",
+        "grant-winner"
+      ],
+      "targets": [
+        "android",
+        "ios",
+        "desktop",
+        "wasm"
+      ],
+      "path": "skills/kotlin-data-store5/SKILL.md"
+    },
+    {
+      "id": "kotlin-architecture-orbit-mvi",
+      "name": "kotlin-architecture-orbit-mvi",
+      "description": "Unidirectional Data Flow (MVI/UDF) state management with Orbit MVI, ContainerHost, and Compose Multiplatform.",
+      "version": "1.0.0",
+      "author": "jesusdmedinac",
+      "category": "architecture",
+      "aliases": [
+        "kmp-orbit-mvi",
+        "orbit-mvi"
+      ],
+      "tags": [
+        "orbit",
+        "orbit-mvi",
+        "mvi",
+        "udf",
+        "state-machine",
+        "architecture",
+        "grant-winner"
+      ],
+      "targets": [
+        "android",
+        "ios",
+        "desktop",
+        "wasm"
+      ],
+      "path": "skills/kotlin-architecture-orbit-mvi/SKILL.md"
+    },
+    {
+      "id": "kotlin-ui-compose-rich-editor",
+      "name": "kotlin-ui-compose-rich-editor",
+      "description": "WYSIWYG rich text editing, formatting toolbars, and Markdown/HTML conversion with Compose Rich Editor.",
+      "version": "1.0.0",
+      "author": "jesusdmedinac",
+      "category": "ui",
+      "aliases": [
+        "kmp-rich-editor",
+        "rich-editor"
+      ],
+      "tags": [
+        "rich-editor",
+        "markdown",
+        "html",
+        "text",
+        "compose",
+        "ui",
+        "grant-winner"
+      ],
+      "targets": [
+        "android",
+        "ios",
+        "desktop",
+        "wasm"
+      ],
+      "path": "skills/kotlin-ui-compose-rich-editor/SKILL.md"
+    },
+    {
+      "id": "kotlin-interop-swift-coroutines",
+      "name": "kotlin-interop-swift-coroutines",
+      "description": "Swift modern concurrency bridging with SKIE and KMP-NativeCoroutines, translating StateFlow to AsyncSequence and sealed classes to Swift enums.",
+      "version": "1.0.0",
+      "author": "jesusdmedinac",
+      "category": "interop",
+      "aliases": [
+        "kmp-swift-coroutines",
+        "skie"
+      ],
+      "tags": [
+        "swift",
+        "ios",
+        "coroutines",
+        "async-await",
+        "skie",
+        "interop",
+        "grant-winner"
+      ],
+      "targets": [
+        "ios"
+      ],
+      "path": "skills/kotlin-interop-swift-coroutines/SKILL.md"
+    },
+    {
+      "id": "kotlin-web-kobweb",
+      "name": "kotlin-web-kobweb",
+      "description": "Full-stack web applications and static sites using Compose HTML, Silk UI design system, and file-based routing with Kobweb.",
+      "version": "1.0.0",
+      "author": "jesusdmedinac",
+      "category": "web",
+      "aliases": [
+        "kmp-kobweb",
+        "kobweb"
+      ],
+      "tags": [
+        "kobweb",
+        "web",
+        "compose-html",
+        "fullstack",
+        "silk",
+        "wasm",
+        "grant-winner"
+      ],
+      "targets": [
+        "wasm",
+        "js"
+      ],
+      "path": "skills/kotlin-web-kobweb/SKILL.md"
+    },
+    {
+      "id": "kotlin-cloud-firebase",
+      "name": "kotlin-cloud-firebase",
+      "description": "Multiplatform Firebase integration (Auth, Firestore, Storage) with GitLive SDK, Coroutines Flows, and Kotlinx Serialization.",
+      "version": "1.0.0",
+      "author": "jesusdmedinac",
+      "category": "cloud",
+      "aliases": [
+        "kmp-firebase",
+        "firebase-kmp"
+      ],
+      "tags": [
+        "firebase",
+        "firestore",
+        "auth",
+        "storage",
+        "cloud",
+        "serialization",
+        "grant-winner"
+      ],
+      "targets": [
+        "android",
+        "ios",
+        "desktop",
+        "wasm"
+      ],
+      "path": "skills/kotlin-cloud-firebase/SKILL.md"
     }
   ]
 }

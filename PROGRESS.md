@@ -202,12 +202,12 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 - [x] Scenario: Scaffold projects with complete platform runners per target
 - [x] Scenario: Query klibs.io for verified library compatibility in Stage 3
 
-### Phase 6: Kotlin Foundation Grant Winners Skills Catalog ([Strategic Plan](docs/plans/kotlin_foundation_grant_winners_skills_plan.md) - `docs/features/16_kotlin_foundation_grant_winners_skills.feature`)
-- [ ] Scenario: Catalog registration and discoverability of Grant Winner skills
-- [ ] Scenario: Describe Persistence and Media Grant Winner skills (Phase 1)
-- [ ] Scenario: Describe Architecture and Rich UI Grant Winner skills (Phase 2)
-- [ ] Scenario: Describe Platforms, Interop, and Cloud Grant Winner skills (Phase 3)
-- [ ] Scenario: Validate Grant Winner skills manifest and catalog integrity
+### Phase 6: Kotlin Foundation Grant Winners Skills Catalog ([#47](https://github.com/jesusdmedinac/KMP-CLI/issues/47) - [Strategic Plan](docs/plans/kotlin_foundation_grant_winners_skills_plan.md) - `docs/features/16_kotlin_foundation_grant_winners_skills.feature`)
+- [x] Scenario: Catalog registration and discoverability of Grant Winner skills
+- [x] Scenario: Describe Persistence and Media Grant Winner skills (Phase 1)
+- [x] Scenario: Describe Architecture and Rich UI Grant Winner skills (Phase 2)
+- [x] Scenario: Describe Platforms, Interop, and Cloud Grant Winner skills (Phase 3)
+- [x] Scenario: Validate Grant Winner skills manifest and catalog integrity
 
 ### Phase 7: Stdio Model Context Protocol (MCP) Server ([#14](https://github.com/jesusdmedinac/KMP-CLI/issues/14) - `docs/features/17_stdio_mcp_server.feature`)
 - [x] Scenario: Initialize MCP session and negotiate protocol capabilities
