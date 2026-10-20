@@ -8,6 +8,7 @@ import com.jesusdmedinac.kmp.cli.command.AnalyzeCommand
 import com.jesusdmedinac.kmp.cli.command.CreateCommand
 import com.jesusdmedinac.kmp.cli.command.DescribeCommand
 import com.jesusdmedinac.kmp.cli.command.DoctorCommand
+import com.jesusdmedinac.kmp.cli.command.McpCommand
 import com.jesusdmedinac.kmp.cli.command.SkillsCommand
 import com.jesusdmedinac.kmp.core.KmpCore
 
@@ -22,6 +23,7 @@ class KmpCommand : CliktCommand(
             DescribeCommand(),
             AnalyzeCommand(),
             CreateCommand(),
+            McpCommand(),
         )
     }
 
