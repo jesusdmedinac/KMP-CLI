@@ -666,9 +666,15 @@ class MigrationEngine(
         if (existingBuildGradle.contains("commonMain.dependencies {")) {
             val depInjections = StringBuilder()
             if (synthesizedDeps.contains("kotlin-networking-ktor")) {
-                depInjections.append("            implementation(libs.ktor.client.core)\n")
-                depInjections.append("            implementation(libs.ktor.client.content.negotiation)\n")
-                depInjections.append("            implementation(libs.ktor.serialization.kotlinx.json)\n")
+                if (!existingBuildGradle.contains("libs.ktor.client.core")) {
+                    depInjections.append("            implementation(libs.ktor.client.core)\n")
+                }
+                if (!existingBuildGradle.contains("libs.ktor.client.content.negotiation")) {
+                    depInjections.append("            implementation(libs.ktor.client.content.negotiation)\n")
+                }
+                if (!existingBuildGradle.contains("libs.ktor.serialization.kotlinx.json")) {
+                    depInjections.append("            implementation(libs.ktor.serialization.kotlinx.json)\n")
+                }
             }
             if (synthesizedDeps.contains("kotlin-media-coil")) {
                 if (!existingBuildGradle.contains("libs.coil.compose")) {
@@ -679,20 +685,32 @@ class MigrationEngine(
                 }
             }
             if (synthesizedDeps.contains("kotlin-data-multiplatform-settings")) {
-                depInjections.append("            implementation(libs.multiplatform.settings)\n")
+                if (!existingBuildGradle.contains("libs.multiplatform.settings")) {
+                    depInjections.append("            implementation(libs.multiplatform.settings)\n")
+                }
             }
             if (synthesizedDeps.contains("kotlin-data-room-kmp")) {
-                depInjections.append("            implementation(libs.androidx.room.runtime)\n")
+                if (!existingBuildGradle.contains("libs.androidx.room.runtime")) {
+                    depInjections.append("            implementation(libs.androidx.room.runtime)\n")
+                }
             }
             if (synthesizedDeps.contains("kotlin-data-sqldelight-database")) {
-                depInjections.append("            implementation(libs.sqldelight.runtime)\n")
+                if (!existingBuildGradle.contains("libs.sqldelight.runtime")) {
+                    depInjections.append("            implementation(libs.sqldelight.runtime)\n")
+                }
             }
             if (synthesizedDeps.contains("kotlin-architecture-orbit-mvi")) {
-                depInjections.append("            implementation(libs.orbit.core)\n")
-                depInjections.append("            implementation(libs.orbit.compose)\n")
+                if (!existingBuildGradle.contains("libs.orbit.core")) {
+                    depInjections.append("            implementation(libs.orbit.core)\n")
+                }
+                if (!existingBuildGradle.contains("libs.orbit.compose")) {
+                    depInjections.append("            implementation(libs.orbit.compose)\n")
+                }
             }
             if (synthesizedDeps.contains("kotlin-data-store5")) {
-                depInjections.append("            implementation(libs.store5)\n")
+                if (!existingBuildGradle.contains("libs.store5")) {
+                    depInjections.append("            implementation(libs.store5)\n")
+                }
             }
 
             if (depInjections.isNotEmpty()) {
