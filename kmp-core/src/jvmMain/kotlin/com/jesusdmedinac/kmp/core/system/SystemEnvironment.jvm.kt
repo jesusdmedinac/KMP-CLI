@@ -62,6 +62,13 @@ class JvmSystemEnvironment : SystemEnvironment {
         false
     }
 
+    override fun deleteFile(path: String): Boolean = try {
+        val file = File(path)
+        if (file.isDirectory) file.deleteRecursively() else file.delete()
+    } catch (e: Exception) {
+        false
+    }
+
     override val operatingSystem: OperatingSystem
         get() {
             val osName = System.getProperty("os.name")?.lowercase() ?: ""

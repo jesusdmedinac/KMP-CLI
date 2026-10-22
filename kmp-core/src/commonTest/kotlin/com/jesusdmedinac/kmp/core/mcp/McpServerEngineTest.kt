@@ -48,7 +48,7 @@ class McpServerEngineTest {
     }
 
     @Test
-    fun `tools list returns all 7 core diagnostic and skills tools with input schemas`() {
+    fun `tools list returns all 9 core diagnostic skills and migration tools with input schemas`() {
         val request = """
             {
                 "jsonrpc": "2.0",
@@ -66,7 +66,7 @@ class McpServerEngineTest {
 
         val tools = result["tools"]?.jsonArray
         assertNotNull(tools)
-        assertEquals(7, tools.size)
+        assertEquals(10, tools.size)
 
         val toolNames = tools.map { it.jsonObject["name"]?.jsonPrimitive?.content }
         assertTrue(toolNames.contains("kmp_doctor"))
@@ -76,6 +76,9 @@ class McpServerEngineTest {
         assertTrue(toolNames.contains("kmp_analyze_libraries"))
         assertTrue(toolNames.contains("kmp_list_skills"))
         assertTrue(toolNames.contains("kmp_add_skill"))
+        assertTrue(toolNames.contains("kmp_migrate_audit"))
+        assertTrue(toolNames.contains("kmp_migrate_plan"))
+        assertTrue(toolNames.contains("kmp_migrate_execute"))
 
         for (tool in tools) {
             val schema = tool.jsonObject["inputSchema"]?.jsonObject
@@ -379,5 +382,132 @@ class McpServerEngineTest {
 
         val responseJson = engine.handleMessage(notification)
         assertNull(responseJson)
+    }
+
+    @Test
+    fun `tool call kmp_migrate_audit returns structured migration report over MCP`() {
+        fakeEnv.writeFileText(
+            "package.json",
+            """
+            {
+              "name": "McpRNApp",
+              "dependencies": {
+                "react-native": "0.72.0",
+                "axios": "^1.0.0"
+              }
+            }
+            """.trimIndent()
+        )
+
+        val request = """
+            {
+                "jsonrpc": "2.0",
+                "id": 10,
+                "method": "tools/call",
+                "params": {
+                    "name": "kmp_migrate_audit",
+                    "arguments": {
+                        "path": "."
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val responseJson = engine.handleMessage(request)
+        assertNotNull(responseJson)
+
+        val responseObj = json.parseToJsonElement(responseJson).jsonObject
+        val result = responseObj["result"]?.jsonObject
+        assertNotNull(result)
+
+        val content = result["content"]?.jsonArray
+        assertNotNull(content)
+        val text = content.first().jsonObject["text"]?.jsonPrimitive?.content
+        assertNotNull(text)
+        assertTrue(text.contains("REACT_NATIVE"))
+        assertTrue(text.contains("axios"))
+        assertTrue(text.contains("kotlin-networking-ktor"))
+    }
+
+    @Test
+    fun `tool call kmp_migrate_plan returns 4-phase Strangler Fig plan over MCP`() {
+        val request = """
+            {
+                "jsonrpc": "2.0",
+                "id": 11,
+                "method": "tools/call",
+                "params": {
+                    "name": "kmp_migrate_plan",
+                    "arguments": {
+                        "path": ".",
+                        "pathway": "native-ui-shared-core"
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val responseJson = engine.handleMessage(request)
+        assertNotNull(responseJson)
+
+        val responseObj = json.parseToJsonElement(responseJson).jsonObject
+        val result = responseObj["result"]?.jsonObject
+        assertNotNull(result)
+
+        val content = result["content"]?.jsonArray
+        assertNotNull(content)
+        val text = content.first().jsonObject["text"]?.jsonPrimitive?.content
+        assertNotNull(text)
+        assertTrue(text.contains("NATIVE_UI_SHARED_CORE"))
+        assertTrue(text.contains("Foundation & Core Bridge"))
+        assertTrue(text.contains("Legacy Shell Deletion"))
+    }
+
+    @Test
+    fun `tool call kmp_migrate_execute scaffolds KMP project and returns manifest over MCP`() {
+        fakeEnv.writeFileText(
+            "package.json",
+            """
+            {
+              "name": "McpRNApp",
+              "dependencies": {
+                "react-native": "0.88.0",
+                "axios": "^1.0.0"
+              }
+            }
+            """.trimIndent()
+        )
+
+        val request = """
+            {
+                "jsonrpc": "2.0",
+                "id": 12,
+                "method": "tools/call",
+                "params": {
+                    "name": "kmp_migrate_execute",
+                    "arguments": {
+                        "sourcePath": ".",
+                        "outputDir": "MigratedMcpApp",
+                        "package": "com.example.mcpmigrated"
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val responseJson = engine.handleMessage(request)
+        assertNotNull(responseJson)
+
+        val responseObj = json.parseToJsonElement(responseJson).jsonObject
+        val result = responseObj["result"]?.jsonObject
+        assertNotNull(result)
+
+        val content = result["content"]?.jsonArray
+        assertNotNull(content)
+        val text = content.first().jsonObject["text"]?.jsonPrimitive?.content
+        assertNotNull(text)
+        assertTrue(text.contains("SUCCESS"))
+        assertTrue(text.contains("MigratedMcpApp"))
+        assertTrue(text.contains("kotlin-networking-ktor"))
+        assertTrue(fakeEnv.fileExists("MigratedMcpApp/migration-manifest.json"))
+        assertTrue(fakeEnv.fileExists("MigratedMcpApp/MIGRATION_PROGRESS.md"))
     }
 }

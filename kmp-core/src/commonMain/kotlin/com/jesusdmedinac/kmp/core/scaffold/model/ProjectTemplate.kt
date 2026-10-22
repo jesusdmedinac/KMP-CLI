@@ -49,6 +49,12 @@ enum class ProjectTemplate(
         displayName = "JSON to Compose Sample App",
         description = "Sample multiplatform app demonstrating Server-Driven UI with json-to-compose",
         aliases = listOf("json-to-compose", "sdui-starter"),
+    ),
+    SHARED_CORE_BRIDGE(
+        id = "kmp-shared-core-bridge",
+        displayName = "Shared KMP Core Bridge",
+        description = "Lightweight KMP library configured for ingestion by existing native/hybrid shells (SPM/CocoaPods & Maven/AAR)",
+        aliases = listOf("shared-core-bridge", "core-bridge"),
     );
 
     companion object {

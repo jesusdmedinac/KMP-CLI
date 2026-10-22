@@ -4,6 +4,7 @@ import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.parsers.CommandLineParser
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
+import com.jesusdmedinac.kmp.core.migration.MigrationEngine
 import com.jesusdmedinac.kmp.core.project.model.ProjectDependencies
 import com.jesusdmedinac.kmp.core.project.parser.VersionCatalogParser
 import com.jesusdmedinac.kmp.core.test.FakeSystemEnvironment
@@ -252,5 +253,68 @@ class AnalyzeCommandTest {
         assertTrue(output.contains("klibs.io"))
         assertTrue(output.contains("io.ktor:ktor-client-core"))
         assertTrue(output.contains("All project targets supported"))
+    }
+
+    @Test
+    fun `analyze on legacy React Native codebase redirects to kmp migrate audit`() {
+        val testEnv = FakeSystemEnvironment()
+        val recorder = TerminalRecorder(width = 80)
+        val terminal = Terminal(terminalInterface = recorder)
+        testEnv.writeFileText(
+            "package.json",
+            """
+            {
+              "name": "LegacyRNApp",
+              "dependencies": {
+                "react-native": "0.72.0"
+              }
+            }
+            """.trimIndent()
+        )
+
+        val migrationEngine = MigrationEngine(testEnv)
+        val command = AnalyzeCommand(
+            versionCatalogParser = VersionCatalogParser(testEnv),
+            migrationEngine = migrationEngine,
+            terminal = terminal,
+        )
+
+        CommandLineParser.parseAndRun(command, listOf()) { it.run() }
+
+        val output = recorder.output()
+        assertTrue(output.contains("Legacy cross-platform codebase detected"))
+        assertTrue(output.contains("React Native"))
+        assertTrue(output.contains("kmp migrate audit"))
+    }
+
+    @Test
+    fun `analyze with json on legacy Flutter codebase returns LegacyDetectionResult payload`() {
+        val testEnv = FakeSystemEnvironment()
+        val recorder = TerminalRecorder(width = 80)
+        val terminal = Terminal(terminalInterface = recorder)
+        testEnv.writeFileText(
+            "pubspec.yaml",
+            """
+            name: flutter_app
+            dependencies:
+              flutter:
+                sdk: flutter
+            """.trimIndent()
+        )
+
+        val migrationEngine = MigrationEngine(testEnv)
+        val command = AnalyzeCommand(
+            versionCatalogParser = VersionCatalogParser(testEnv),
+            migrationEngine = migrationEngine,
+            terminal = terminal,
+        )
+
+        CommandLineParser.parseAndRun(command, listOf("--json")) { it.run() }
+
+        val output = recorder.output().trim()
+        val legacy = Json.decodeFromString<com.jesusdmedinac.kmp.core.migration.model.LegacyDetectionResult>(output)
+        assertTrue(legacy.detected)
+        assertEquals(com.jesusdmedinac.kmp.core.migration.model.LegacyFramework.FLUTTER, legacy.framework)
+        assertEquals("kmp migrate audit", legacy.suggestedCommand)
     }
 }

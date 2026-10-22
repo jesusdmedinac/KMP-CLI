@@ -148,15 +148,25 @@ Central tracking roadmap for the project, following the [5-Step AI Planning & De
 
 ## Cross-Platform Modernization: React Native & Flutter Migration Engine
 ### Feature: Cross-Platform Modernization & Migration Analysis (`docs/features/07_cross_platform_modernization_and_migration.feature`)
-- [ ] **[#40](https://github.com/jesusdmedinac/KMP-CLI/issues/40)** Cross-Platform Modernization & Audit Engine
-  - [ ] Scenario: Audit React Native codebase and generate dependency replacement matrix
-  - [ ] Scenario: Audit Flutter codebase and generate dependency replacement matrix
-  - [ ] Scenario: Smart redirect from kmp analyze when detecting legacy cross-platform codebases
-  - [ ] Scenario: Recommend architectural modernization pathway
-  - [ ] Scenario: Generate phased Strangler Fig migration roadmap
-  - [ ] Scenario: Provide canonical migration skills in KMP Skills Hub
-  - [ ] Scenario: Scaffold Shared KMP Core bridge template
-  - [ ] Scenario: Output migration audit in dual formats for humans and AI agents
+- [x] **[#40](https://github.com/jesusdmedinac/KMP-CLI/issues/40)** Cross-Platform Modernization & Audit Engine
+  - [x] Scenario: Audit React Native codebase and generate dependency replacement matrix
+  - [x] Scenario: Audit Flutter codebase and generate dependency replacement matrix
+  - [x] Scenario: Smart redirect from kmp analyze when detecting legacy cross-platform codebases
+  - [x] Scenario: Recommend architectural modernization pathway
+  - [x] Scenario: Generate phased Strangler Fig migration roadmap
+  - [x] Scenario: Provide canonical migration skills in KMP Skills Hub
+  - [x] Scenario: Scaffold Shared KMP Core bridge template
+  - [x] Scenario: Output migration audit in dual formats for humans and AI agents
+
+### Feature: Cross-Platform Migration Execution (`docs/features/18_cross_platform_migration_execution.feature`)
+- [x] **[#50](https://github.com/jesusdmedinac/KMP-CLI/issues/50)** Cross-Platform Migration Execution Engine (`kmp migrate execute`)
+  - [x] Scenario: Scaffold destination KMP project and synthesize dependency catalog from legacy audit
+  - [x] Scenario: Migrate and normalize visual assets into Compose Multiplatform resources
+  - [x] Scenario: Generate layered migration manifest and progress tracking for AI agents
+  - [x] Scenario: Execute autonomous translation of Domain Models and Data Layer
+  - [x] Scenario: Execute autonomous translation of UI Screens to Compose Multiplatform
+  - [x] Scenario: Support guided migration strategy with interactive review checkpoints
+  - [x] Scenario: Expose migration execution tools via MCP for AI agent co-pilots
 
 ---
 

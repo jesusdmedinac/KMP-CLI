@@ -41,6 +41,7 @@ class ScaffoldingEngine(
             ProjectTemplate.TOOLCHAIN_NATIVE_UI -> GenericTemplateGenerator(ProjectTemplate.TOOLCHAIN_NATIVE_UI, templateSource)
             ProjectTemplate.FULLSTACK -> FullstackGenerator(templateSource)
             ProjectTemplate.JSON_TO_COMPOSE_SAMPLE -> JsonToComposeSampleGenerator(templateSource)
+            ProjectTemplate.SHARED_CORE_BRIDGE -> GenericTemplateGenerator(ProjectTemplate.SHARED_CORE_BRIDGE, templateSource)
         }
 
         val generatedFiles = generator.generate(options)
