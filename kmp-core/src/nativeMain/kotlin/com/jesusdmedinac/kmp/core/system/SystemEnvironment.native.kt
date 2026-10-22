@@ -111,6 +111,12 @@ class NativeSystemEnvironment : SystemEnvironment {
     }
 
     @OptIn(ExperimentalForeignApi::class)
+    override fun deleteFile(path: String): Boolean {
+        val res = execute(listOf("rm", "-rf", path))
+        return res.exitCode == 0
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
     override fun nowIso8601(): String = memScoped {
         val now = alloc<time_tVar>()
         now.value = time(null)

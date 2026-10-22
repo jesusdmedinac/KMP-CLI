@@ -10,6 +10,7 @@ interface SystemEnvironment {
     fun listFilesRecursively(dir: String): List<String>
     fun setExecutable(path: String): Boolean
     fun copyFile(source: String, destination: String): Boolean
+    fun deleteFile(path: String): Boolean
     val operatingSystem: OperatingSystem
 }
 

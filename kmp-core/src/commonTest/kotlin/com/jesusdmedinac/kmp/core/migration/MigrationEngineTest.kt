@@ -359,4 +359,93 @@ class MigrationEngineTest {
         assertTrue(progressContent.contains("Layer 1: Domain Models"))
         assertTrue(progressContent.contains("Layer 4: UI Screens & Components"))
     }
+
+    @Test
+    fun testAssetSanitizationAndDensityResolution() {
+        val asset1 = migrationEngine.sanitizeAndResolveAsset("tabIcons/explore@2x.png", "explore@2x.png")
+        assertNotNull(asset1)
+        assertEquals("drawable-xhdpi", asset1.subDir)
+        assertEquals("explore.png", asset1.fileName)
+
+        val asset2 = migrationEngine.sanitizeAndResolveAsset("tabIcons/explore@3x.png", "explore@3x.png")
+        assertNotNull(asset2)
+        assertEquals("drawable-xxhdpi", asset2.subDir)
+        assertEquals("explore.png", asset2.fileName)
+
+        val asset3 = migrationEngine.sanitizeAndResolveAsset("tabIcons/explore.png", "explore.png")
+        assertNotNull(asset3)
+        assertEquals("drawable", asset3.subDir)
+        assertEquals("explore.png", asset3.fileName)
+
+        val asset4 = migrationEngine.sanitizeAndResolveAsset("images/react-logo@2x.png", "react-logo@2x.png")
+        assertNotNull(asset4)
+        assertEquals("drawable-xhdpi", asset4.subDir)
+        assertEquals("react_logo.png", asset4.fileName)
+
+        val asset5 = migrationEngine.sanitizeAndResolveAsset("images/expo-symbol 2.svg", "expo-symbol 2.svg")
+        assertNotNull(asset5)
+        assertEquals("drawable", asset5.subDir)
+        assertEquals("expo_symbol_2.svg", asset5.fileName)
+
+        val asset6 = migrationEngine.sanitizeAndResolveAsset("icons/2.0x/car.png", "car.png")
+        assertNotNull(asset6)
+        assertEquals("drawable-xhdpi", asset6.subDir)
+        assertEquals("car.png", asset6.fileName)
+
+        val asset7 = migrationEngine.sanitizeAndResolveAsset("icons/123-badge.png", "123-badge.png")
+        assertNotNull(asset7)
+        assertEquals("drawable", asset7.subDir)
+        assertEquals("res_123_badge.png", asset7.fileName)
+
+        val fontAsset = migrationEngine.sanitizeAndResolveAsset("fonts/OpenSans-Regular.ttf", "OpenSans-Regular.ttf")
+        assertNotNull(fontAsset)
+        assertEquals("font", fontAsset.subDir)
+        assertEquals("opensans_regular.ttf", fontAsset.fileName)
+    }
+
+    @Test
+    fun testExecuteMigratesAndSanitizesAssetsWithDensityFolders() {
+        fakeEnv.writeFileText(
+            "complex-app/package.json",
+            """
+            {
+              "name": "ComplexApp",
+              "dependencies": {
+                "react-native": "0.76.0"
+              }
+            }
+            """.trimIndent(),
+        )
+        fakeEnv.writeFileText("complex-app/assets/images/tabIcons/explore.png", "explore-1x")
+        fakeEnv.writeFileText("complex-app/assets/images/tabIcons/explore@2x.png", "explore-2x")
+        fakeEnv.writeFileText("complex-app/assets/images/tabIcons/explore@3x.png", "explore-3x")
+        fakeEnv.writeFileText("complex-app/assets/images/react-logo@2x.png", "react-logo-2x")
+        fakeEnv.writeFileText("complex-app/assets/images/expo-symbol 2.svg", "<svg></svg>")
+
+        val options = MigrationExecuteOptions(
+            sourcePath = "complex-app",
+            outputDir = "migrated-complex",
+            packageName = "com.example.complex",
+            strategy = MigrationStrategy.AUTONOMOUS,
+        )
+
+        val result = migrationEngine.execute(options)
+        assertEquals("SUCCESS", result.status)
+        assertTrue(result.migratedAssetsCount >= 5)
+
+        val resBase = "migrated-complex/src/commonMain/composeResources"
+        assertTrue(fakeEnv.fileExists("$resBase/drawable/explore.png"))
+        assertTrue(fakeEnv.fileExists("$resBase/drawable-xhdpi/explore.png"))
+        assertTrue(fakeEnv.fileExists("$resBase/drawable-xxhdpi/explore.png"))
+        assertTrue(fakeEnv.fileExists("$resBase/drawable-xhdpi/react_logo.png"))
+        assertTrue(fakeEnv.fileExists("$resBase/drawable/expo_symbol_2.svg"))
+
+        // Ensure no file with '@', '-', or space exists in drawable/
+        val drawables = fakeEnv.listFilesRecursively("$resBase/drawable")
+        for (drawable in drawables) {
+            assertFalse(drawable.contains("@"), "Drawable file contains '@': $drawable")
+            assertFalse(drawable.contains("-"), "Drawable file contains '-': $drawable")
+            assertFalse(drawable.contains(" "), "Drawable file contains ' ': $drawable")
+        }
+    }
 }

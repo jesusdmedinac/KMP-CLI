@@ -76,4 +76,15 @@ class FakeSystemEnvironment(
         }
         return true
     }
+
+    override fun deleteFile(path: String): Boolean {
+        val removed1 = files.remove(path)
+        val removed2 = fileContents.remove(path) != null
+        val prefix = if (path.endsWith("/")) path else "$path/"
+        val childFiles = files.filter { it.startsWith(prefix) }
+        files.removeAll(childFiles.toSet())
+        val childContents = fileContents.keys.filter { it.startsWith(prefix) }
+        childContents.forEach { fileContents.remove(it) }
+        return removed1 || removed2 || childFiles.isNotEmpty()
+    }
 }

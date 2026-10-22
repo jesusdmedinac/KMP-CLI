@@ -734,8 +734,14 @@ class MigrationEngine(
                 systemEnvironment.fileExists("$it/values/strings.xml")
         } ?: "${options.outputDir}/src/commonMain/composeResources"
 
-        val drawableDest = "$targetResDir/drawable"
-        val fontDest = "$targetResDir/font"
+        // Clean up any stale or un-sanitized drawable assets in targetResDir that violate Android DEX or AAPT2 rules
+        val existingDrawables = systemEnvironment.listFilesRecursively("$targetResDir/drawable")
+        for (existing in existingDrawables) {
+            val fileName = existing.substringAfterLast('/').substringAfterLast('\\')
+            if (fileName.contains("@") || fileName.contains(" ") || fileName.contains("-")) {
+                systemEnvironment.deleteFile("$targetResDir/drawable/$existing")
+            }
+        }
 
         val assetSearchDirs = listOf(
             "${root}assets/images",
@@ -745,24 +751,19 @@ class MigrationEngine(
             "${root}images",
         )
 
-        val processedAssetNames = mutableSetOf<String>()
+        val processedAssetKeys = mutableSetOf<String>()
         for (dir in assetSearchDirs) {
             val relativeFiles = systemEnvironment.listFilesRecursively(dir)
             val cleanDir = if (dir.endsWith("/")) dir.dropLast(1) else dir
             for (relFile in relativeFiles) {
                 val fullPath = "$cleanDir/$relFile"
                 val fileName = relFile.substringAfterLast('/').substringAfterLast('\\')
-                if (!processedAssetNames.contains(fileName)) {
-                    val ext = fileName.substringAfterLast('.', "").lowercase()
-                    if (ext in listOf("png", "jpg", "jpeg", "webp", "svg")) {
-                        val destPath = "$drawableDest/$fileName"
+                val resolved = sanitizeAndResolveAsset(relFile, fileName)
+                if (resolved != null) {
+                    val assetKey = "${resolved.subDir}/${resolved.fileName}"
+                    if (processedAssetKeys.add(assetKey)) {
+                        val destPath = "$targetResDir/${resolved.subDir}/${resolved.fileName}"
                         systemEnvironment.copyFile(fullPath, destPath)
-                        processedAssetNames.add(fileName)
-                        assetCount++
-                    } else if (ext in listOf("ttf", "otf")) {
-                        val destPath = "$fontDest/$fileName"
-                        systemEnvironment.copyFile(fullPath, destPath)
-                        processedAssetNames.add(fileName)
                         assetCount++
                     }
                 }
@@ -882,6 +883,71 @@ class MigrationEngine(
             migratedAssetsCount = assetCount,
             manifestPath = manifestPath,
         )
+    }
+
+    internal data class ProcessedAsset(
+        val subDir: String,
+        val fileName: String,
+    )
+
+    internal fun sanitizeAndResolveAsset(relPath: String, fileName: String): ProcessedAsset? {
+        val ext = fileName.substringAfterLast('.', "").lowercase()
+        val isImage = ext in listOf("png", "jpg", "jpeg", "webp", "svg")
+        val isFont = ext in listOf("ttf", "otf")
+
+        if (!isImage && !isFont) return null
+
+        val baseName = fileName.substringBeforeLast('.')
+
+        if (isFont) {
+            val cleanBase = sanitizeResourceIdentifier(baseName)
+            return ProcessedAsset("font", "$cleanBase.$ext")
+        }
+
+        val (densityQualifier, strippedBase) = extractDensityQualifier(relPath, baseName)
+        val cleanBase = sanitizeResourceIdentifier(strippedBase)
+
+        return ProcessedAsset(densityQualifier, "$cleanBase.$ext")
+    }
+
+    internal fun extractDensityQualifier(relPath: String, rawBase: String): Pair<String, String> {
+        val lowerBase = rawBase.lowercase()
+        val normalizedRelPath = relPath.replace('\\', '/')
+        return when {
+            lowerBase.endsWith("@2x") -> "drawable-xhdpi" to rawBase.dropLast(3)
+            lowerBase.endsWith("@3x") -> "drawable-xxhdpi" to rawBase.dropLast(3)
+            lowerBase.endsWith("@4x") -> "drawable-xxxhdpi" to rawBase.dropLast(3)
+            lowerBase.endsWith("@1.5x") -> "drawable-hdpi" to rawBase.dropLast(5)
+            lowerBase.endsWith("@1x") -> "drawable" to rawBase.dropLast(3)
+            normalizedRelPath.contains("/2.0x/") || normalizedRelPath.contains("/2x/") ||
+                normalizedRelPath.startsWith("2.0x/") || normalizedRelPath.startsWith("2x/") ->
+                "drawable-xhdpi" to rawBase
+            normalizedRelPath.contains("/3.0x/") || normalizedRelPath.contains("/3x/") ||
+                normalizedRelPath.startsWith("3.0x/") || normalizedRelPath.startsWith("3x/") ->
+                "drawable-xxhdpi" to rawBase
+            normalizedRelPath.contains("/4.0x/") || normalizedRelPath.contains("/4x/") ||
+                normalizedRelPath.startsWith("4.0x/") || normalizedRelPath.startsWith("4x/") ->
+                "drawable-xxxhdpi" to rawBase
+            normalizedRelPath.contains("/1.5x/") || normalizedRelPath.startsWith("1.5x/") ->
+                "drawable-hdpi" to rawBase
+            else -> "drawable" to rawBase
+        }
+    }
+
+    internal fun sanitizeResourceIdentifier(name: String): String {
+        val lower = name.lowercase()
+        val replaced = buildString {
+            for (ch in lower) {
+                if (ch in 'a'..'z' || ch in '0'..'9' || ch == '_') {
+                    append(ch)
+                } else {
+                    append('_')
+                }
+            }
+        }
+        val collapsed = replaced.replace(Regex("_+"), "_").trim('_')
+        val validBase = if (collapsed.isEmpty()) "asset" else collapsed
+        return if (validBase.first() in '0'..'9') "res_$validBase" else validBase
     }
 
     private fun normalizePath(path: String): String {
