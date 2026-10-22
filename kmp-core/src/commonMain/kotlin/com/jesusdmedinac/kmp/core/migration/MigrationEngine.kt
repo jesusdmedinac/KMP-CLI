@@ -724,8 +724,18 @@ class MigrationEngine(
 
         // Migrate Assets
         var assetCount = 0
-        val drawableDest = "${options.outputDir}/src/commonMain/composeResources/drawable"
-        val fontDest = "${options.outputDir}/src/commonMain/composeResources/font"
+        val resCandidates = listOf(
+            "${options.outputDir}/shared/src/commonMain/composeResources",
+            "${options.outputDir}/composeApp/src/commonMain/composeResources",
+            "${options.outputDir}/src/commonMain/composeResources",
+        )
+        val targetResDir = resCandidates.firstOrNull {
+            systemEnvironment.listFilesRecursively(it).isNotEmpty() ||
+                systemEnvironment.fileExists("$it/values/strings.xml")
+        } ?: "${options.outputDir}/src/commonMain/composeResources"
+
+        val drawableDest = "$targetResDir/drawable"
+        val fontDest = "$targetResDir/font"
 
         val assetSearchDirs = listOf(
             "${root}assets/images",
