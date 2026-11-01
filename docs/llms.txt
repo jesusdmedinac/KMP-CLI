@@ -1,0 +1,22 @@
+# KMP CLI & Agent Skills Hub
+
+> A unified, extensible CLI and curated Agent Skills Hub for Kotlin Multiplatform — built for human developers and AI coding agents.
+
+## Core Commands
+- `kmp doctor`: Inspects development environment (JDK, Android SDK, Xcode, CocoaPods, Node.js). Use `--json` for structured output.
+- `kmp create <name> --template <template> --targets <targets>`: Scaffolds clean KMP projects with zero bloat.
+  Templates: `shared-ui`, `native-ui`, `json-to-compose-sample-app`, `toolchain-shared-ui`, `fullstack`.
+- `kmp describe <path>`: Parses build configuration across both Gradle (`build.gradle.kts`) and declarative Kotlin Toolchain (`module.yaml`).
+- `kmp analyze dependencies <path>`: Audits project dependencies and version catalogs against official KMP coordinates.
+- `kmp migrate audit <path>`: Scans legacy React Native or Flutter apps, reports architecture bottlenecks, and suggests target KMP architectures.
+- `kmp migrate plan <path>`: Generates phased Strangler Fig roadmap.
+- `kmp migrate execute <path> -o <output>`: Synthesizes destination Kotlin Multiplatform project.
+- `kmp skills list`: Lists certified Agent Skills (`SKILL.md`).
+- `kmp skills install <id>`: Installs skill into agent or repository directory.
+- `kmp mcp`: Runs native Model Context Protocol stdio server.
+
+## Ecosystem Libraries
+- `json-to-compose`: Server-Driven UI runtime for Compose Multiplatform.
+- `zora-community`: Production vehicle copilot reference application.
+- `kmp-auto`: In-car navigation framework bridging Android Auto and Apple CarPlay.
+- `kmp-xr`: Spatial UI framework for Android XR and smart glasses.

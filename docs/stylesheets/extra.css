@@ -1,0 +1,67 @@
+:root {
+  --zora-purple: #894CFF;
+  --zora-violet: #A833FD;
+  --zora-magenta: #CD00EB;
+  --zora-fuchsia: #E200C0;
+  --zora-pink: #EC168A;
+  --md-primary-fg-color: #894CFF;
+  --md-accent-fg-color: #EC168A;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #894CFF;
+  --md-accent-fg-color: #EC168A;
+  --md-default-bg-color: #0F0E17;
+  --md-default-bg-color--light: #161524;
+}
+
+/* Zora Gradient Text and Hero Elements */
+.zora-gradient-text {
+  background: linear-gradient(135deg, #894CFF 0%, #A833FD 25%, #CD00EB 50%, #E200C0 75%, #EC168A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+
+.md-header {
+  background: linear-gradient(90deg, #120924 0%, #1f0d3a 50%, #2b0b30 100%) !important;
+  border-bottom: 1px solid rgba(137, 76, 255, 0.2);
+}
+
+.md-tabs {
+  background: #160c2e !important;
+  border-bottom: 1px solid rgba(236, 22, 138, 0.2);
+}
+
+/* Ecosystem Banner */
+.ecosystem-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 1.5rem 0;
+  padding: 12px 16px;
+  background: rgba(137, 76, 255, 0.08);
+  border: 1px solid rgba(137, 76, 255, 0.25);
+  border-radius: 8px;
+  align-items: center;
+}
+
+.ecosystem-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+}
+
+.ecosystem-pill:hover {
+  background: rgba(137, 76, 255, 0.2);
+  border-color: #894CFF;
+  transform: translateY(-1px);
+}
