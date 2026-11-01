@@ -7,6 +7,7 @@ on:
     paths:
       - "docs/**"
       - "mkdocs.yml"
+      - "requirements.txt"
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 
@@ -40,7 +41,7 @@ jobs:
       - name: Install MkDocs & Material Theme
         run: |
           pip install --upgrade pip
-          pip install mkdocs-material
+          pip install -r requirements.txt
 
       - name: Build Documentation Site
         run: |
