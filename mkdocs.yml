@@ -1,0 +1,110 @@
+site_name: KMP CLI
+site_description: "A unified, extensible CLI and curated Agent Skills Hub for Kotlin Multiplatform — built for both human developers and AI coding agents."
+site_author: "Jesus Daniel Medina Cruz"
+site_url: "https://jesusdmedinac.github.io/KMP-CLI/"
+repo_name: "jesusdmedinac/KMP-CLI"
+repo_url: "https://github.com/jesusdmedinac/KMP-CLI"
+edit_uri: "edit/main/docs/"
+
+theme:
+  name: material
+  language: en
+  palette:
+    - scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - content.code.copy
+    - content.code.select
+    - search.suggest
+    - search.highlight
+    - search.share
+  logo: assets/zora-transparent.svg
+  favicon: assets/zora-transparent.svg
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+  - attr_list
+  - md_in_html
+
+validation:
+  omitted_files: ignore
+  absolute_links: ignore
+  unrecognized_links: ignore
+
+nav:
+  - "Overview": index.md
+  - "Getting Started":
+      - "Installation": getting-started/installation.md
+      - "Quickstart": getting-started/quickstart.md
+  - "Commands":
+      - "Overview": commands/overview.md
+      - "kmp doctor": commands/doctor.md
+      - "kmp create": commands/create.md
+      - "kmp describe": commands/describe.md
+      - "kmp analyze": commands/analyze.md
+      - "kmp migrate": commands/migrate.md
+      - "kmp skills": commands/skills.md
+      - "kmp mcp": commands/mcp.md
+  - "Agent Skills Hub":
+      - "Overview": skills/overview.md
+      - "Skills Catalog": skills/catalog.md
+  - "Ecosystem":
+      - "Overview & Flywheel": ecosystem/overview.md
+      - "KMP Ecosystem State": ecosystem/kmp-ecosystem-state.md
+      - "json-to-compose": ecosystem/json-to-compose.md
+      - "zora-community": ecosystem/zora-community.md
+      - "kmp-auto": ecosystem/kmp-auto.md
+      - "kmp-xr": ecosystem/kmp-xr.md
+  - "Architecture & RFCs":
+      - "Architecture ADR-001": architecture/ADR-001-modular-core-and-cli-architecture.md
+      - "RFC-001 Vision & Architecture": rfcs/RFC-001-vision-and-architecture.md
+      - "RFC-002 SDUI Synergy (json-to-compose)": rfcs/RFC-002-sdui-synergy-json-to-compose.md
+      - "RFC-003 Zora Kits & Licensing": rfcs/RFC-003-zora-kits-licensing-and-copilot.md
+      - "RFC-004 Agent Skills Evolution": rfcs/RFC-004-agent-skills-evolution-and-guard-engine.md
+      - "RFC-005 Cross-Platform Modernization": rfcs/RFC-005-cross-platform-modernization-and-migration.md
+      - "Grant Winners Skills Plan": plans/kotlin_foundation_grant_winners_skills_plan.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jesusdmedinac
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/jesusdmedinac

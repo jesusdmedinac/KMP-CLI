@@ -1,0 +1,12 @@
+{
+  "name": "kmp-cli-plugin",
+  "displayName": "KMP CLI",
+  "version": "1.1.0",
+  "description": "Unified Kotlin Multiplatform developer tooling for environment diagnostics (kmp doctor), project architecture inspection (kmp describe), dependency analysis, multiplatform scaffolding (kmp create), and certified agent skills.",
+  "logo": "assets/logo.svg",
+  "suggestedPrompts": [
+    "Run kmp doctor to diagnose my Kotlin Multiplatform environment and toolchain",
+    "Inspect the architecture, target platforms, and build system of this KMP project",
+    "Scaffold a clean Kotlin Multiplatform project with custom target platforms using kmp create"
+  ]
+}

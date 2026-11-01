@@ -27,3 +27,7 @@ local.properties
 /jetbrains/
 /wizard/
 /kmp
+
+# Python venv & MkDocs Site
+.venv/
+site/
