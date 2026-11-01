@@ -26,3 +26,15 @@ kmp skills install kotlin-ui-sdui-compose
 
 ### 3. Automatic Detection in `kmp migrate`
 When running `kmp migrate audit` on a React Native project, `kmp-cli` automatically flags dynamic JSON layouts and maps them to `json-to-compose` runtime parsers.
+
+---
+
+## GitHub Actions & CI/CD Pipelines
+
+`json-to-compose` employs automated GitHub Actions workflows for multiplatform builds, WebAssembly distribution, and automated Sonatype Maven Central releases:
+
+| Workflow | Trigger | Description & Targets |
+| :--- | :--- | :--- |
+| **`publish.yml`** | `release` | Automated Maven Central artifact publication across Android, iOS, Desktop JVM, and Wasm. |
+| **`wasm-publish.yml`** | `push` on `main` | Compiles WASM JS executable and deploys to Cloudflare Pages (`composy-web-app`). |
+| **`desktop-publish.yml`** | Release tag | Builds standalone desktop installers using Hydraulic Conveyor and publishes to Netlify. |

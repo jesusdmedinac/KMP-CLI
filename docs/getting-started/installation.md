@@ -29,6 +29,19 @@
     curl -fsSL https://raw.githubusercontent.com/jesusdmedinac/KMP-CLI/main/install.sh | bash
     ```
 
+=== "GitHub Actions (CI/CD)"
+    Add `kmp-cli` to your GitHub Actions pipeline for automated environment validation, dependency catalog audits, and migration checks:
+    ```yaml
+    - name: Install KMP CLI
+      run: curl -fsSL https://raw.githubusercontent.com/jesusdmedinac/KMP-CLI/main/install.sh | bash
+
+    - name: Verify KMP Toolchain & Runtimes
+      run: ~/.local/bin/kmp doctor --json
+
+    - name: Audit Dependency Version Catalog
+      run: ~/.local/bin/kmp analyze dependencies --json
+    ```
+
 ---
 
 ## Prebuilt Binaries (GitHub Releases)
