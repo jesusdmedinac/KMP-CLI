@@ -8,6 +8,7 @@ import com.github.ajalt.clikt.parameters.arguments.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.mordant.rendering.TextColors.cyan
+import com.github.ajalt.mordant.rendering.TextColors.green
 import com.github.ajalt.mordant.rendering.TextStyles.bold
 import com.github.ajalt.mordant.rendering.TextStyles.dim
 import com.github.ajalt.mordant.terminal.Terminal
@@ -15,6 +16,9 @@ import com.github.ajalt.mordant.terminal.danger
 import com.jesusdmedinac.kmp.core.architecture.ArchitectureRuleChecker
 import com.jesusdmedinac.kmp.core.architecture.model.ArchitectureReport
 import com.jesusdmedinac.kmp.core.architecture.model.ViolationSeverity
+import com.jesusdmedinac.kmp.core.migration.MigrationEngine
+import com.jesusdmedinac.kmp.core.migration.model.LegacyDetectionResult
+import com.jesusdmedinac.kmp.core.migration.model.LegacyFramework
 import com.jesusdmedinac.kmp.core.project.model.ProjectDependencies
 import com.jesusdmedinac.kmp.core.project.parser.VersionCatalogParser
 import com.github.ajalt.mordant.rendering.TextColors
@@ -29,6 +33,7 @@ class AnalyzeCommand(
     private val architectureChecker: ArchitectureRuleChecker = ArchitectureRuleChecker(),
     klibsCatalog: com.jesusdmedinac.kmp.core.klibs.KlibsCatalog = com.jesusdmedinac.kmp.core.klibs.KlibsCatalog(),
     projectParser: com.jesusdmedinac.kmp.core.project.parser.UnifiedProjectParser = com.jesusdmedinac.kmp.core.project.parser.UnifiedProjectParser(),
+    private val migrationEngine: MigrationEngine = MigrationEngine(),
     private val terminal: Terminal = Terminal(),
 ) : CliktCommand(
     name = "analyze",
@@ -50,13 +55,14 @@ class AnalyzeCommand(
 
     init {
         subcommands(
-            AnalyzeDependenciesCommand(versionCatalogParser, terminal),
+            AnalyzeDependenciesCommand(versionCatalogParser, migrationEngine, terminal),
             AnalyzeRulesCommand(architectureChecker, terminal),
             AnalyzeLibrariesCommand(klibsCatalog, projectParser, terminal),
         )
     }
 
     override fun run() {
+        if (currentContext.invokedSubcommand != null) return
         if (rules) {
             val report = architectureChecker.checkProject(".")
             if (jsonOutput) {
@@ -66,6 +72,24 @@ class AnalyzeCommand(
             }
             if (!report.passed) {
                 throw ProgramResult(1)
+            }
+        } else {
+            val legacy = migrationEngine.detectLegacyFramework(".")
+            if (legacy.detected) {
+                if (jsonOutput) {
+                    terminal.println(json.encodeToString(legacy))
+                } else {
+                    val frameworkName = when (legacy.framework) {
+                        LegacyFramework.REACT_NATIVE -> "React Native"
+                        LegacyFramework.FLUTTER -> "Flutter"
+                        LegacyFramework.UNKNOWN -> "Unknown"
+                    }
+                    terminal.println(TextColors.yellow(bold("💡 Legacy cross-platform codebase detected!")))
+                    terminal.println("Detected: ${cyan(frameworkName)} via '${legacy.signatureFile}'.")
+                    terminal.println("Recommendation: Run '${green("kmp migrate audit")}' to analyze native bridge dependencies and modernization pathways.")
+                }
+            } else {
+                terminal.println("Run 'kmp analyze dependencies', 'kmp analyze libraries', or 'kmp analyze --rules'.")
             }
         }
     }
@@ -136,6 +160,7 @@ private fun renderRulesReport(report: ArchitectureReport, terminal: Terminal) {
  */
 class AnalyzeDependenciesCommand(
     private val versionCatalogParser: VersionCatalogParser = VersionCatalogParser(),
+    private val migrationEngine: MigrationEngine = MigrationEngine(),
     private val terminal: Terminal = Terminal(),
 ) : CliktCommand(
     name = "dependencies",
@@ -165,10 +190,26 @@ class AnalyzeDependenciesCommand(
         val catalog = versionCatalogParser.parse(catalogPath)
 
         if (catalog == null) {
-            if (jsonOutput) {
-                terminal.println("""{"error":"No version catalog found at '$catalogPath'"}""")
+            val legacy = migrationEngine.detectLegacyFramework(projectPath)
+            if (legacy.detected) {
+                if (jsonOutput) {
+                    terminal.println(json.encodeToString(legacy))
+                } else {
+                    val frameworkName = when (legacy.framework) {
+                        LegacyFramework.REACT_NATIVE -> "React Native"
+                        LegacyFramework.FLUTTER -> "Flutter"
+                        LegacyFramework.UNKNOWN -> "Unknown"
+                    }
+                    terminal.println(TextColors.yellow(bold("💡 Legacy cross-platform codebase detected!")))
+                    terminal.println("Detected: ${cyan(frameworkName)} via '${legacy.signatureFile}'.")
+                    terminal.println("Recommendation: Run '${green("kmp migrate audit")}' to analyze native bridge dependencies and modernization pathways.")
+                }
             } else {
-                terminal.danger("No version catalog found at '$catalogPath'. Ensure gradle/libs.versions.toml exists.")
+                if (jsonOutput) {
+                    terminal.println("""{"error":"No version catalog found at '$catalogPath'"}""")
+                } else {
+                    terminal.danger("No version catalog found at '$catalogPath'. Ensure gradle/libs.versions.toml exists.")
+                }
             }
             throw ProgramResult(1)
         }

@@ -3,8 +3,14 @@ Feature: Cross-Platform Modernization & Migration Analysis
   I want KMP CLI to inspect React Native, Flutter, and hybrid repositories
   So that I can audit native bridge dependencies, evaluate migration feasibility, and execute phased migrations to Dual Native, Native UI + Shared KMP Core, or 100% Compose Multiplatform
 
+  Background:
+    Given the official upstream cross-platform baseline guides:
+      | Framework    | Canonical Guide URL                         | Standard Bootstrap Command  |
+      | React Native | https://reactnative.dev/docs/environment-setup | npx create-expo-app@latest  |
+      | Flutter      | https://docs.flutter.dev/install/quick      | flutter create / VS Code    |
+
   Scenario: Audit React Native codebase and generate dependency replacement matrix
-    Given an existing React Native repository with "package.json", iOS CocoaPods, and Android Gradle modules
+    Given an existing React Native repository (Expo framework or bare) with "package.json", iOS CocoaPods, or Android Gradle modules
     When the developer or AI agent runs "kmp migrate audit"
     Then the engine must detect the React Native framework version and architecture (Old Architecture bridge vs New Architecture TurboModules)
     And the engine must identify all third-party npm packages requiring native bridges (e.g. storage, networking, navigation, native device APIs)

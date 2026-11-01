@@ -98,7 +98,9 @@ class TemplateSource(
             "src/commonMain/kotlin/{{PACKAGE_PATH}}/Platform.kt",
             "src/jvmMain/kotlin/{{PACKAGE_PATH}}/Platform.jvm.kt",
             "src/iosMain/kotlin/{{PACKAGE_PATH}}/Platform.ios.kt",
-            "src/commonTest/kotlin/{{PACKAGE_PATH}}/GreetingTest.kt"
+            "src/commonTest/kotlin/{{PACKAGE_PATH}}/GreetingTest.kt",
+            "src/commonMain/kotlin/{{PACKAGE_PATH}}/bridge/CoreBridge.kt",
+            "src/commonMain/kotlin/{{PACKAGE_PATH}}/dispatcher/CoroutineDispatchers.kt"
         )
     }
 }

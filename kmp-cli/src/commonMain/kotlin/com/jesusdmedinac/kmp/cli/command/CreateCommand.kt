@@ -233,12 +233,13 @@ class CreateCommand(
             throw ProgramResult(1)
         }
 
-        val resolvedPackage = packageName ?: "com.example.${projectName.lowercase().replace("-", "").replace("_", "")}"
+        val cleanProjectName = projectName.trimEnd('/', '\\').substringAfterLast('/').substringAfterLast('\\')
+        val resolvedPackage = packageName ?: "com.example.${cleanProjectName.lowercase().replace("-", "").replace("_", "")}"
         val targetList = targets.split(',').map { it.trim() }.filter { it.isNotEmpty() }
         val outputDirectory = outputOption ?: projectName
 
         val options = ScaffoldingOptions(
-            name = projectName,
+            name = cleanProjectName,
             packageName = resolvedPackage,
             template = template,
             targets = targetList,

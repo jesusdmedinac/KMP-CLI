@@ -203,7 +203,7 @@ kmp create MyAgentApp --template multiplatform-library --json
 | :--- | :--- | :--- |
 | `--wizard` | Launch interactive step-by-step project creation wizard | `false` |
 | `--name <name>` | Project name (can also be passed as positional argument) | Required |
-| `--template <id>` | `shared-ui`, `native-ui`, `multiplatform-library`, `toolchain-shared-ui`, `toolchain-native-ui`, `sdui-starter`, `fullstack` | Auto-resolved |
+| `--template <id>` | `shared-ui`, `native-ui`, `multiplatform-library`, `toolchain-shared-ui`, `toolchain-native-ui`, `sdui-starter`, `fullstack`, `kmp-shared-core-bridge` | Auto-resolved |
 | `--package <id>` | Base application package (e.g. `com.example.app`) | `com.example.<name>` |
 | `--build-system <system>` | Build system: `gradle` or `toolchain` | `gradle` |
 | `--ios-ui <ui>` | iOS UI framework: `compose` or `swiftui` | `compose` |
@@ -252,7 +252,7 @@ Add `kmp` to your `claude_desktop_config.json` or Antigravity MCP settings:
 }
 ```
 
-##### Available MCP Tools (7):
+##### Available MCP Tools (9):
 | MCP Tool | Description | Key Parameters |
 | :--- | :--- | :--- |
 | `kmp_doctor` | Host environment check (JDK, Android SDK, Xcode via `kdoctor`, Toolchain 0.12) | `includeKdoctor`, `projectPath` |
@@ -262,6 +262,38 @@ Add `kmp` to your `claude_desktop_config.json` or Antigravity MCP settings:
 | `kmp_analyze_libraries` | klibs.io library search and multiplatform target compatibility | `query`, `targets` |
 | `kmp_list_skills` | List certified procedural skills in the KMP Skills Hub | None |
 | `kmp_add_skill` | Install an agent skill locally or globally | `skillId`, `global` |
+| `kmp_migrate_audit` | Audit React Native or Flutter codebases for native bridge migration | `path` |
+| `kmp_migrate_plan` | Generate phased Strangler Fig migration roadmap to KMP | `path`, `pathway` |
+| `kmp_migrate_execute` | Execute cross-platform modernization into KMP (scaffold, synthesize, migrate assets, emit manifest) | `sourcePath`, `outputDir`, `package`, `pathway`, `strategy` |
+
+#### 7. Cross-Platform Modernization & Migration Engine (`kmp migrate`)
+Audit legacy cross-platform codebases (React Native, Flutter) and generate incremental Strangler Fig modernization pathways (see [RFC-005](docs/RFC-005-cross-platform-modernization-and-migration.md)):
+
+- **Canonical React Native Upstream Baseline:** [React Native Environment Setup & Expo Framework](https://reactnative.dev/docs/environment-setup) (`npx create-expo-app@latest`)
+- **Canonical Flutter Upstream Baseline:** [Flutter Set up & Test Drive](https://docs.flutter.dev/install/quick) (`flutter create` / VS Code `Flutter: New Project`)
+
+```bash
+# Audit React Native or Flutter codebase and generate dependency replacement matrix
+kmp migrate audit
+
+# Output modernization audit as machine-readable JSON for AI agents
+kmp migrate audit --json
+
+# Generate a 4-phase Strangler Fig incremental migration roadmap
+kmp migrate plan
+
+# Override pathway recommendation (dual-native, native-ui-shared-core, compose-multiplatform)
+kmp migrate plan --pathway native-ui-shared-core
+
+# Execute end-to-end migration: scaffold KMP app, synthesize dependencies, migrate assets, and emit manifest
+kmp migrate execute ./legacy-app --output ./migrated-kmp --package com.example.migrated --strategy autonomous
+
+# Scaffold shared KMP core bridge library for existing hybrid shells
+kmp create MyBridge --template kmp-shared-core-bridge
+```
+
+*Smart Redirect*: Executing `kmp analyze` on a repository containing `package.json` (React Native) or `pubspec.yaml` (Flutter) without Kotlin build descriptors automatically advises running `kmp migrate audit`.
+
 
 ---
 

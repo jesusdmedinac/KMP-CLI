@@ -11,6 +11,7 @@ object EmbeddedTemplates {
         ProjectTemplate.TOOLCHAIN_NATIVE_UI -> toolchainApp
         ProjectTemplate.FULLSTACK -> fullstack
         ProjectTemplate.JSON_TO_COMPOSE_SAMPLE -> jsonToComposeSample
+        ProjectTemplate.SHARED_CORE_BRIDGE -> sharedCoreBridge
     }
 
     private val composeMultiplatform = mapOf(
@@ -1838,6 +1839,134 @@ object EmbeddedTemplates {
                     }
                 }.start(wait = true)
             }
+        """.trimIndent()
+    )
+
+    private val sharedCoreBridge = mapOf(
+        ".gitignore" to """
+            *.iml
+            .gradle
+            /build
+            !/gradle/wrapper/gradle-wrapper.jar
+            .idea
+            local.properties
+            .DS_Store
+            .kotlin
+        """.trimIndent(),
+        "settings.gradle.kts" to """
+            rootProject.name = "{{PROJECT_NAME}}"
+
+            pluginManagement {
+                repositories {
+                    google()
+                    mavenCentral()
+                    gradlePluginPortal()
+                }
+            }
+
+            dependencyResolutionManagement {
+                repositories {
+                    google()
+                    mavenCentral()
+                }
+            }
+        """.trimIndent(),
+        "gradle/libs.versions.toml" to """
+            [versions]
+            kotlin = "2.1.10"
+            agp = "8.8.0"
+            coroutines = "1.9.0"
+            serialization = "1.7.3"
+            ktor = "3.1.1"
+            skie = "0.10.1"
+
+            [libraries]
+            kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+            kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+            ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+            kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+
+            [plugins]
+            kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+            kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+            androidLibrary = { id = "com.android.library", version.ref = "agp" }
+            skie = { id = "co.touchlab.skie", version.ref = "skie" }
+        """.trimIndent(),
+        "build.gradle.kts" to """
+            plugins {
+                alias(libs.plugins.kotlinMultiplatform)
+                alias(libs.plugins.androidLibrary)
+                alias(libs.plugins.kotlinSerialization)
+                alias(libs.plugins.skie)
+                `maven-publish`
+            }
+
+            group = "{{PACKAGE_NAME}}"
+            version = "0.1.0"
+
+            kotlin {
+                androidTarget {
+                    publishLibraryVariants("release", "debug")
+                    compilerOptions {
+                        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+                    }
+                }
+
+                listOf(
+                    iosX64(),
+                    iosArm64(),
+                    iosSimulatorArm64()
+                ).forEach { iosTarget ->
+                    iosTarget.binaries.framework {
+                        baseName = "{{PROJECT_NAME}}"
+                        isStatic = true
+                        export(libs.kotlinx.coroutines.core)
+                    }
+                }
+
+                sourceSets {
+                    commonMain.dependencies {
+                        implementation(libs.kotlinx.coroutines.core)
+                        implementation(libs.kotlinx.serialization.json)
+                        implementation(libs.ktor.client.core)
+                    }
+                    commonTest.dependencies {
+                        implementation(libs.kotlin.test)
+                    }
+                }
+            }
+
+            android {
+                namespace = "{{PACKAGE_NAME}}"
+                compileSdk = 35
+                defaultConfig {
+                    minSdk = 24
+                }
+            }
+        """.trimIndent(),
+        "src/commonMain/kotlin/{{PACKAGE_PATH}}/bridge/CoreBridge.kt" to """
+            package {{PACKAGE_NAME}}.bridge
+
+            import kotlinx.coroutines.flow.StateFlow
+
+            interface CoreBridge {
+                val isReady: StateFlow<Boolean>
+                suspend fun initialize(): Boolean
+                fun shutdown()
+            }
+        """.trimIndent(),
+        "src/commonMain/kotlin/{{PACKAGE_PATH}}/dispatcher/CoroutineDispatchers.kt" to """
+            package {{PACKAGE_NAME}}.dispatcher
+
+            import kotlinx.coroutines.CoroutineDispatcher
+            import kotlinx.coroutines.Dispatchers
+
+            interface AppDispatchers {
+                val main: CoroutineDispatcher get() = Dispatchers.Main
+                val default: CoroutineDispatcher get() = Dispatchers.Default
+            }
+
+            object DefaultAppDispatchers : AppDispatchers
         """.trimIndent()
     )
 }

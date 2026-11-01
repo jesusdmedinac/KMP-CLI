@@ -441,6 +441,82 @@
         "wasm"
       ],
       "path": "skills/kotlin-cloud-firebase/SKILL.md"
+    },
+    {
+      "id": "kmp-migrate-from-react-native",
+      "name": "kmp-migrate-from-react-native",
+      "description": "Strangler migration patterns, bridge removal, JS state to Kotlin StateFlow, and incremental React Native modernization to Kotlin Multiplatform.",
+      "version": "1.0.0",
+      "author": "jesusdmedinac",
+      "category": "migration",
+      "aliases": [
+        "kotlin-migration-react-native",
+        "migrate-react-native"
+      ],
+      "tags": [
+        "migration",
+        "react-native",
+        "strangler-fig",
+        "bridge-removal",
+        "stateflow",
+        "turbomodules"
+      ],
+      "targets": [
+        "android",
+        "ios"
+      ],
+      "path": "skills/kmp-migrate-from-react-native/SKILL.md"
+    },
+    {
+      "id": "kmp-migrate-from-flutter",
+      "name": "kmp-migrate-from-flutter",
+      "description": "Flutter Widget & BLoC migration to Compose Multiplatform & Coroutines, platform channel elimination, and phased Flutter modernization.",
+      "version": "1.0.0",
+      "author": "jesusdmedinac",
+      "category": "migration",
+      "aliases": [
+        "kotlin-migration-flutter",
+        "migrate-flutter"
+      ],
+      "tags": [
+        "migration",
+        "flutter",
+        "bloc",
+        "compose-multiplatform",
+        "platform-channels",
+        "coroutines"
+      ],
+      "targets": [
+        "android",
+        "ios"
+      ],
+      "path": "skills/kmp-migrate-from-flutter/SKILL.md"
+    },
+    {
+      "id": "kmp-shared-core-bridge",
+      "name": "kmp-shared-core-bridge",
+      "description": "Architecture, packaging, and integration of a Shared KMP Core module for existing native (SwiftUI/Compose) and hybrid mobile shells.",
+      "version": "1.0.0",
+      "author": "jesusdmedinac",
+      "category": "migration",
+      "aliases": [
+        "kotlin-migration-shared-core-bridge",
+        "shared-core-bridge"
+      ],
+      "tags": [
+        "migration",
+        "shared-core",
+        "bridge",
+        "packaging",
+        "spm",
+        "cocoapods",
+        "aar"
+      ],
+      "targets": [
+        "android",
+        "ios"
+      ],
+      "path": "skills/kmp-shared-core-bridge/SKILL.md"
     }
   ]
 }
