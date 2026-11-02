@@ -1,7 +1,7 @@
 site_name: KMP CLI
 site_description: "A unified, extensible CLI and curated Agent Skills Hub for Kotlin Multiplatform — built for both human developers and AI coding agents."
 site_author: "Jesus Daniel Medina Cruz"
-site_url: "https://jesusdmedinac.github.io/KMP-CLI/"
+site_url: "https://kmp.jesusdmedinac.com/"
 repo_name: "jesusdmedinac/KMP-CLI"
 repo_url: "https://github.com/jesusdmedinac/KMP-CLI"
 edit_uri: "edit/main/docs/"
